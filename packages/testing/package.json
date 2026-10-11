@@ -1,0 +1,11 @@
+{
+  "name": "@eagles-eye/testing",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Test support: fixture websites and a local server that serves them.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

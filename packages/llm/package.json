@@ -1,0 +1,14 @@
+{
+  "name": "@eagles-eye/llm",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Provider-agnostic language-model interface with an OpenAI-compatible implementation.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@eagles-eye/core": "0.1.0"
+  }
+}

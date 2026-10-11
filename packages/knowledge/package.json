@@ -1,0 +1,14 @@
+{
+  "name": "@eagles-eye/knowledge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Chunking, the knowledge store interface and its SQLite (FTS5/BM25) implementation.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@eagles-eye/core": "0.1.0"
+  }
+}

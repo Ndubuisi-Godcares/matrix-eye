@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      # Type errors fail the build before any test runs.
+      - run: npm run typecheck
+
+      - run: npm test
+
+      # Answer-quality gate: fails if any Phase 1 target (correctness, citations, abstention,
+      # unsupported figures, injection resistance) regresses. Runs offline against the fixture site.
+      - run: npm run eval -- --gate
+
+      - name: Upload evaluation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-report
+          path: evals/reports/
+          if-no-files-found: ignore
+
+      - name: Dependency audit (production dependencies)
+        run: npm audit --omit=dev --audit-level=high

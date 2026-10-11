@@ -1,0 +1,26 @@
+{
+  "name": "@eagles-eye/api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Eagle's Eye HTTP API (Fastify): projects, crawling, search and chat.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts"
+  },
+  "dependencies": {
+    "@eagles-eye/core": "0.1.0",
+    "@eagles-eye/crawler": "0.1.0",
+    "@eagles-eye/engine": "0.1.0",
+    "@eagles-eye/knowledge": "0.1.0",
+    "@eagles-eye/llm": "0.1.0",
+    "@fastify/cors": "^11.0.0",
+    "@fastify/rate-limit": "^10.0.0",
+    "fastify": "^5.0.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@eagles-eye/testing": "0.1.0"
+  }
+}

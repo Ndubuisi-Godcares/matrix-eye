@@ -1,0 +1,21 @@
+{
+  "name": "@eagles-eye/crawler",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Safe, polite website crawler and main-content extractor.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@eagles-eye/core": "0.1.0",
+    "cheerio": "^1.0.0",
+    "domhandler": "^5.0.3",
+    "robots-parser": "^3.0.1",
+    "undici": "^7.0.0"
+  },
+  "devDependencies": {
+    "@eagles-eye/testing": "0.1.0"
+  }
+}
