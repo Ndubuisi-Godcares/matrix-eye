@@ -1,0 +1,6 @@
+{
+  // Browser-oriented: type-checked with the DOM library, like the widget it wraps.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "lib": ["ES2023", "DOM", "DOM.Iterable"], "types": ["node"], "jsx": "react-jsx" },
+  "include": ["src/**/*.ts", "test/**/*.ts"]
+}

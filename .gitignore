@@ -17,3 +17,6 @@ evals/reports/
 
 .DS_Store
 Thumbs.db
+
+# Screenshots written by the browser tests for human review
+packages/widget/test/__screenshots__/

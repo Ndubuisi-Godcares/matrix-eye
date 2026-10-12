@@ -13,6 +13,8 @@ const schema = z.object({
   EAGLE_CORS_ORIGINS: z.string().default(""),
   /** Requests per minute per client IP. */
   EAGLE_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).default(120),
+  /** Chat requests per minute per visitor IP and project on the public widget endpoints. */
+  EAGLE_PUBLIC_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).default(20),
   /** Allow crawling localhost / private addresses. Trusted dev machines only. */
   EAGLE_ALLOW_PRIVATE_NETWORKS: z
     .enum(["true", "false"])
@@ -27,6 +29,7 @@ export interface AppConfig {
   dbPath: string;
   corsOrigins: string[];
   rateLimitPerMinute: number;
+  publicRateLimitPerMinute: number;
   allowPrivateNetworks: boolean;
 }
 
@@ -44,6 +47,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     dbPath: v.EAGLE_DB_PATH,
     corsOrigins: v.EAGLE_CORS_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean),
     rateLimitPerMinute: v.EAGLE_RATE_LIMIT_PER_MINUTE,
+    publicRateLimitPerMinute: v.EAGLE_PUBLIC_RATE_LIMIT_PER_MINUTE,
     allowPrivateNetworks: v.EAGLE_ALLOW_PRIVATE_NETWORKS,
   };
 }

@@ -13,6 +13,7 @@ export type ErrorCode =
   | "not_found"
   | "invalid_request"
   | "unauthorized"
+  | "forbidden"
   | "llm_failed"
   | "internal";
 

@@ -25,6 +25,9 @@ jobs:
       # Type errors fail the build before any test runs.
       - run: npm run typecheck
 
+      # Builds the SDK, the widget (fails above 30 KB gzipped) and the React wrapper.
+      - run: npm run build
+
       - run: npm test
 
       # Answer-quality gate: fails if any Phase 1 target (correctness, citations, abstention,

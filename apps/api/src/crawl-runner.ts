@@ -6,6 +6,7 @@
  */
 import { EagleError } from "@eagles-eye/core";
 import { ingestSite } from "@eagles-eye/engine";
+import type { PageRenderer } from "@eagles-eye/crawler";
 import type { KnowledgeStore } from "@eagles-eye/knowledge";
 import type { CrawlJob, Project, Repositories } from "./repositories";
 
@@ -22,7 +23,7 @@ export class CrawlRunner {
   constructor(
     private readonly repos: Repositories,
     private readonly store: KnowledgeStore,
-    private readonly options: { allowPrivateNetworks: boolean; delayMs?: number },
+    private readonly options: { allowPrivateNetworks: boolean; delayMs?: number; renderer?: PageRenderer },
   ) {}
 
   /** Start a crawl and return immediately with the new (running) job. */
@@ -56,6 +57,7 @@ export class CrawlRunner {
         full: request.full,
         allowPrivateNetworks: this.options.allowPrivateNetworks,
         delayMs: this.options.delayMs,
+        renderer: this.options.renderer,
       });
       this.repos.finishJob(jobId, {
         status: "completed",

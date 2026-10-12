@@ -2,7 +2,7 @@
   "name": "eagles-eye",
   "version": "0.1.0",
   "private": true,
-  "description": "Eagle's Eye — a website intelligence engine that turns a website into a source-grounded conversational assistant.",
+  "description": "Eagle's Eye â€” a website intelligence engine that turns a website into a source-grounded conversational assistant.",
   "license": "Apache-2.0",
   "type": "module",
   "engines": {
@@ -14,15 +14,24 @@
     "evals"
   ],
   "scripts": {
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p packages/widget/tsconfig.json && tsc --noEmit -p packages/widget-react/tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "eval": "npm run run --workspace @eagles-eye/evals",
     "dev:api": "npm run dev --workspace @eagles-eye/api",
-    "eagle": "tsx apps/cli/src/main.ts"
+    "eagle": "tsx apps/cli/src/main.ts",
+    "build": "npm run build --workspace @eagles-eye/sdk --workspace @eagles-eye/widget --workspace @eagles-eye/widget-react",
+    "demo": "tsx apps/demo/src/main.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "axe-core": "^4.14.0",
+    "esbuild": "^0.28.2",
+    "jsdom": "^30.1.2",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",
     "vitest": "^5.0.3"

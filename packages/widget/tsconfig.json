@@ -1,0 +1,6 @@
+{
+  // The widget runs in a browser, so it is type-checked with the DOM library (the server packages are not).
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "lib": ["ES2023", "DOM", "DOM.Iterable"], "types": ["node"] },
+  "include": ["src/**/*.ts", "test/**/*.ts"]
+}

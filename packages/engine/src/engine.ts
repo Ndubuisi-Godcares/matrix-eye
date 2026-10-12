@@ -47,6 +47,14 @@ export interface AskInput {
   siteName?: string;
   rules?: readonly Rule[];
   signal?: AbortSignal;
+  /**
+   * Receives the model's answer as it is written, so a chat window can show text immediately instead of
+   * waiting several seconds. The text is PROVISIONAL: it has not been validated yet. The returned response
+   * is authoritative and may differ (for example when validation replaces an unsafe answer), so callers
+   * must replace what they streamed with `response.answer`. Never called for rule, facts, overview,
+   * small-talk or extractive answers, which are instant.
+   */
+  onToken?: (text: string) => void;
 }
 
 const MAX_QUESTION_CHARS = 1000;
@@ -139,7 +147,7 @@ export class ConversationEngine {
     let response: Omit<ChatResponse, "debug"> | null = null;
 
     if (this.llm) {
-      response = await this.generateWithModel(this.llm, { question, siteName, evidence, history, signal: input.signal }, issues);
+      response = await this.generateWithModel(this.llm, { question, siteName, evidence, history, signal: input.signal, onToken: input.onToken }, issues);
     }
     response ??= this.generateExtractive(query, evidence, (term) => inverseDocumentFrequency(term, df, chunks), expectsNumber(question));
     mark("generate", t);
@@ -151,18 +159,23 @@ export class ConversationEngine {
   /** Ask the model, validate its answer, and fall back to extractive on any failure. Returns null to request fallback. */
   private async generateWithModel(
     llm: LlmProvider,
-    ctx: { question: string; siteName: string; evidence: SearchHit[]; history: readonly ChatTurn[]; signal?: AbortSignal },
+    ctx: { question: string; siteName: string; evidence: SearchHit[]; history: readonly ChatTurn[]; signal?: AbortSignal; onToken?: (text: string) => void },
     issues: string[],
   ): Promise<Omit<ChatResponse, "debug"> | null> {
     let raw: string;
     try {
-      const result = await llm.complete({
-        messages: buildMessages(ctx),
-        maxTokens: this.tuning.maxAnswerTokens,
-        temperature: 0.1,
-        signal: ctx.signal,
-      });
-      raw = result.text;
+      const request = { messages: buildMessages(ctx), maxTokens: this.tuning.maxAnswerTokens, temperature: 0.1, signal: ctx.signal };
+      if (ctx.onToken) {
+        // Same request, delivered incrementally; the full text is still validated below before it is trusted.
+        raw = "";
+        for await (const piece of llm.stream(request)) {
+          raw += piece;
+          ctx.onToken(piece);
+        }
+        raw = raw.trim();
+      } else {
+        raw = (await llm.complete(request)).text;
+      }
     } catch (err) {
       // An unreachable model degrades the answer style, not availability.
       issues.push(`llm_error:${err instanceof Error ? err.message.slice(0, 120) : "unknown"}`);

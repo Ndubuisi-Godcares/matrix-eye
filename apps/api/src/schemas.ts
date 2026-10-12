@@ -30,10 +30,31 @@ const ruleSchema = z
 
 export const rulesSchema = z.array(ruleSchema).max(100);
 
+/** An exact browser origin ("https://school.edu", "http://localhost:3000") or "*" for any site. Normalised to lower case. */
+const originSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .refine((v) => v === "*" || /^https?:\/\/[^\s/?#]+$/.test(v), 'must be an origin like "https://school.edu" (no path) or "*"');
+
+export const settingsSchema = z.object({
+  allowedOrigins: z.array(originSchema).max(20).optional(),
+  greeting: z.string().trim().max(300).nullable().optional(),
+  suggestedQuestions: z.array(z.string().trim().min(1).max(120)).max(4).optional(),
+});
+
 export const createProjectSchema = z.object({
   name: z.string().trim().min(1).max(120),
   siteUrl: z.string().trim().url().max(2000),
   rules: rulesSchema.optional(),
+  settings: settingsSchema.optional(),
+});
+
+export const feedbackSchema = z.object({
+  rating: z.enum(["up", "down"]),
+  question: z.string().trim().min(1).max(1000),
+  answer: z.string().max(4000),
+  comment: z.string().trim().max(1000).optional(),
 });
 
 export const crawlSchema = z.object({
