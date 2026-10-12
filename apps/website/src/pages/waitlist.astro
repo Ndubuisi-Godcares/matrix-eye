@@ -1,0 +1,24 @@
+---
+import Icon from "../components/Icon.astro";
+import WaitlistForm from "../components/WaitlistForm.astro";
+import Base from "../layouts/Base.astro";
+---
+
+<Base title="Join the waitlist" description="Get early access to Eagle's Eye: an assistant for your website that answers from your own pages and cites its sources. Free during early access.">
+  <section class="section">
+    <div class="container split" style="align-items: start;">
+      <div class="prose">
+        <span class="eyebrow">Early access</span>
+        <h1>Be one of the first</h1>
+        <p class="lead">Tell us where to send your invitation. Early access is free, and early members help decide what we build next.</p>
+        <ul class="checks">
+          <li><Icon name="check" /><span><strong>No credit card.</strong> Nothing is charged during early access.</span></li>
+          <li><Icon name="check" /><span><strong>No spam.</strong> We email you about access, and you can ask to be removed at any time.</span></li>
+          <li><Icon name="check" /><span><strong>Want to try it now?</strong> The <a href="/docs/quickstart/">quickstart</a> runs everything on your own computer.</span></li>
+        </ul>
+        <p class="meta">What happens next: we send invitations in small groups so we can help each team get set up well.</p>
+      </div>
+      <div class="card"><WaitlistForm idPrefix="wl" /></div>
+    </div>
+  </section>
+</Base>

@@ -57,6 +57,31 @@ export const feedbackSchema = z.object({
   comment: z.string().trim().max(1000).optional(),
 });
 
+/** Trimmed, lower-cased, length-bounded email address. */
+const emailSchema = z.string().trim().toLowerCase().min(3).max(254).email();
+
+/**
+ * Website forms. `website` is a honeypot: a field real visitors never see or fill (it is hidden), but form-filling
+ * bots do. A filled honeypot is answered with success and silently discarded, so bots learn nothing.
+ */
+export const waitlistSchema = z.object({
+  email: emailSchema,
+  name: z.string().trim().max(100).optional(),
+  useCase: z.string().trim().max(300).optional(),
+  source: z.string().trim().max(200).optional(),
+  /** Must be true: nothing is stored without the person agreeing to be contacted. */
+  consent: z.literal(true, { errorMap: () => ({ message: "Please tick the box to agree to be contacted" }) }),
+  website: z.string().max(200).optional(),
+});
+
+export const contactSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  email: emailSchema,
+  message: z.string().trim().min(5).max(2000),
+  consent: z.literal(true, { errorMap: () => ({ message: "Please tick the box so we may reply to you" }) }),
+  website: z.string().max(200).optional(),
+});
+
 export const crawlSchema = z.object({
   maxPages: z.number().int().min(1).max(1000).optional(),
   full: z.boolean().optional(),

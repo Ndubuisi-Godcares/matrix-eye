@@ -1,0 +1,19 @@
+---
+/** A syntax-highlighted code sample with a copy button. Highlighting happens at build time (no runtime cost). */
+import { Code } from "astro:components";
+import type { CodeLanguage } from "astro";
+import Icon from "./Icon.astro";
+
+interface Props {
+  code: string;
+  lang?: CodeLanguage;
+}
+const { code, lang = "bash" } = Astro.props;
+---
+
+<div class="code-block">
+  <button class="copy-btn" type="button" data-copy aria-label="Copy code to the clipboard">
+    <Icon name="copy" /><span>Copy</span>
+  </button>
+  <Code code={code} lang={lang} themes={{ light: "github-light-high-contrast", dark: "github-dark-high-contrast" }} defaultColor={false} />
+</div>

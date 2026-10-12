@@ -13,6 +13,10 @@ const schema = z.object({
   EAGLE_CORS_ORIGINS: z.string().default(""),
   /** Requests per minute per client IP. */
   EAGLE_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).default(120),
+  /** Comma-separated origins of the marketing website, allowed to submit the waitlist and contact forms. */
+  EAGLE_SITE_ORIGINS: z.string().default(""),
+  /** Waitlist and contact form submissions per minute per visitor IP. */
+  EAGLE_FORM_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).default(5),
   /** Chat requests per minute per visitor IP and project on the public widget endpoints. */
   EAGLE_PUBLIC_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).default(20),
   /** Allow crawling localhost / private addresses. Trusted dev machines only. */
@@ -28,8 +32,10 @@ export interface AppConfig {
   host: string;
   dbPath: string;
   corsOrigins: string[];
+  siteOrigins: string[];
   rateLimitPerMinute: number;
   publicRateLimitPerMinute: number;
+  formRateLimitPerMinute: number;
   allowPrivateNetworks: boolean;
 }
 
@@ -46,8 +52,10 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     host: v.HOST,
     dbPath: v.EAGLE_DB_PATH,
     corsOrigins: v.EAGLE_CORS_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean),
+    siteOrigins: v.EAGLE_SITE_ORIGINS.split(",").map((o) => o.trim().toLowerCase()).filter(Boolean),
     rateLimitPerMinute: v.EAGLE_RATE_LIMIT_PER_MINUTE,
     publicRateLimitPerMinute: v.EAGLE_PUBLIC_RATE_LIMIT_PER_MINUTE,
+    formRateLimitPerMinute: v.EAGLE_FORM_RATE_LIMIT_PER_MINUTE,
     allowPrivateNetworks: v.EAGLE_ALLOW_PRIVATE_NETWORKS,
   };
 }

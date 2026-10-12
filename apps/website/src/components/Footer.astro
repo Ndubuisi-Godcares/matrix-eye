@@ -1,0 +1,29 @@
+---
+import { FOOTER_GROUPS, SITE } from "../data/site";
+import Logo from "./Logo.astro";
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__about">
+        <a href="/" aria-label="Eagle's Eye, home"><Logo height={44} /></a>
+        <p>An assistant for your website that answers from your own pages and shows its sources. Early access.</p>
+      </div>
+      {
+        FOOTER_GROUPS.map((group) => (
+          <nav aria-label={group.title}>
+            <h2>{group.title}</h2>
+            <ul>
+              {group.links.map((link) => <li><a href={link.href}>{link.label}</a></li>)}
+            </ul>
+          </nav>
+        ))
+      }
+    </div>
+    <div class="footer__legal">
+      <span>&copy; {SITE.year} {SITE.name}. All rights reserved.</span>
+      <span>Eagle's Eye is in early access. Features, prices and policies may change.</span>
+    </div>
+  </div>
+</footer>

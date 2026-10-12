@@ -8,5 +8,5 @@
     "evals/src/**/*.ts",
     "vitest.config.ts"
   ],
-  "exclude": ["packages/widget/**", "packages/widget-react/**", "examples/**"]
+  "exclude": ["packages/widget/**", "packages/widget-react/**", "apps/website/**", "examples/**"]
 }

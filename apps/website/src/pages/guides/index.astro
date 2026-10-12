@@ -1,0 +1,28 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+
+const guides = (await getCollection("guides")).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const format = (date: Date) => date.toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
+---
+
+<Base title="Guides" description="Practical articles from building Eagle's Eye: how to keep an assistant honest, how to add it to a React or Next.js site, and how we test accessibility.">
+  <section class="section">
+    <div class="container">
+      <div class="section__head">
+        <span class="eyebrow">Guides</span>
+        <h1>What we have learned building this</h1>
+        <p class="lead">Practical, honest write-ups: what worked, what failed, and what we measured.</p>
+      </div>
+      <div class="post-list" style="max-width: 46rem;">
+        {guides.map((guide) => (
+          <a class="post-card" href={`/guides/${guide.id}/`}>
+            <h2>{guide.data.title}</h2>
+            <p>{guide.data.description}</p>
+            <span class="meta">{format(guide.data.date)} &middot; {guide.data.author}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>

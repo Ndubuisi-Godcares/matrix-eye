@@ -47,7 +47,7 @@ export default function Assistant() {
 }
 ```
 
-Try it locally on any site: `npm run demo -- https://example.edu` (see the command guide).
+Try it locally on any site: `npm run demo -- https://example.edu` (see the [quickstart](quickstart.md)).
 
 ## 3. Settings
 

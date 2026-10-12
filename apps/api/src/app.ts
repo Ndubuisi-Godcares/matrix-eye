@@ -16,7 +16,7 @@ import { createAuthHook } from "./auth";
 import type { AppConfig } from "./config";
 import { CrawlRunner } from "./crawl-runner";
 import { Repositories } from "./repositories";
-import { chatSchema, crawlSchema, createProjectSchema, feedbackSchema, idParamSchema, rulesSchema, searchSchema, settingsSchema } from "./schemas";
+import { chatSchema, contactSchema, crawlSchema, createProjectSchema, feedbackSchema, idParamSchema, rulesSchema, searchSchema, settingsSchema, waitlistSchema } from "./schemas";
 
 export interface AppDependencies {
   config: AppConfig;
@@ -46,6 +46,9 @@ const STATUS: Partial<Record<ErrorCode, number>> = {
 /** /v1/public/projects/<uuid>/... : the endpoints a website visitor's browser calls. */
 const PUBLIC_PATH = /^\/v1\/public\/projects\/([0-9a-f-]{36})(?:[/?]|$)/i;
 
+/** The website's waitlist and contact forms. */
+const SITE_FORM_PATH = /^\/v1\/public\/(waitlist|contact)(?:[?]|$)/;
+
 export interface BuiltApp {
   app: FastifyInstance;
   crawls: CrawlRunner;
@@ -66,6 +69,10 @@ export async function buildApp(deps: AppDependencies): Promise<BuiltApp> {
   // other route allows only the operator's list. (The route-level origin check below enforces the same rule
   // for non-preflight requests, so CORS headers are a browser convenience, not the only gate.)
   await app.register(cors, () => (request: FastifyRequest, callback: (error: Error | null, options: FastifyCorsOptions) => void) => {
+    // The marketing website's forms: only the configured site origins, only POST.
+    if (SITE_FORM_PATH.test(request.url ?? "")) {
+      return callback(null, { origin: config.siteOrigins.length ? config.siteOrigins : false, methods: ["POST", "OPTIONS"], allowedHeaders: ["content-type"], maxAge: 600 });
+    }
     const match = PUBLIC_PATH.exec(request.url ?? "");
     if (!match) return callback(null, { origin: config.corsOrigins.length ? config.corsOrigins : false });
     const origins = repos.getProject(match[1] ?? "")?.settings.allowedOrigins ?? [];
@@ -150,6 +157,26 @@ export async function buildApp(deps: AppDependencies): Promise<BuiltApp> {
         return { feedback: repos.listFeedback(project.id, { rating: rating === "up" || rating === "down" ? rating : undefined }) };
       });
 
+      // ---- Website forms: review and privacy requests (admin only) ----
+      v1.get("/waitlist", async (request, reply) => {
+        const entries = repos.listWaitlist();
+        if ((request.query as { format?: string }).format !== "csv") return { count: entries.length, entries };
+        // CSV for spreadsheets. Cells starting with = + - @ are prefixed with ' so they cannot run as formulas.
+        const cell = (v: string | null) => `"${String(v ?? "").replace(/^[=+\-@]/, "'$&").replace(/"/g, '""')}"`;
+        const rows = ["email,name,use_case,source,consent_at,created_at", ...entries.map((e) => [e.email, e.name, e.useCase, e.source, e.consentAt, e.createdAt].map(cell).join(","))];
+        return reply.type("text/csv; charset=utf-8").send(rows.join("\n") + "\n");
+      });
+
+      v1.delete("/waitlist", async (request, reply) => {
+        const email = String((request.query as { email?: string }).email ?? "").trim().toLowerCase();
+        if (!email) throw new EagleError("invalid_request", "Give the address to erase as ?email=");
+        // 404 if absent, so an operator can tell whether the request found anything.
+        if (!repos.deleteWaitlist(email)) throw new EagleError("not_found", "That address is not on the waitlist");
+        return reply.code(204).send();
+      });
+
+      v1.get("/contact-messages", async () => ({ messages: repos.listContactMessages() }));
+
       v1.post("/projects/:id/crawl", async (request, reply) => {
         const project = requireProject(request.params);
         const body = crawlSchema.parse(request.body ?? {});
@@ -215,6 +242,30 @@ export async function buildApp(deps: AppDependencies): Promise<BuiltApp> {
           keyGenerator: (request: { ip: string; params: unknown }) => `${request.ip}:${(request.params as { id?: string }).id ?? ""}`,
         },
       };
+
+      // ---- Website forms (not tied to a project) ----
+      const formLimit = { rateLimit: { max: config.formRateLimitPerMinute, timeWindow: "1 minute", keyGenerator: (request: { ip: string }) => `form:${request.ip}` } };
+      const requireSiteOrigin = (origin: string | undefined) => {
+        // Browsers always send Origin on cross-site POSTs. A missing Origin (curl, server code) is allowed;
+        // a present but unlisted one is refused so other websites cannot post forms on a visitor's behalf.
+        if (origin && !config.siteOrigins.includes(origin.toLowerCase())) throw new EagleError("forbidden", "This website is not allowed to submit this form.");
+      };
+
+      pub.post("/waitlist", { config: formLimit }, async (request, reply) => {
+        requireSiteOrigin(request.headers.origin);
+        const body = waitlistSchema.parse(request.body);
+        // Honeypot filled: pretend it worked, store nothing. Same response as a real signup and as a duplicate,
+        // so the form also never reveals whether an address is already registered.
+        if (!body.website) repos.addWaitlist({ email: body.email, name: body.name || null, useCase: body.useCase || null, source: body.source || null });
+        return reply.code(204).send();
+      });
+
+      pub.post("/contact", { config: formLimit }, async (request, reply) => {
+        requireSiteOrigin(request.headers.origin);
+        const body = contactSchema.parse(request.body);
+        if (!body.website) repos.addContactMessage({ name: body.name, email: body.email, message: body.message });
+        return reply.code(204).send();
+      });
 
       pub.get("/projects/:id/config", async (request) => {
         const project = publicProject(request);

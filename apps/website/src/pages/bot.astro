@@ -1,0 +1,38 @@
+---
+import { SITE } from "../data/site";
+import Base from "../layouts/Base.astro";
+---
+
+<Base title="EaglesEyeBot, our crawler" description="Information for website owners about EaglesEyeBot: what it is, how it behaves, how to control it, and how to contact us.">
+  <section class="section">
+    <div class="container prose">
+      <span class="eyebrow">For website owners</span>
+      <h1>{SITE.botName}</h1>
+      <p class="lead">If you found <code>{SITE.botName}</code> in your server logs, this page explains who it is, what it does, and how to stop it.</p>
+
+      <h2 id="what">What it is</h2>
+      <p>{SITE.botName} is the crawler used by Eagle's Eye. Someone who runs an Eagle's Eye assistant pointed it at your website so their chat window can answer visitors' questions from your pages. It reads public web pages only. It does not log in, submit forms, run searches on your site, or read pages behind a password.</p>
+      <p>Its user-agent looks like this:</p>
+      <pre><code>EaglesEyeBot/0.1 (+{SITE.url}/bot/)</code></pre>
+
+      <h2 id="behaviour">How it behaves</h2>
+      <ul>
+        <li><strong>It obeys <code>robots.txt</code>.</strong> Pages you disallow are not fetched. If your <code>robots.txt</code> cannot be read reliably, it does not crawl at all.</li>
+        <li><strong>It respects <code>Crawl-delay</code></strong> and never goes faster than about four requests per second, with at most two at once.</li>
+        <li><strong>It stays on one website.</strong> It does not follow links to other sites.</li>
+        <li><strong>It honours <code>noindex</code></strong> and <code>nofollow</code>, and skips pages that are marked that way.</li>
+        <li><strong>It only sends <code>GET</code> requests</strong>, never anything that could change your site.</li>
+        <li><strong>It limits itself:</strong> a cap on pages per crawl, on page size, and on time per page.</li>
+      </ul>
+
+      <h2 id="control">How to control or block it</h2>
+      <p>To stop it entirely, add this to the <code>robots.txt</code> at the root of your website:</p>
+      <pre><code>User-agent: {SITE.botName}
+Disallow: /</code></pre>
+      <p>To keep it out of part of your site, disallow only those paths. To slow it down, add <code>Crawl-delay: 5</code> (seconds) under the same user-agent.</p>
+
+      <h2 id="contact">Contact</h2>
+      <p>If it is misbehaving, or you want to know who asked it to visit, please use the <a href="/contact/">contact page</a> and include the time of the visits and your website address. We will respond promptly.</p>
+    </div>
+  </section>
+</Base>

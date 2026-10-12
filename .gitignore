@@ -20,3 +20,14 @@ Thumbs.db
 
 # Screenshots written by the browser tests for human review
 packages/widget/test/__screenshots__/
+
+# Copied from packages/widget at build time
+apps/website/public/eagles-eye-widget.js
+# Built site and search index
+apps/website/dist/
+apps/website/.astro/
+
+# Screenshots written by the website browser tests for human review
+apps/website/test/__screenshots__/
+apps/website/.build.lock
+apps/website/.build.done

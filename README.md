@@ -9,7 +9,7 @@ Crawl a site, index it, and answer visitors' questions with citations, or an hon
 
 ## Status
 
-**Phase 1 (core engine) and Phase 2 (SDK, chat widget, streaming) are built and tested.** A website is crawled (including
+**Phases 1-3 (core engine; SDK, chat widget, streaming; marketing and documentation website) are built and tested.** A website is crawled (including
 JavaScript sites), questions are answered with citations by a local or hosted language model (or by quoting the site),
 and a one-line script puts an accessible chat window on any page.
 
@@ -21,7 +21,8 @@ and a one-line script puts an accessible chat window on any page.
 | Chat widget (script tag, web component, `init()`) | built, ~10 KB gzipped; tested in real Chromium incl. axe-core accessibility audit |
 | React / Next.js component | built, server-side-rendering safe |
 | Local model (Ollama) | verified with `qwen3:4b-instruct` |
-| Marketing website, dashboard, hosted service, billing | not started (Phases 3-4) |
+| Marketing and documentation website ([docs/website.md](docs/website.md)) | built, tested, **not deployed** (no domain or host yet) |
+| Dashboard, hosted service, billing | not started (Phase 4) |
 | Real screen-reader testing, npm/CDN publishing, domain | not done |
 
 The evaluation harness (`npm run eval`) scores 100% on its 48-question fixture set in the default mode and 97.4% with a
@@ -142,7 +143,7 @@ apps/
   cli/         `eagle` command line tool
   demo/        `npm run demo`: read a site and chat with it through the real widget
 evals/         labelled questions, scoring, report + CI quality gate
-docs/          api.md, architecture decision records (adr/), planning PDFs (planning/)
+docs/          website.md, api.md, architecture decision records (adr/), planning PDFs (planning/)
 brand/         logos
 ```
 

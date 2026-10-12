@@ -1,0 +1,23 @@
+---
+/**
+ * An illustration of the product: a short conversation that shows the two behaviours that matter most, an answer
+ * that cites its page and an honest "I couldn't find that". It uses an invented university and says so, so it
+ * cannot be mistaken for a customer. The messages appear one after another (CSS only; shown at once when the
+ * visitor prefers reduced motion). It is real text, so screen readers read it as written.
+ */
+import Icon from "./Icon.astro";
+---
+
+<figure class="chat-demo" aria-label="Example conversation">
+  <div class="chat-demo__bar"><Icon name="chat" /> Riverside University</div>
+  <div class="chat-demo__body">
+    <p class="bubble bubble--user reveal reveal--1">When is the application deadline for September?</p>
+    <p class="bubble bubble--bot reveal reveal--2">
+      The application deadline for the September intake is <strong>30 June 2026</strong>.<sup><a href="#chat-demo-note" aria-label="Source 1, see the note below the conversation">1</a></sup>
+    </p>
+    <p class="chat-sources reveal reveal--3"><span class="chip"><Icon name="link" /> Admissions · riverside.example/admissions</span></p>
+    <p class="bubble bubble--user reveal reveal--4">Do you have a swimming pool?</p>
+    <p class="bubble bubble--bot reveal reveal--5">I couldn't find that on this website. You can email admissions@riverside.example.</p>
+  </div>
+  <figcaption class="chat-demo__label reveal reveal--6" id="chat-demo-note">Illustration with an invented university. On your site, every answer links to your own pages.</figcaption>
+</figure>

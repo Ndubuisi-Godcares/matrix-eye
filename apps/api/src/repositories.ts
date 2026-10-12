@@ -63,6 +63,26 @@ export interface Feedback {
   createdAt: string;
 }
 
+/** Someone who asked for early access through the website. */
+export interface WaitlistEntry {
+  email: string;
+  name: string | null;
+  useCase: string | null;
+  /** Page the form was submitted from, to learn which pages convert. */
+  source: string | null;
+  /** When they ticked the consent box. Required to store anything. */
+  consentAt: string;
+  createdAt: string;
+}
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  createdAt: string;
+}
+
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS projects (
   id            TEXT PRIMARY KEY,
@@ -98,6 +118,21 @@ CREATE TABLE IF NOT EXISTS feedback (
   created_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_feedback_project ON feedback (project_id, created_at);
+CREATE TABLE IF NOT EXISTS waitlist (
+  email      TEXT PRIMARY KEY,
+  name       TEXT,
+  use_case   TEXT,
+  source     TEXT,
+  consent_at TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS contact_messages (
+  id         TEXT PRIMARY KEY,
+  name       TEXT NOT NULL,
+  email      TEXT NOT NULL,
+  message    TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
 `;
 
 interface ProjectRow {
@@ -252,6 +287,36 @@ export class Repositories {
         result.error ?? null,
         id,
       );
+  }
+
+  /** Add someone to the waitlist. Returns false (and changes nothing) if the address is already there. */
+  addWaitlist(input: { email: string; name?: string | null; useCase?: string | null; source?: string | null }): boolean {
+    const now = new Date().toISOString();
+    const result = this.db
+      .prepare("INSERT OR IGNORE INTO waitlist (email, name, use_case, source, consent_at, created_at) VALUES (?, ?, ?, ?, ?, ?)")
+      .run(input.email, input.name ?? null, input.useCase ?? null, input.source ?? null, now, now);
+    return Number(result.changes) > 0;
+  }
+
+  listWaitlist(): WaitlistEntry[] {
+    const rows = this.db.prepare("SELECT * FROM waitlist ORDER BY created_at DESC").all() as Array<{ email: string; name: string | null; use_case: string | null; source: string | null; consent_at: string; created_at: string }>;
+    return rows.map((r) => ({ email: r.email, name: r.name, useCase: r.use_case, source: r.source, consentAt: r.consent_at, createdAt: r.created_at }));
+  }
+
+  /** Erase one person (a privacy request). Returns whether anything was removed. */
+  deleteWaitlist(email: string): boolean {
+    return Number(this.db.prepare("DELETE FROM waitlist WHERE email = ?").run(email).changes) > 0;
+  }
+
+  addContactMessage(input: { name: string; email: string; message: string }): ContactMessage {
+    const message: ContactMessage = { id: randomUUID(), ...input, createdAt: new Date().toISOString() };
+    this.db.prepare("INSERT INTO contact_messages (id, name, email, message, created_at) VALUES (?, ?, ?, ?, ?)").run(message.id, message.name, message.email, message.message, message.createdAt);
+    return message;
+  }
+
+  listContactMessages(): ContactMessage[] {
+    const rows = this.db.prepare("SELECT * FROM contact_messages ORDER BY created_at DESC LIMIT 500").all() as Array<{ id: string; name: string; email: string; message: string; created_at: string }>;
+    return rows.map((r) => ({ id: r.id, name: r.name, email: r.email, message: r.message, createdAt: r.created_at }));
   }
 
   addFeedback(input: Omit<Feedback, "id" | "createdAt">): Feedback {

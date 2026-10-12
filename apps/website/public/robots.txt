@@ -1,0 +1,5 @@
+# This website is public and welcomes search engines. The draft legal pages are marked noindex in the page itself.
+User-agent: *
+Allow: /
+
+Sitemap: https://eagleseye.ai/sitemap-index.xml

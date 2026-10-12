@@ -1,0 +1,41 @@
+---
+/**
+ * Code samples in tabs. With JavaScript the tabs switch between samples (arrow keys work); without it every
+ * sample is shown one after another under its own heading, so nothing is hidden from anyone.
+ */
+import type { CodeLanguage } from "astro";
+import CodeBlock from "./CodeBlock.astro";
+
+interface Tab {
+  id: string;
+  label: string;
+  code: string;
+  lang?: CodeLanguage;
+}
+interface Props {
+  tabs: Tab[];
+  /** Prefix that keeps element ids unique when a page has more than one set of tabs. */
+  name: string;
+}
+const { tabs, name } = Astro.props;
+---
+
+<div class="tabs" data-tabs>
+  <div role="tablist" aria-label="Code examples" class="js-only">
+    {tabs.map((tab, i) => <button role="tab" type="button" id={`${name}-tab-${tab.id}`} aria-controls={`${name}-panel-${tab.id}`} aria-selected={i === 0 ? "true" : "false"} tabindex={i === 0 ? 0 : -1}>{tab.label}</button>)}
+  </div>
+  {
+    tabs.map((tab) => (
+      <div role="tabpanel" id={`${name}-panel-${tab.id}`} aria-labelledby={`${name}-tab-${tab.id}`} tabindex="0">
+        <p class="panel-title">{tab.label}</p>
+        <CodeBlock code={tab.code} lang={tab.lang ?? "html"} />
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  /* The tab buttons only make sense when scripts run, so they stay hidden until the page marks itself as "js". */
+  .js-only { display: none; }
+  :global(.js) .js-only { display: flex; }
+</style>

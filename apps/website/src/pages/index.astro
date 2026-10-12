@@ -1,0 +1,168 @@
+---
+import type { CodeLanguage } from "astro";
+import ChatDemo from "../components/ChatDemo.astro";
+import CodeTabs from "../components/CodeTabs.astro";
+import Faq from "../components/Faq.astro";
+import Icon from "../components/Icon.astro";
+import WaitlistForm from "../components/WaitlistForm.astro";
+import { FAQ } from "../data/faq";
+import { SITE } from "../data/site";
+import Base from "../layouts/Base.astro";
+
+const stripHtml = (html: string) => html.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+const homeFaq = FAQ.slice(0, 6);
+
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: SITE.name,
+    applicationCategory: "DeveloperApplication",
+    operatingSystem: "Any",
+    description: SITE.description,
+    offers: { "@type": "Offer", price: "0", priceCurrency: "USD", description: "Community edition, free to self-host" },
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: homeFaq.map((item) => ({ "@type": "Question", name: item.q, acceptedAnswer: { "@type": "Answer", text: stripHtml(item.a) } })),
+  },
+];
+
+const tabs: Array<{ id: string; label: string; lang: CodeLanguage; code: string }> = [
+  { id: "script", label: "Script tag", lang: "html", code: `<script src="https://YOUR-HOST/eagles-eye-widget.js" defer\n        data-project="PROJECT_ID"\n        data-api="https://YOUR-API-HOST"></script>` },
+  { id: "react", label: "React / Next.js", lang: "tsx", code: `import { EaglesEyeChat } from "@eagles-eye/widget-react";\n\nexport default function Assistant() {\n  return <EaglesEyeChat project="PROJECT_ID" api="https://YOUR-API-HOST" />;\n}` },
+  {
+    id: "sdk",
+    label: "TypeScript SDK",
+    lang: "ts",
+    code: `import { EagleEyeClient } from "@eagles-eye/sdk";\n\nconst eagle = new EagleEyeClient({ baseUrl: "https://YOUR-API-HOST", apiKey: process.env.EAGLE_API_KEY });\n\nconst project = await eagle.createProject({\n  name: "My site",\n  siteUrl: "https://example.com",\n  settings: { allowedOrigins: ["https://example.com"] },\n});\nawait eagle.waitForCrawl((await eagle.startCrawl(project.id)).id);\n\nconst reply = await eagle.project(project.id).chat("How do I apply?");\nconsole.log(reply.answer, reply.citations);`,
+  },
+];
+---
+
+<Base title={SITE.tagline} description={SITE.description} {jsonLd}>
+  <section class="hero">
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <span class="eyebrow">Early access</span>
+        <h1>An assistant for your website that <span class="accent-underline">shows its sources</span></h1>
+        <p class="lead">Eagle's Eye reads your pages and answers visitors in a chat window. Every answer links to the page it came from. When your site doesn't say, it says so instead of guessing.</p>
+        <div class="hero__cta">
+          <a class="btn btn--primary" href="/waitlist/">Join the waitlist <Icon name="arrow" /></a>
+          <a class="btn btn--secondary" href="/docs/quickstart/">Read the quickstart</a>
+        </div>
+        <p class="hero__note">Free during early access. No credit card. Self-host it or wait for the hosted service.</p>
+      </div>
+      <div class="hero__visual"><ChatDemo /></div>
+    </div>
+  </section>
+
+  <section class="section section--alt" aria-labelledby="why">
+    <div class="container">
+      <div class="section__head">
+        <span class="eyebrow">Why it is different</span>
+        <h2 id="why">Answers you can trust, because you can check them</h2>
+        <p class="lead">Most chatbots sound confident whether or not they know. Eagle's Eye is built around the opposite habit.</p>
+      </div>
+      <div class="grid grid--3">
+        <article class="card">
+          <div class="card__icon"><Icon name="link" /></div>
+          <h3>Every answer cites its page</h3>
+          <p>Visitors see exactly which page of your site an answer came from, and can click through. You can see it too, which makes mistakes easy to find and fix.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon"><Icon name="shield" /></div>
+          <h3>It says "I couldn't find that"</h3>
+          <p>If your site doesn't cover a question, the assistant says so and points to your contact details. Prices, dates and email addresses are checked against your page text before they are shown.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon"><Icon name="server" /></div>
+          <h3>Yours to run, anywhere</h3>
+          <p>Self-host the whole thing with a language model on your own machine, or use a hosted service when it launches. The same code and the same chat window work both ways.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="how">
+    <div class="container">
+      <div class="section__head">
+        <span class="eyebrow">How it works</span>
+        <h2 id="how">From a web address to a working assistant</h2>
+      </div>
+      <ol class="steps">
+        <li>
+          <h3>Point it at your site</h3>
+          <p>Give it your web address. It reads your pages politely, respecting <code>robots.txt</code>, and understands JavaScript sites too.</p>
+        </li>
+        <li>
+          <h3>It indexes and checks</h3>
+          <p>Pages are split into passages and indexed. Anything that looks like an instruction aimed at an AI is removed, so a hostile page cannot steer your assistant.</p>
+        </li>
+        <li>
+          <h3>Visitors get cited answers</h3>
+          <p>A question finds the right passages, the answer is written from them, and the result is verified before it appears, with links to the sources.</p>
+        </li>
+      </ol>
+      <p class="mt-0" style="margin-top: 1.5rem;"><a href="/docs/how-it-works/">Read the details of how it works</a></p>
+    </div>
+  </section>
+
+  <section class="section section--alt" aria-labelledby="dev">
+    <div class="container split">
+      <div>
+        <span class="eyebrow">For developers</span>
+        <h2 id="dev">One line to add it. A typed SDK to build on.</h2>
+        <p class="lead">A small chat widget for any page, a React component, and a TypeScript client with streaming answers.</p>
+        <ul class="checks" style="margin-top: 1.5rem;">
+          <li><Icon name="check" /><span><strong>About 10 KB</strong> for the widget, in an isolated shell so your site's CSS cannot break it.</span></li>
+          <li><Icon name="check" /><span><strong>Streaming answers</strong>, replaced by the verified version when complete.</span></li>
+          <li><Icon name="check" /><span><strong>Built for keyboards and screen readers</strong> and audited automatically on every change.</span></li>
+          <li><Icon name="check" /><span><strong>Safe by construction:</strong> answers are shown as plain text, never as HTML.</span></li>
+        </ul>
+        <p style="margin-top: 1.5rem;"><a class="btn btn--secondary btn--sm" href="/docs/widget/">Widget guide</a> <a class="btn btn--secondary btn--sm" href="/docs/sdk/">SDK guide</a></p>
+      </div>
+      <div>
+        <CodeTabs name="home" tabs={tabs} />
+        <p class="hero__note">Packages are in early access; the <a href="/docs/quickstart/">quickstart</a> shows how to run everything today.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="trust">
+    <div class="container">
+      <div class="section__head">
+        <span class="eyebrow">Safe by design</span>
+        <h2 id="trust">Built for other people's websites and other people's visitors</h2>
+      </div>
+      <div class="grid grid--4">
+        <div class="card"><div class="card__icon"><Icon name="eye" /></div><h3>A polite crawler</h3><p>Follows <code>robots.txt</code>, reads a few pages per second, and identifies itself as <a href="/bot/">EaglesEyeBot</a>.</p></div>
+        <div class="card"><div class="card__icon"><Icon name="lock" /></div><h3>No secrets in the page</h3><p>The chat window only works on websites you allow, and is rate-limited for each visitor.</p></div>
+        <div class="card"><div class="card__icon"><Icon name="shield" /></div><h3>Attack-aware</h3><p>Defences against prompt injection and server-side request forgery, with tests for each.</p></div>
+        <div class="card"><div class="card__icon"><Icon name="layers" /></div><h3>Your data stays yours</h3><p>Self-host and nothing leaves your servers. No third-party trackers on this site.</p></div>
+      </div>
+      <p style="margin-top: 1.5rem;"><a href="/security/">Read about security</a></p>
+    </div>
+  </section>
+
+  <section class="section section--alt" aria-labelledby="faq">
+    <div class="container">
+      <div class="section__head"><span class="eyebrow">Questions</span><h2 id="faq">Frequently asked questions</h2></div>
+      <Faq items={homeFaq} />
+      <p style="margin-top: 1.5rem;">More answers on the <a href="/pricing/#faq">pricing page</a> and in the <a href="/docs/">documentation</a>.</p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="join">
+    <div class="container">
+      <div class="cta-band split">
+        <div>
+          <h2 id="join">Be one of the first to use it</h2>
+          <p class="lead" style="color: inherit; opacity: 0.85;">Early access is free. Tell us what you'd use it for, and we'll email you when your turn comes. No spam, and you can ask to be removed at any time.</p>
+        </div>
+        <div class="card"><WaitlistForm idPrefix="home" /></div>
+      </div>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,59 @@
+---
+/**
+ * Early-access signup. Posts to the Eagle's Eye API (see scripts/forms.ts). The "website" field is a honeypot: it is
+ * hidden from people but filled by form-spamming bots, which are then silently ignored by the server.
+ */
+interface Props {
+  /** Heading level context: the form has no heading of its own, so it is labelled by the page. */
+  idPrefix?: string;
+}
+const { idPrefix = "wl" } = Astro.props;
+---
+
+<form class="form" data-form="waitlist" method="post" action="#" novalidate>
+  <div class="field">
+    <label for={`${idPrefix}-email`}>Email address</label>
+    <input class="input" id={`${idPrefix}-email`} name="email" type="email" autocomplete="email" inputmode="email" required aria-describedby={`${idPrefix}-email-error`} />
+    <p class="field-error" id={`${idPrefix}-email-error`} hidden></p>
+  </div>
+
+  <div class="field">
+    <label for={`${idPrefix}-name`}>Name <span class="hint">(optional)</span></label>
+    <input class="input" id={`${idPrefix}-name`} name="name" type="text" autocomplete="name" maxlength="100" />
+  </div>
+
+  <div class="field">
+    <label for={`${idPrefix}-use`}>What would you use it for? <span class="hint">(optional)</span></label>
+    <select class="select" id={`${idPrefix}-use`} name="useCase">
+      <option value="">Choose one</option>
+      <option>Client websites (agency or freelancer)</option>
+      <option>My software product's documentation</option>
+      <option>A university, college or school</option>
+      <option>My business website</option>
+      <option>Something else</option>
+    </select>
+  </div>
+
+  <div class="honeypot" aria-hidden="true">
+    <label for={`${idPrefix}-website`}>Leave this field empty</label>
+    <input id={`${idPrefix}-website`} name="website" type="text" tabindex="-1" autocomplete="off" />
+  </div>
+
+  <div class="field">
+    <div class="check">
+      <input id={`${idPrefix}-consent`} name="consent" type="checkbox" required aria-describedby={`${idPrefix}-consent-error`} />
+      <label for={`${idPrefix}-consent`} style="font-weight: 450; margin: 0;">
+        I agree to be emailed about Eagle's Eye early access. I can ask to be removed at any time. See the <a href="/privacy/">privacy policy (draft)</a>.
+      </label>
+    </div>
+    <p class="field-error" id={`${idPrefix}-consent-error`} hidden></p>
+  </div>
+
+  <button class="btn btn--primary" type="submit">Join the waitlist</button>
+  <div class="form-status" role="status" aria-live="polite" hidden data-status></div>
+  <noscript><p class="form-status form-status--error">This form needs JavaScript. Please enable it, or use the <a href="/contact/">contact page</a>.</p></noscript>
+</form>
+
+<script>
+  import "../scripts/forms";
+</script>

@@ -1,4 +1,4 @@
-# API reference (v1, Phase 1)
+# API reference (v1)
 
 Base URL: `http://localhost:8787`. All `/v1` routes need `Authorization: Bearer <EAGLE_API_KEY>`.
 Errors always have the shape `{ "error": { "code": "...", "message": "...", "details"?: [...] } }`.
@@ -18,9 +18,30 @@ Errors always have the shape `{ "error": { "code": "...", "message": "...", "det
 | GET | `/v1/projects/:id/feedback` | Visitors' thumbs up/down; `?rating=down` for the unhelpful ones |
 | POST | `/v1/projects/:id/chat` | Ask a question `{ message, history? }`; add `?debug=true` for diagnostics |
 
+## Website forms (waitlist and contact)
+
+Used by the marketing website. They need no key but only accept requests from the origins in `EAGLE_SITE_ORIGINS`,
+are rate-limited per visitor (`EAGLE_FORM_RATE_LIMIT_PER_MINUTE`, default 5 a minute), and answer `204` whether or
+not the address was already registered, so they never reveal who is on the list.
+
+| Method | Path | Purpose |
+|---|---|---|
+| POST | `/v1/public/waitlist` | `{ email, name?, useCase?, source?, consent: true }`. Nothing is stored without `consent: true`. |
+| POST | `/v1/public/contact` | `{ name, email, message, consent: true }` |
+
+Both accept a hidden `website` field as a spam trap: a request that fills it is accepted and silently discarded.
+
+Owner tools (need the admin key):
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/v1/waitlist` | The waitlist as JSON, or `?format=csv` (cells that could run as spreadsheet formulas are neutralised) |
+| DELETE | `/v1/waitlist?email=ADDRESS` | Erase one person (a privacy request). `404` if the address is not on the list. |
+| GET | `/v1/contact-messages` | Messages sent through the contact form |
+
 ## Public endpoints (for the chat widget)
 
-Called from visitors' browsers, so they take **no API key**. See ADR-006 for the security model.
+Called from visitors' browsers, so they take **no API key**. See [How it works](how-it-works.md#safety) for the security model.
 
 | Method | Path | Purpose |
 |---|---|---|
@@ -79,4 +100,4 @@ Rules are checked before retrieval and the model, so they can never be contradic
 
 Body 100 KB; message 1000 chars; history 12 turns; crawl `maxPages` <= 1000; 120 requests/minute/IP by default.
 
-Per-project API keys and usage quotas arrive with the hosted service (Phase 4).
+Per-project API keys and usage quotas arrive with the hosted service.

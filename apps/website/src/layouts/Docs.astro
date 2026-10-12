@@ -1,0 +1,101 @@
+---
+/**
+ * Layout for documentation pages: section navigation on the left, the page in the middle, an outline of its
+ * headings on the right, and previous/next links underneath. On small screens the navigation folds into a menu.
+ */
+import DocsSearch from "../components/DocsSearch.astro";
+import { DOC_GROUPS, DOC_PAGES } from "../data/docs";
+import { absoluteUrl } from "../data/site";
+import Base from "./Base.astro";
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+interface Props {
+  slug: string;
+  headings: Heading[];
+}
+
+const { slug, headings } = Astro.props;
+const page = DOC_PAGES.find((p) => p.slug === slug)!;
+const index = DOC_PAGES.findIndex((p) => p.slug === slug);
+const prev = DOC_PAGES[index - 1];
+const next = DOC_PAGES[index + 1];
+/** Outline: h2 and h3 only, and not the page's own title. */
+const outline = headings.filter((h) => h.depth === 2 || h.depth === 3);
+
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Documentation", item: absoluteUrl("/docs/") },
+      { "@type": "ListItem", position: 2, name: page.title, item: absoluteUrl(`/docs/${slug}/`) },
+    ],
+  },
+  { "@context": "https://schema.org", "@type": "TechArticle", headline: page.title, description: page.description },
+];
+---
+
+<Base title={page.title} description={page.description} {jsonLd}>
+  <div class="container docs">
+    <aside class="docs__nav-wrap" aria-label="Documentation">
+      <DocsSearch />
+      <details class="docs__mobile-nav">
+        <summary>Documentation menu</summary>
+        <nav class="docs__nav" aria-label="Documentation sections">
+          {
+            DOC_GROUPS.map((group) => (
+              <>
+                <h2>{group}</h2>
+                <ul>
+                  {DOC_PAGES.filter((p) => p.group === group).map((p) => <li><a href={`/docs/${p.slug}/`} aria-current={p.slug === slug ? "page" : undefined}>{p.title}</a></li>)}
+                </ul>
+              </>
+            ))
+          }
+        </nav>
+      </details>
+      <nav class="docs__nav" aria-label="Documentation sections">
+        {
+          DOC_GROUPS.map((group) => (
+            <>
+              <h2>{group}</h2>
+              <ul>
+                {DOC_PAGES.filter((p) => p.group === group).map((p) => <li><a href={`/docs/${p.slug}/`} aria-current={p.slug === slug ? "page" : undefined}>{p.title}</a></li>)}
+              </ul>
+            </>
+          ))
+        }
+      </nav>
+    </aside>
+
+    <article data-pagefind-body>
+      <header class="docs__title">
+        <span class="eyebrow">{page.group}</span>
+        <h1>{page.title}</h1>
+        <p class="lead">{page.description}</p>
+      </header>
+      <div class="prose">
+        <slot />
+      </div>
+      <nav class="docs__pager" aria-label="Previous and next page">
+        {prev && <a class="prev" href={`/docs/${prev.slug}/`} rel="prev"><small>Previous</small><strong>{prev.title}</strong></a>}
+        {next && <a class="next" href={`/docs/${next.slug}/`} rel="next"><small>Next</small><strong>{next.title}</strong></a>}
+      </nav>
+    </article>
+
+    {
+      outline.length > 1 && (
+        <nav class="docs__toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ul>
+            {outline.map((h) => <li class={`depth-${h.depth}`}><a href={`#${h.slug}`}>{h.text}</a></li>)}
+          </ul>
+        </nav>
+      )
+    }
+  </div>
+</Base>

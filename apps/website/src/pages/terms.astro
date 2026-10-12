@@ -1,0 +1,46 @@
+---
+import { SITE } from "../data/site";
+import Base from "../layouts/Base.astro";
+---
+
+<Base title="Terms of use (draft)" description="Draft terms for the Eagle's Eye early access: what you may do, what we promise, and the limits." noindex>
+  <section class="section">
+    <div class="container prose">
+      <span class="eyebrow">Draft</span>
+      <h1>Terms of use</h1>
+
+      <div class="callout callout--draft" role="note">
+        <p><strong>Draft, not yet legal advice.</strong> These are the intended ground rules for early access, written plainly. Items in [square brackets] are decisions still to be made. A qualified lawyer must review and complete them, including liability, governing law and the operating company's details, before launch.</p>
+      </div>
+
+      <p class="meta">Last updated: October 2026</p>
+
+      <h2 id="agreement">1. Who these terms are between</h2>
+      <p>These terms are between you and {SITE.legalEntity} ("we"). By using this website, or the early-access software and services, you agree to them.</p>
+
+      <h2 id="early">2. Early access</h2>
+      <p>Eagle's Eye is in early access. It is provided "as is": features, prices and these terms may change, it may be unavailable at times, and it may contain mistakes. Do not rely on it for decisions where an incorrect answer could cause serious harm. [Service levels, if any, to be added.]</p>
+
+      <h2 id="crawling">3. Only index websites you may index</h2>
+      <p>You may point Eagle's Eye only at websites that you own, or that you have permission to read and index, and you must respect those websites' <code>robots.txt</code> and terms. You are responsible for the content your assistant is built from and for the answers it gives your visitors.</p>
+
+      <h2 id="acceptable">4. Acceptable use</h2>
+      <p>Do not use Eagle's Eye to break the law, to infringe others' rights, to collect personal data unlawfully, to attack or overload any website or system, to bypass security measures or limits, or to deceive people about whether they are talking to an automated assistant.</p>
+
+      <h2 id="answers">5. Answers are generated</h2>
+      <p>Eagle's Eye produces answers from the pages it has read, with sources, and is built to say when it does not know. It can still be wrong or out of date. You should review how it performs on your site, and tell your visitors it is an automated assistant.</p>
+
+      <h2 id="software">6. Software licence</h2>
+      <p>The software is released under the Apache License 2.0, which governs your use of the code. [Terms for the hosted service to be added.]</p>
+
+      <h2 id="liability">7. Liability</h2>
+      <p>[Disclaimer of warranties and limitation of liability to be drafted with legal advice, appropriate to the jurisdiction.]</p>
+
+      <h2 id="law">8. Governing law</h2>
+      <p>[Governing law and place of resolution of disputes to be decided.]</p>
+
+      <h2 id="contact">9. Contact</h2>
+      <p>Questions about these terms: use the <a href="/contact/">contact page</a>.</p>
+    </div>
+  </section>
+</Base>

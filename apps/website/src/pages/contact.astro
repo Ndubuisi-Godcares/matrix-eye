@@ -1,0 +1,25 @@
+---
+import ContactForm from "../components/ContactForm.astro";
+import { SITE } from "../data/site";
+import Base from "../layouts/Base.astro";
+---
+
+<Base title="Contact" description="Get in touch with the Eagle's Eye team: questions, partnership ideas, press, or a security report.">
+  <section class="section">
+    <div class="container split" style="align-items: start;">
+      <div class="prose">
+        <span class="eyebrow">Contact</span>
+        <h1>Talk to us</h1>
+        <p class="lead">Questions, ideas, a problem with {SITE.botName} on your site, or a security report: write to us and a person will reply.</p>
+        <ul>
+          <li><strong>Questions about the product</strong>: ask anything, including whether it fits your site.</li>
+          <li><strong>Security reports</strong>: start your message with "Security" and include steps to reproduce.</li>
+          <li><strong>Removal requests</strong>: ask to be removed from the waitlist, or for your details to be erased, from the email address concerned.</li>
+        </ul>
+        {SITE.contactEmail && <p>You can also email <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>.</p>}
+        <p class="meta">We usually reply within two working days.</p>
+      </div>
+      <div class="card"><ContactForm /></div>
+    </div>
+  </section>
+</Base>

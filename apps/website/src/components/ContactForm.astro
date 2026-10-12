@@ -1,0 +1,42 @@
+---
+/** Contact form. Same mechanics and spam protection as the waitlist form (see scripts/forms.ts). */
+---
+
+<form class="form" data-form="contact" method="post" action="#" novalidate>
+  <div class="field">
+    <label for="ct-name">Name</label>
+    <input class="input" id="ct-name" name="name" type="text" autocomplete="name" maxlength="100" required aria-describedby="ct-name-error" />
+    <p class="field-error" id="ct-name-error" hidden></p>
+  </div>
+  <div class="field">
+    <label for="ct-email">Email address</label>
+    <input class="input" id="ct-email" name="email" type="email" autocomplete="email" inputmode="email" required aria-describedby="ct-email-error" />
+    <p class="field-error" id="ct-email-error" hidden></p>
+  </div>
+  <div class="field">
+    <label for="ct-message">How can we help?</label>
+    <textarea class="textarea" id="ct-message" name="message" minlength="5" maxlength="2000" required aria-describedby="ct-message-error"></textarea>
+    <p class="field-error" id="ct-message-error" hidden></p>
+  </div>
+
+  <div class="honeypot" aria-hidden="true">
+    <label for="ct-website">Leave this field empty</label>
+    <input id="ct-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+  </div>
+
+  <div class="field">
+    <div class="check">
+      <input id="ct-consent" name="consent" type="checkbox" required aria-describedby="ct-consent-error" />
+      <label for="ct-consent" style="font-weight: 450; margin: 0;">I agree that Eagle's Eye may use these details to reply to me. See the <a href="/privacy/">privacy policy (draft)</a>.</label>
+    </div>
+    <p class="field-error" id="ct-consent-error" hidden></p>
+  </div>
+
+  <button class="btn btn--primary" type="submit">Send message</button>
+  <div class="form-status" role="status" aria-live="polite" hidden data-status></div>
+  <noscript><p class="form-status form-status--error">This form needs JavaScript. Please enable it and try again.</p></noscript>
+</form>
+
+<script>
+  import "../scripts/forms";
+</script>

@@ -77,4 +77,4 @@ Every failure is an `EagleEyeError` with `status` (0 if the server was unreachab
 
 - The SDK carries its own copy of the API's types. The test suite runs it against the real server (including a real
   crawl and streaming) so the two cannot drift apart unnoticed.
-- Not yet published to npm. Inside this repository it is consumed from source (ADR-001).
+- Early access: the package is not on npm yet. Today you use it from the repository (see the [quickstart](quickstart.md)).

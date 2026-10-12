@@ -1,0 +1,141 @@
+---
+import Icon from "../components/Icon.astro";
+import Base from "../layouts/Base.astro";
+---
+
+<Base title="How Eagle's Eye works" description="How Eagle's Eye reads your website, finds the evidence for a question, answers with sources, and says so when your site doesn't have the answer.">
+  <section class="section">
+    <div class="container">
+      <div class="section__head">
+        <span class="eyebrow">Product</span>
+        <h1>An assistant that answers from your site, and only from your site</h1>
+        <p class="lead">Four stages turn a web address into answers your visitors can check. Each one is built to prefer saying less over saying something wrong.</p>
+      </div>
+      <h2 class="sr-only">The four stages</h2>
+      <div class="grid grid--2">
+        <article class="card" id="read">
+          <div class="card__icon"><Icon name="globe" /></div>
+          <h3>1. It reads your site</h3>
+          <ul class="checks">
+            <li><Icon name="check" /><span>Follows <code>robots.txt</code> and sitemaps; reads a few pages a second at most.</span></li>
+            <li><Icon name="check" /><span>Understands JavaScript sites (React, Vue) with a built-in browser mode.</span></li>
+            <li><Icon name="check" /><span>Skips menus, banners and footers; keeps headings so passages stay understandable.</span></li>
+            <li><Icon name="check" /><span>Ignores duplicates and filtered copies of the same page.</span></li>
+            <li><Icon name="check" /><span>Re-reads only pages that changed. Pages that disappeared are removed.</span></li>
+          </ul>
+        </article>
+        <article class="card" id="find">
+          <div class="card__icon"><Icon name="search" /></div>
+          <h3>2. It finds the evidence</h3>
+          <ul class="checks">
+            <li><Icon name="check" /><span>A search tuned for websites: titles, headings and page addresses count for more than body text.</span></li>
+            <li><Icon name="check" /><span>Understands everyday wording ("cost" finds "tuition").</span></li>
+            <li><Icon name="check" /><span>Follow-up questions work: "how much is it?" knows what "it" is.</span></li>
+            <li><Icon name="check" /><span>"What is this site about?" is answered from your front page's own description.</span></li>
+          </ul>
+        </article>
+        <article class="card" id="answer">
+          <div class="card__icon"><Icon name="chat" /></div>
+          <h3>3. It answers, or says it can't</h3>
+          <ul class="checks">
+            <li><Icon name="check" /><span>Answers are written only from the passages found, each with a source link.</span></li>
+            <li><Icon name="check" /><span>If the evidence doesn't cover the question, it says so and offers your contact details.</span></li>
+            <li><Icon name="check" /><span>Contact details come straight from your pages, never from the model.</span></li>
+            <li><Icon name="check" /><span>Fixed rules let you set exact answers (a refund policy, opening hours) that nothing can override.</span></li>
+          </ul>
+        </article>
+        <article class="card" id="verify">
+          <div class="card__icon"><Icon name="shield" /></div>
+          <h3>4. It checks itself</h3>
+          <ul class="checks">
+            <li><Icon name="check" /><span>Prices, dates and numbers must appear in your page text, or the answer is replaced.</span></li>
+            <li><Icon name="check" /><span>Invented source numbers are removed; an answer with no source is rejected.</span></li>
+            <li><Icon name="check" /><span>Text on a page that tries to give the assistant orders is removed before it is ever read.</span></li>
+            <li><Icon name="check" /><span>Visitors can mark answers helpful or not, so you see what to improve.</span></li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" aria-labelledby="fits">
+    <div class="container split">
+      <div>
+        <span class="eyebrow">Fits your website</span>
+        <h2 id="fits">A chat window that belongs on your page</h2>
+        <p>Add one script tag, or use the React component or the TypeScript SDK to build your own interface. The window can be recoloured to your brand, placed left or right, switched to dark, and translated.</p>
+        <ul class="checks">
+          <li><Icon name="check" /><span>Answers stream in as they are written.</span></li>
+          <li><Icon name="check" /><span>Works with keyboard and screen reader; full-screen on phones.</span></li>
+          <li><Icon name="check" /><span>Only the websites you list can use your assistant.</span></li>
+        </ul>
+        <p style="margin-top: 1.25rem;"><a class="btn btn--secondary btn--sm" href="/docs/widget/">Widget guide</a></p>
+      </div>
+      <div class="card">
+        <h3>Where it runs</h3>
+        <table class="comparison">
+          <thead><tr><th scope="col">Option</th><th scope="col">Status</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Self-hosted, local model</th><td class="us">Available in early access</td></tr>
+            <tr><th scope="row">Self-hosted, any compatible model</th><td class="us">Available in early access</td></tr>
+            <tr><th scope="row">Hosted by us</th><td>Planned</td></tr>
+            <tr><th scope="row">Private deployment with support</th><td>Planned</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="compare" aria-labelledby="compare-title">
+    <div class="container">
+      <div class="section__head">
+        <span class="eyebrow">Compared with the alternatives</span>
+        <h2 id="compare-title">Three ways to add an assistant to a website</h2>
+        <p class="lead">General patterns, not statements about any one product. Details vary, so check any vendor's current terms.</p>
+      </div>
+      <div class="table-wrap">
+        <table class="comparison">
+          <thead>
+            <tr><th scope="col"><span class="sr-only">Feature</span></th><th scope="col">Hosted chatbot builder</th><th scope="col">Build it yourself on a model API</th><th scope="col">Eagle's Eye</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Time to a working assistant</th><td>Fast</td><td>Weeks of engineering</td><td class="us">Minutes to hours</td></tr>
+            <tr><th scope="row">Answers cite your pages</th><td>Varies</td><td>You build it</td><td class="us">Always, and checked</td></tr>
+            <tr><th scope="row">When it doesn't know</th><td>Varies</td><td>You build it</td><td class="us">Says so, by design</td></tr>
+            <tr><th scope="row">Where it runs</th><td>The vendor's servers</td><td>Your choice</td><td class="us">Your servers, or hosted (planned)</td></tr>
+            <tr><th scope="row">Typical cost model</th><td>Per conversation or per seat</td><td>Per token, plus your time</td><td class="us">Free to self-host</td></tr>
+            <tr><th scope="row">Your customisation</th><td>Within the vendor's limits</td><td>Unlimited, at your cost</td><td class="us">SDK, rules, theming, source access</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" aria-labelledby="limits">
+    <div class="container">
+      <div class="section__head">
+        <span class="eyebrow">Honest limits</span>
+        <h2 id="limits">What it does not do yet</h2>
+        <p class="lead">Early access means some things are still ahead. Better to know now.</p>
+      </div>
+      <div class="grid grid--3">
+        <div class="card"><h3>English first</h3><p>Accuracy has been measured in English only. Other languages may work depending on the model, but are not yet tested.</p></div>
+        <div class="card"><h3>Pages, not documents</h3><p>It reads web pages. PDFs, images and pages behind a login are not read yet.</p></div>
+        <div class="card"><h3>Keyword-based search</h3><p>Search is tuned but still based on words and synonyms, so an unusual phrasing can be wrongly declined. Smarter retrieval is planned and will be adopted only if it measurably improves results.</p></div>
+        <div class="card"><h3>Small models are cautious</h3><p>A small local model sometimes declines two-part questions. Larger models do better; the choice is yours.</p></div>
+        <div class="card"><h3>No dashboard yet</h3><p>Today you manage projects through the API and command line. A web dashboard comes with the hosted service.</p></div>
+        <div class="card"><h3>Not independently audited</h3><p>Security is tested thoroughly in-house, but no outside audit has been done. One is planned before the public launch. Details on the <a href="/security/">security page</a>.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="cta-band center">
+        <h2>Try it on your own website</h2>
+        <p class="lead" style="margin-inline: auto; color: inherit; opacity: 0.85;">Join the waitlist, or follow the quickstart to run it today.</p>
+        <p style="margin-top: 1.5rem;"><a class="btn btn--primary" href="/waitlist/">Join the waitlist</a> <a class="btn btn--secondary" style="color: inherit; border-color: currentColor;" href="/docs/quickstart/">Open the quickstart</a></p>
+      </div>
+    </div>
+  </section>
+</Base>

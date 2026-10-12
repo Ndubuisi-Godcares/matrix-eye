@@ -1,0 +1,56 @@
+---
+import Faq from "../components/Faq.astro";
+import Plans from "../components/Plans.astro";
+import { FAQ } from "../data/faq";
+import Base from "../layouts/Base.astro";
+
+const stripHtml = (html: string) => html.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+const jsonLd = [{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: FAQ.map((item) => ({ "@type": "Question", name: item.q, acceptedAnswer: { "@type": "Answer", text: stripHtml(item.a) } })) }];
+---
+
+<Base title="Pricing" description="Eagle's Eye is free to self-host. Hosted plans are planned; the prices shown are estimates and no payment is taken during early access." {jsonLd}>
+  <section class="section">
+    <div class="container">
+      <div class="section__head">
+        <span class="eyebrow">Pricing</span>
+        <h1>Free to run yourself. Paid plans when you want it hosted.</h1>
+        <p class="lead">Self-hosting costs nothing but your own server. Hosted plans are planned for people who would rather not run anything.</p>
+      </div>
+
+      <div class="callout" role="note">
+        <p><strong>These are estimates, not an offer.</strong> Eagle's Eye is in early access. The monthly prices below are our current plan and may change before launch; no plan is sold yet and we take no payment. Join the waitlist and tell us what would be a fair price.</p>
+      </div>
+
+      <h2 class="sr-only">Plans</h2>
+      <Plans />
+
+      <div class="grid grid--2" style="margin-top: 3rem;">
+        <article class="card">
+          <h3>What the hosted plans pay for</h3>
+          <p>The software is free to self-host. Hosted plans pay for what costs real money to run: the language model's computing time, keeping your site's index fresh, monitoring, and support. Usage will come with a clear included allowance and straightforward overage, with no surprise bills.</p>
+        </article>
+        <article class="card">
+          <h3>What self-hosting costs you</h3>
+          <p>A server or computer to run it on. A small language model runs on an ordinary laptop with a modest graphics card (we test on a 4 GB card), while larger models give better answers and need more hardware. The <a href="/docs/self-hosting/">self-hosting guide</a> explains the options.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section__head"><span class="eyebrow">Questions</span><h2 id="faq-title">Frequently asked questions</h2></div>
+      <Faq items={FAQ} />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="cta-band center">
+        <h2>Help shape the pricing</h2>
+        <p class="lead" style="margin-inline: auto; color: inherit; opacity: 0.85;">Early-access members get a say, and a fair price for being first.</p>
+        <p style="margin-top: 1.5rem;"><a class="btn btn--primary" href="/waitlist/">Join the waitlist</a></p>
+      </div>
+    </div>
+  </section>
+</Base>

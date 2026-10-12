@@ -1,0 +1,21 @@
+---
+/** Question-and-answer list using the browser's own disclosure widget: keyboard and screen-reader friendly, no script. */
+interface Item {
+  q: string;
+  /** HTML allowed (trusted, written in this repository). */
+  a: string;
+}
+interface Props {
+  items: Item[];
+}
+const { items } = Astro.props;
+---
+
+<div class="faq">
+  {items.map((item) => (
+    <details>
+      <summary>{item.q}</summary>
+      <div set:html={item.a} />
+    </details>
+  ))}
+</div>

@@ -1,0 +1,54 @@
+---
+import Base from "../layouts/Base.astro";
+---
+
+<Base title="Security" description="How Eagle's Eye protects your website, your visitors and your data: the threats we design against, how each is tested, what is stored, and what is not done yet.">
+  <section class="section">
+    <div class="container prose">
+      <span class="eyebrow">Security</span>
+      <h1>How we think about security, including where we fall short</h1>
+      <p class="lead">Eagle's Eye reads other people's websites and shows the results to other people's visitors, so it faces unusual risks. This page says what we defend against, how each defence is tested, what we store, and what is still missing.</p>
+
+      <h2 id="threats">What we defend against</h2>
+      <table>
+        <thead><tr><th scope="col">Risk</th><th scope="col">What we do</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">The crawler being turned against internal systems (SSRF)</th><td>Addresses are checked before and again at connection time, which defeats DNS tricks. Private, local and cloud-metadata addresses are refused, every redirect is re-checked, and responses are size- and time-limited.</td></tr>
+          <tr><th scope="row">A web page that tells the assistant what to do (prompt injection)</th><td>Instruction-like text is removed when pages are read, page text is fenced off and declared untrusted to the model, and the finished answer is verified against the evidence. The test suite includes hostile pages.</td></tr>
+          <tr><th scope="row">Invented facts</th><td>Prices, dates and numbers must appear in your page text. Contact details are copied from your pages rather than generated. An answer with no valid source is replaced with the quoted evidence.</td></tr>
+          <tr><th scope="row">Script injection through the chat window</th><td>Answers are inserted as plain text, never as HTML, and links are limited to <code>http</code> and <code>https</code>. Tests feed the widget scripts, event handlers and <code>javascript:</code> links and confirm they stay inert text.</td></tr>
+          <tr><th scope="row">Other websites using your assistant</th><td>Each project lists the websites allowed to use it (closed until you add yours), and each visitor is rate-limited. The page that shows the chat window contains no secret key.</td></tr>
+          <tr><th scope="row">Spam through our forms</th><td>Hidden honeypot fields, rate limits, size limits and consent are required before anything is stored.</td></tr>
+          <tr><th scope="row">Over-eager crawling</th><td>We follow <code>robots.txt</code> and crawl delays, read only the site you give us, and identify ourselves. See the <a href="/bot/">crawler page</a>.</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="data">What is stored</h2>
+      <ul>
+        <li><strong>Your site's pages</strong> are indexed so questions can be answered. If you self-host, this stays on your servers.</li>
+        <li><strong>Visitor feedback</strong> (thumbs up or down, with the question and answer) is stored so you can improve answers.</li>
+        <li><strong>Waitlist and contact forms</strong> store only what you type, plus the time you agreed to be contacted. Any person can ask us to erase their details, and we have tooling for it.</li>
+        <li><strong>Chat conversations are not stored</strong> by the engine. Visitors' conversations are kept only in their own browser tab, and cleared when it closes.</li>
+        <li><strong>This website</strong> uses no third-party scripts, fonts, cookies or trackers. It stores your light or dark choice in your browser only.</li>
+      </ul>
+
+      <h2 id="process">How we test</h2>
+      <p>Every change runs automatic checks: hundreds of unit and integration tests, tests in a real browser, an accessibility audit, a dependency vulnerability scan, and an answer-quality gate that fails the build if accuracy or injection resistance drops. Each security defence above has a test for the specific attack it prevents.</p>
+
+      <h2 id="gaps">What is not done yet</h2>
+      <div class="callout">
+        <ul>
+          <li><strong>No independent audit.</strong> A third-party security review and penetration test are planned before the public launch.</li>
+          <li><strong>Injection filtering is heuristic.</strong> It catches common phrasings and will miss novel ones; that is why the other layers exist.</li>
+          <li><strong>One admin key.</strong> Per-project keys, key rotation and usage quotas arrive with the hosted service.</li>
+          <li><strong>The widget's origin check</strong> stops other websites embedding your assistant, but cannot stop a script outside a browser from calling the public endpoints; rate limits are the control for that.</li>
+          <li><strong>Browser rendering of JavaScript sites</strong> shares the browser's own network lookups; for hosted use it must run in an isolated sandbox.</li>
+          <li><strong>No compliance certification</strong> (such as SOC 2) yet.</li>
+        </ul>
+      </div>
+
+      <h2 id="report">Reporting a vulnerability</h2>
+      <p>Please report it privately through the <a href="/contact/">contact page</a>, mark the message "security", and include steps to reproduce. Please do not publish details until we have had a reasonable chance to fix the problem. We aim to acknowledge reports within three working days. A dedicated security address will be published before launch.</p>
+    </div>
+  </section>
+</Base>

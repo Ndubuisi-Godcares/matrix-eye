@@ -1,0 +1,25 @@
+---
+import { PLANS } from "../data/pricing";
+import Icon from "./Icon.astro";
+---
+
+<div class="plans">
+  {
+    PLANS.map((plan) => (
+      <article class:list={["plan", { "plan--featured": plan.featured }]} aria-labelledby={`plan-${plan.id}`}>
+        {plan.featured && <span class="badge plan__flag">Most popular for agencies</span>}
+        <h3 id={`plan-${plan.id}`}>{plan.name}</h3>
+        <p class="plan__for">{plan.audience}</p>
+        <p class="price">
+          {plan.price}
+          {plan.per && <small> {plan.per}</small>}
+        </p>
+        <p><span class="badge">{plan.status}</span></p>
+        <ul>
+          {plan.features.map((feature) => <li><Icon name="check" /><span>{feature}</span></li>)}
+        </ul>
+        <a class:list={["btn", plan.featured ? "btn--primary" : "btn--secondary"]} href={plan.cta.href}>{plan.cta.label}</a>
+      </article>
+    ))
+  }
+</div>

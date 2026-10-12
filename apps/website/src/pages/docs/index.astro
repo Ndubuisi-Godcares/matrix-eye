@@ -1,0 +1,33 @@
+---
+import { DOC_GROUPS, DOC_PAGES } from "../../data/docs";
+import Base from "../../layouts/Base.astro";
+import DocsSearch from "../../components/DocsSearch.astro";
+---
+
+<Base title="Documentation" description="Guides and reference for Eagle's Eye: quickstart, how it works, the chat widget, the TypeScript SDK, the API, self-hosting and troubleshooting.">
+  <section class="section">
+    <div class="container">
+      <div class="section__head">
+        <span class="eyebrow">Documentation</span>
+        <h1>Everything you need to add an assistant to your site</h1>
+        <p class="lead">New here? Start with the <a href="/docs/quickstart/">quickstart</a>. It takes about ten minutes.</p>
+      </div>
+      <div style="max-width: 26rem; margin-bottom: 2rem;"><DocsSearch /></div>
+      {
+        DOC_GROUPS.map((group) => (
+          <div style="margin-bottom: 2.5rem;">
+            <h2 style="font-size: 1.4rem;">{group}</h2>
+            <div class="grid grid--3">
+              {DOC_PAGES.filter((p) => p.group === group).map((p) => (
+                <a class="post-card" href={`/docs/${p.slug}/`}>
+                  <h3 style="margin-bottom: 0.4rem;">{p.title}</h3>
+                  <p style="margin: 0;">{p.description}</p>
+                </a>
+              ))}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</Base>

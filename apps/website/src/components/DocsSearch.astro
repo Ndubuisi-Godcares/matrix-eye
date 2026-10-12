@@ -1,0 +1,19 @@
+---
+/**
+ * Documentation search. The index is built at deploy time (Pagefind) and queried in the visitor's browser, so
+ * nothing they type is sent anywhere. The search code is only downloaded when they first use the box.
+ */
+import Icon from "./Icon.astro";
+---
+
+<div class="search" data-search hidden>
+  <label class="sr-only" for="docs-search">Search the documentation</label>
+  <Icon name="search" />
+  <input id="docs-search" type="search" placeholder="Search the docs" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="docs-search-results" aria-autocomplete="list" />
+  <ul class="search__results" id="docs-search-results" role="listbox" aria-label="Search results" hidden></ul>
+  <div class="sr-only" role="status" aria-live="polite" data-search-status></div>
+</div>
+
+<script>
+  import "../scripts/search";
+</script>
