@@ -1,17 +1,18 @@
 /**
- * Generates the website's image assets from the original logo (brand/matrix-eye-logo-light.png, drawn on white):
+ * Generates the website's image assets from the original logo (brand/matrix-eye-logo-light.png, drawn on white).
+ * The logo's colours are never changed: the same navy and gold appear in light and dark themes (in dark mode the
+ * site shows the logo on a light badge, see global.css).
  *
- *   public/brand/logo-light.webp, logo-dark.webp   the full logo (eye + MATRIXEYE lettering), transparent
- *   public/brand/lockup-light.webp, lockup-dark.webp   the same logo, small, for the header and footer
- *   public/favicon-32.png, apple-touch-icon.png, icon-512.png   the eye on navy
+ *   public/brand/logo-light.webp     the full logo, transparent background (used to draw the sharing image)
+ *   public/brand/lockup-light.webp   the same logo, small, for the header and footer
+ *   public/favicon-32.png, apple-touch-icon.png, icon-512.png   the eye on a cream tile
  *
- * The original is a 1.2 MB picture on a white background. A website needs small files with a transparent background
- * that also work on a dark theme, so the white is removed ("colour to alpha": the exact inverse of laying the logo
- * on white, which keeps its soft metallic edges), the picture is trimmed and converted to WebP, and for dark
- * backgrounds the navy parts are lightened and the gold brightened.
+ * The original is a 1.2 MB picture on a white background. A website needs small files, so the white is removed
+ * ("colour to alpha": the exact inverse of laying the logo on white, which keeps its soft metallic edges), the picture
+ * is trimmed and converted to WebP.
  * Re-run after changing the logo:  npm run assets --workspace @matrix-eye/website
  */
-import { mkdirSync } from "node:fs";
+import { mkdirSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
@@ -21,15 +22,13 @@ const source = join(here, "../../../brand/matrix-eye-logo-light.png");
 const out = join(here, "../public");
 mkdirSync(join(out, "brand"), { recursive: true });
 
-const NAVY = [10, 24, 44];
-// Navy parts are blended this far toward a pale blue on dark backgrounds, which keeps the metallic shading.
-const LIFT_TO = [100, 170, 255];
-const LIFT = 0.6;
-// Gold looks dimmer against a dark page, so it is warmed and brightened a little there.
-const BRIGHT_GOLD = [255, 207, 96];
+// Earlier versions also made recoloured dark-theme copies; they are no longer used.
+for (const old of ["logo-dark.webp", "lockup-dark.webp", "mark-light.webp", "mark-dark.webp"]) rmSync(join(out, "brand", old), { force: true });
 
-/** The logo with its white background turned into transparency. `dark` lightens the non-gold parts for dark pages. */
-async function transparent(dark) {
+const CREAM = { r: 250, g: 248, b: 243, alpha: 1 };
+
+/** The logo with its white background turned into transparency, colours exactly as drawn. */
+async function transparent() {
   const { data, info } = await sharp(source).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   const px = Buffer.from(data);
   for (let i = 0; i < px.length; i += 4) {
@@ -41,47 +40,32 @@ async function transparent(dark) {
       continue;
     }
     // Undo the blend with white to recover the pixel's own colour.
-    let c = [r, g, b].map((v) => Math.max(0, Math.min(255, Math.round((v - 255 * (1 - alpha)) / alpha))));
-    const isGold = c[0] > c[2] + 10; // warm = gold; navy is always bluer than it is red
-    if (dark) {
-      const [to, amount] = isGold ? [BRIGHT_GOLD, 0.4] : [LIFT_TO, LIFT];
-      c = c.map((v, k) => Math.round(v + (to[k] - v) * amount));
-    }
-    px[i] = c[0];
-    px[i + 1] = c[1];
-    px[i + 2] = c[2];
+    for (let k = 0; k < 3; k++) px[i + k] = Math.max(0, Math.min(255, Math.round((px[i + k] - 255 * (1 - alpha)) / alpha)));
     px[i + 3] = Math.round(alpha * 255);
   }
-  return { px, width: info.width, height: info.height };
+  return sharp(px, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
 }
 
-const toPng = async ({ px, width, height }) => sharp(px, { raw: { width, height, channels: 4 } }).png().toBuffer();
 // Trimming is a separate step from cropping: sharp cannot extract and trim in one pipeline.
 const trimmed = async (png) => sharp(png).trim({ threshold: 4 }).png().toBuffer();
-
-const lightFull = await toPng(await transparent(false));
-const darkFull = await toPng(await transparent(true));
+const full = await trimmed(await transparent());
 const meta = await sharp(source).metadata();
-
-// The eye mark: everything above the lettering (the lettering starts about 70% of the way down).
-const markArea = { left: 0, top: 0, width: meta.width, height: Math.round(meta.height * 0.68) };
-const markLight = await trimmed(await sharp(lightFull).extract(markArea).png().toBuffer());
-const markDark = await trimmed(await sharp(darkFull).extract(markArea).png().toBuffer());
 
 const webp = (buffer, file, width) =>
   sharp(buffer).resize({ width }).webp({ quality: 90, alphaQuality: 95 }).toFile(join(out, "brand", file));
-await webp(await trimmed(lightFull), "logo-light.webp", 700);
-await webp(await trimmed(darkFull), "logo-dark.webp", 700);
-// The header and footer logo: the complete logo (eye with the lettering underneath), small.
-await webp(await trimmed(lightFull), "lockup-light.webp", 360);
-await webp(await trimmed(darkFull), "lockup-dark.webp", 360);
+await webp(full, "logo-light.webp", 700);
+await webp(full, "lockup-light.webp", 360);
+
+// The eye alone (everything above the lettering, which starts about 70% of the way down) for the small icons.
+const fullMeta = await sharp(full).metadata();
+const eye = await trimmed(await sharp(full).extract({ left: 0, top: 0, width: fullMeta.width, height: Math.round(fullMeta.height * 0.7) }).png().toBuffer());
 
 async function icon(size, file, padding) {
   const inner = Math.round(size * (1 - padding * 2));
-  const mark = await sharp(markDark).resize({ width: inner, height: inner, fit: "inside" }).toBuffer();
+  const mark = await sharp(eye).resize({ width: inner, height: inner, fit: "inside" }).toBuffer();
   const radius = Math.round(size * 0.22);
   const mask = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><rect width="${size}" height="${size}" rx="${radius}" fill="#fff"/></svg>`);
-  await sharp({ create: { width: size, height: size, channels: 4, background: { r: NAVY[0], g: NAVY[1], b: NAVY[2], alpha: 1 } } })
+  await sharp({ create: { width: size, height: size, channels: 4, background: CREAM } })
     .composite([{ input: mark, gravity: "centre" }, { input: mask, blend: "dest-in" }])
     .png({ compressionLevel: 9 })
     .toFile(join(out, file));
@@ -89,5 +73,4 @@ async function icon(size, file, padding) {
 await icon(32, "favicon-32.png", 0.06);
 await icon(180, "apple-touch-icon.png", 0.1);
 await icon(512, "icon-512.png", 0.12);
-const mk = await sharp(markLight).metadata();
-console.log(`Assets written to apps/website/public (mark ${mk.width}x${mk.height})`);
+console.log(`Assets written to apps/website/public (source ${meta.width}x${meta.height})`);
