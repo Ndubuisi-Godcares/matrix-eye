@@ -212,6 +212,33 @@ describe("layout and motion", () => {
   });
 });
 
+describe("navigation", () => {
+  it("has a Home link, marked as current only on the home page", async (ctx) => {
+    if (!browser) return ctx.skip();
+    const home = await open("/");
+    const link = home.page.locator(".nav__links a", { hasText: "Home" });
+    expect(await link.getAttribute("href")).toBe("/");
+    expect(await link.getAttribute("aria-current")).toBe("page");
+    expect(await home.page.locator('.nav__links a[aria-current="page"]').count()).toBe(1);
+    await home.context.close();
+    const docs = await open("/docs/widget/");
+    expect(await docs.page.locator(".nav__links a", { hasText: "Home" }).getAttribute("aria-current")).toBeNull();
+    expect(await docs.page.locator('.nav__links a[aria-current="page"]').innerText()).toBe("Docs");
+    await docs.context.close();
+  });
+
+  it("lays out the header with the logo left, links centred and actions right", async (ctx) => {
+    if (!browser) return ctx.skip();
+    const { page, context } = await open("/", { width: 1500, height: 800 });
+    const box = (selector: string) => page.locator(selector).first().evaluate((el) => { const r = el.getBoundingClientRect(); return { left: r.left, right: r.right }; });
+    const brand = await box(".brand"), links = await box(".nav__links"), actions = await box(".nav__actions");
+    expect(brand.left).toBeLessThan(60);
+    expect(Math.abs((links.left + links.right) / 2 - 750)).toBeLessThan(8);
+    expect(1500 - actions.right).toBeLessThan(60);
+    await context.close();
+  });
+});
+
 describe("keyboard and interaction", () => {
   it("lets a keyboard user skip straight to the content", async (ctx) => {
     if (!browser) return ctx.skip();

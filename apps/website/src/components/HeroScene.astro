@@ -1,0 +1,33 @@
+---
+/**
+ * The hero's right-hand side: the chat illustration surrounded by a small animated story of what the product does,
+ * in order: it reads a site (the crawl card fills and ticks), it answers and checks the figure (the green badge),
+ * and it declines when the site is silent (the grey badge). Rings and a soft glow turn slowly behind it all.
+ *
+ * Everything around the chat is decoration (aria-hidden): the same facts are in the conversation text and the page
+ * copy. It is CSS only and shows its final state, with no movement, for visitors who prefer reduced motion. The side
+ * cards are hidden below 1100px wide so they never crowd the headline.
+ */
+import ChatDemo from "./ChatDemo.astro";
+import Icon from "./Icon.astro";
+---
+
+<div class="scene">
+  <div class="scene__rings" aria-hidden="true"><span></span><span></span></div>
+
+  <aside class="float-card float-card--crawl" aria-hidden="true">
+    <p class="float-card__title"><Icon name="globe" /> Reading riverside.example</p>
+    <ul class="crawl">
+      <li style="--d: 0.5s"><Icon name="check" /> /admissions</li>
+      <li style="--d: 1.1s"><Icon name="check" /> /courses/engineering</li>
+      <li style="--d: 1.7s"><Icon name="check" /> /campus/facilities</li>
+    </ul>
+    <div class="crawl__bar"><span></span></div>
+    <p class="crawl__status"><span class="crawl__running">Reading pages…</span><span class="crawl__done"><Icon name="check" /> 48 pages indexed</span></p>
+  </aside>
+
+  <div class="scene__chat"><ChatDemo /></div>
+
+  <p class="float-card float-card--ok" aria-hidden="true"><span class="dot"><Icon name="check" /></span> Date verified</p>
+  <p class="float-card float-card--no" aria-hidden="true"><span class="dot dot--muted">?</span> Says so when unsure</p>
+</div>

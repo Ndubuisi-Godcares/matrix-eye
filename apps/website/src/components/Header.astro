@@ -5,7 +5,7 @@ import Logo from "./Logo.astro";
 
 const path = Astro.url.pathname;
 /** A nav link is "current" for its own page and everything beneath it (e.g. /docs/ for /docs/widget/). */
-const isCurrent = (href: string) => path === href || path.startsWith(href);
+const isCurrent = (href: string) => (href === "/" ? path === "/" : path === href || path.startsWith(href));
 ---
 
 <header class="site-header">
