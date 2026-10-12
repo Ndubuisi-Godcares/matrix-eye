@@ -43,6 +43,20 @@ forms. `EAGLE_FORM_RATE_LIMIT_PER_MINUTE` changes the per-visitor form limit (de
    the headers for Vercel.
 5. **Real screen-reader testing.** Automated checks catch many problems, not all. Test with NVDA or VoiceOver before launch.
 
+## Deploying to Vercel
+
+The repository carries a `vercel.json` at its root and another in `apps/website`, so it deploys with either project setting:
+
+1. Import the GitHub repository in Vercel. Leave **Framework Preset** on "Other" and the **Root Directory** at its default (the
+   repository root), or set it to `apps/website`. Do not override the build or output settings; the file sets them.
+2. Add the build variables from the table above under **Settings > Environment Variables**: at least `PUBLIC_SITE_URL` and
+   `PUBLIC_API_URL`.
+3. Run `PUBLIC_API_URL=https://your-api npm run deploy-config -w @eagles-eye/website` and commit both files whenever the API
+   address changes, because the security policy names it.
+
+If a build says "No Output Directory named public", the project is not reading these files: check the Root Directory and
+that the output directory field is empty.
+
 ## Design decisions
 
 See [ADR-007](adr/ADR-007-website.md).

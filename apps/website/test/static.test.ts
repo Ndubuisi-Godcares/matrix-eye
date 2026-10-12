@@ -164,7 +164,9 @@ describe("weight budgets (gzipped)", () => {
 describe("deployment configuration", () => {
   it("keeps the committed vercel.json in sync with the header definitions", () => {
     const committed = JSON.parse(readFileSync(join(SITE_ROOT, "vercel.json"), "utf8"));
-    expect(committed).toEqual(vercelConfig({ apiOrigin: "https://api.eagleseye.ai" }));
+    expect(committed).toEqual(vercelConfig({ apiOrigin: "https://api.eagleseye.ai", build: "site" }));
+    // The copy at the repository root serves a Vercel project whose Root Directory is left at its default.
+    expect(JSON.parse(readFileSync(join(SITE_ROOT, "../../vercel.json"), "utf8"))).toEqual(vercelConfig({ apiOrigin: "https://api.eagleseye.ai", build: "repo" }));
   });
 
   it("sends a strict Content-Security-Policy", () => {

@@ -17,5 +17,8 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const apiUrl = process.env.PUBLIC_API_URL ?? "https://api.eagleseye.ai";
 const apiOrigin = new URL(apiUrl).origin;
 
-writeFileSync(join(root, "vercel.json"), `${JSON.stringify(vercelConfig({ apiOrigin }), null, 2)}\n`);
-console.log(`vercel.json written (forms may connect to ${apiOrigin})`);
+// Two copies, so the deployment works whichever folder the Vercel project's Root Directory points at.
+const write = (dir, build) => writeFileSync(join(dir, "vercel.json"), `${JSON.stringify(vercelConfig({ apiOrigin, build }), null, 2)}\n`);
+write(root, "site");
+write(join(root, "..", ".."), "repo");
+console.log(`vercel.json written at the repository root and in apps/website (forms may connect to ${apiOrigin})`);

@@ -54,8 +54,18 @@ export function cacheControlFor(pathname) {
 /** The deployment configuration for Vercel, derived from the definitions above. */
 export function vercelConfig(options = {}) {
   const toList = (headers) => Object.entries(headers).map(([key, value]) => ({ key, value }));
+  // How Vercel builds the site. The website needs the widget built first (it ships a copy), and npm workspaces
+  // install from the repository root, so the commands differ by where the Vercel project's Root Directory points.
+  const build = {
+    // Root Directory left at the repository root (the default).
+    repo: { installCommand: "npm ci", buildCommand: "npm run build -w @eagles-eye/widget && npm run build -w @eagles-eye/website", outputDirectory: "apps/website/dist" },
+    // Root Directory set to apps/website.
+    site: { installCommand: "cd ../.. && npm ci", buildCommand: "cd ../.. && npm run build -w @eagles-eye/widget && npm run build -w @eagles-eye/website", outputDirectory: "dist" },
+  }[options.build ?? "site"];
   return {
     $schema: "https://openapi.vercel.sh/vercel.json",
+    framework: null,
+    ...build,
     cleanUrls: false,
     trailingSlash: true,
     headers: [
