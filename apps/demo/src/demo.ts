@@ -18,7 +18,7 @@ import type { FastifyInstance } from "fastify";
 const here = dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = join(here, "..", "..", "..");
 export const WIDGET_FILE = join(REPO_ROOT, "packages", "widget", "dist", "matrix-eye-widget.js");
-const LOGO_FILE = join(REPO_ROOT, "brand", "matrix-eye-logo-light.png");
+const LOGO_FILE = join(REPO_ROOT, "brand", "matrix-eye-logo.png");
 
 export interface DemoOptions {
   store: SqliteKnowledgeStore;
@@ -59,7 +59,7 @@ function demoPage(projectId: string, siteName: string, siteUrl: string, query: R
 <style>
   body { font: 16px/1.6 system-ui, sans-serif; margin: 0; color: #14202e; background: #f6f1e7; }
   main { max-width: 760px; margin: 0 auto; padding: 48px 20px 120px; }
-  img { width: 240px; max-width: 70%; }
+  img { width: 240px; max-width: 70%; border-radius: 14px; }
   h1 { font-size: 28px; margin: 24px 0 8px; color: #0f2238; }
   code { background: #fff; border: 1px solid #d8cdb8; border-radius: 4px; padding: 1px 6px; }
   pre { background: #fff; border: 1px solid #d8cdb8; border-radius: 8px; padding: 14px; overflow-x: auto; }
