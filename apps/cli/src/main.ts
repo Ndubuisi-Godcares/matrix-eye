@@ -13,6 +13,7 @@
 import { createInterface } from "node:readline/promises";
 import { parseArgs } from "node:util";
 import { isEagleError, type ChatResponse, type ChatTurn } from "@eagles-eye/core";
+import { createPlaywrightRenderer, type PageRenderer } from "@eagles-eye/crawler";
 import { ConversationEngine, ingestSite } from "@eagles-eye/engine";
 import { SqliteKnowledgeStore } from "@eagles-eye/knowledge";
 import { llmFromEnv } from "@eagles-eye/llm";
@@ -22,13 +23,15 @@ const PROJECT = "cli";
 const USAGE = `Eagle's Eye CLI
 
 Usage:
-  eagle crawl <url> [--max-pages N] [--full] [--allow-private]
+  eagle crawl <url> [--max-pages N] [--full] [--allow-private] [--render]
   eagle ask "<question>" [--debug] [--json]
   eagle chat
   eagle search "<query>" [--limit N]
   eagle pages
 
 Options:
+  --render       Run JavaScript for pages that arrive empty (React/Vue sites). Needs a one-time
+                 "npx playwright install chromium". Slower: use a small --max-pages first.
   --db <file>    SQLite file (default ./data/eagle-cli.sqlite)
   --name <text>  Site name used in answers (default: the site's hostname)`;
 
@@ -54,6 +57,7 @@ async function main() {
       limit: { type: "string", default: "5" },
       full: { type: "boolean", default: false },
       "allow-private": { type: "boolean", default: false },
+      render: { type: "boolean", default: false },
       debug: { type: "boolean", default: false },
       json: { type: "boolean", default: false },
       help: { type: "boolean", short: "h", default: false },
@@ -69,19 +73,31 @@ async function main() {
         const url = rest[0];
         if (!url) throw new Error("crawl needs a URL");
         console.log(`Crawling ${url} (polite: robots.txt respected, ~4 requests/second at most)...`);
-        const result = await ingestSite({
-          store,
-          projectId: PROJECT,
-          startUrl: url,
-          maxPages: values["max-pages"] ? Number(values["max-pages"]) : undefined,
-          full: values.full,
-          allowPrivateNetworks: values["allow-private"],
-          onEvent: (e) => {
-            if (e.type === "page") console.log(`  + ${e.url}`);
-            else if (e.type === "flagged") console.log(`  ! ${e.url} — removed ${e.count} suspicious instruction-like paragraph(s)`);
-            else if (e.type === "failed") console.log(`  x ${e.url} — ${e.error}`);
-          },
-        });
+        // Only start a browser when asked; it is only used for pages that arrive nearly empty.
+        let renderer: PageRenderer | undefined;
+        if (values.render) {
+          renderer = await createPlaywrightRenderer({ allowPrivateNetworks: values["allow-private"] });
+          console.log("JavaScript rendering is on for pages with little static content.");
+        }
+        let result;
+        try {
+          result = await ingestSite({
+            store,
+            projectId: PROJECT,
+            startUrl: url,
+            renderer,
+            maxPages: values["max-pages"] ? Number(values["max-pages"]) : undefined,
+            full: values.full,
+            allowPrivateNetworks: values["allow-private"],
+            onEvent: (e) => {
+              if (e.type === "page") console.log(`  + ${e.url}`);
+              else if (e.type === "flagged") console.log(`  ! ${e.url} — removed ${e.count} suspicious instruction-like paragraph(s)`);
+              else if (e.type === "failed") console.log(`  x ${e.url} — ${e.error}`);
+            },
+          });
+        } finally {
+          await renderer?.close(); // always release the browser, even if the crawl fails
+        }
         console.log(`\nDone. ${result.pagesIndexed} pages indexed, ${result.pagesUnchanged} unchanged, ${result.pagesRemoved} removed, ${result.chunksWritten} chunks.`);
         if (result.reachedPageLimit) console.log("Stopped at the page limit; the site has more pages. Raise --max-pages to index them.");
         console.log(`Skipped ${result.skipped.length} (robots.txt, noindex, duplicates, errors); failed ${result.failed.length}.`);

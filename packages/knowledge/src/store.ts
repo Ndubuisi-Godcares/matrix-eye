@@ -27,6 +27,12 @@ export interface KnowledgeStore {
   /** Remove pages whose URL is not in `keepUrls` (pages that disappeared from the site). Returns the count removed. */
   pruneMissingPages(projectId: string, keepUrls: ReadonlySet<string>): number;
 
+  /**
+   * The site's front page (shortest URL) with its description and opening text. Used to answer
+   * "what is this site about?", which keyword search cannot answer from scattered passages.
+   */
+  rootPage(projectId: string): { url: string; title: string; description: string; text: string } | null;
+
   /** url -> contentHash for every stored page, used to skip unchanged pages on re-crawl. */
   contentHashes(projectId: string): Map<string, string>;
 

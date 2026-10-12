@@ -9,3 +9,4 @@ export { buildMessages, buildSystemPrompt, NO_ANSWER_PHRASE } from "./prompt";
 export { factsFromPage, dedupeFacts, isContactQuestion, answerFromFacts } from "./facts";
 export { expectsNumber, containsNumber } from "./answer-type";
 export { unsupportedKeyTerm, inverseDocumentFrequency } from "./retrieve";
+export { isOverviewQuestion } from "./overview";

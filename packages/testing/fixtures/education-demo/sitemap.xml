@@ -5,6 +5,7 @@
   <url><loc>{{BASE}}/admissions</loc></url>
   <url><loc>{{BASE}}/tuition</loc></url>
   <url><loc>{{BASE}}/tuition-fees</loc></url>
+  <url><loc>{{BASE}}/tuition-print</loc></url>
   <url><loc>{{BASE}}/drafts</loc></url>
   <url><loc>{{BASE}}/private/staff</loc></url>
   <url><loc>{{BASE}}/hidden-gem</loc></url>

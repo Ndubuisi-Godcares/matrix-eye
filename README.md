@@ -9,8 +9,9 @@ Crawl a site, index it, and answer visitors' questions with citations, or an hon
 
 ## Status
 
-**Phase 1 (core engine): built and passing its quality gate.** Crawler, knowledge store, retrieval,
-grounded answering, validation, HTTP API and CLI all work end to end, with 176 automated tests.
+**Phase 1 (core engine): built and passing its quality gate.** Crawler (including JavaScript sites), knowledge
+store, retrieval, grounded answering, validation, HTTP API and CLI all work end to end, with 211 automated tests.
+It has been tried on three real sites (Reed College, Swarthmore, and a React single-page app).
 Not built yet: SDK, embeddable widget, dashboard, website, hosted service (Phases 2-4).
 
 The evaluation harness (`npm run eval`) currently scores 100% on its 45-question fixture set. Read that
@@ -23,7 +24,7 @@ Requires **Node.js 24+**.
 
 ```bash
 npm install
-npm test            # 176 tests
+npm test            # 211 tests
 npm run eval        # answer-quality report against the fixture site (add -- --gate for CI behaviour)
 npm run typecheck
 ```
@@ -36,6 +37,13 @@ npm run eagle -- ask "How much is tuition for computer science?"
 npm run eagle -- chat                      # interactive, remembers follow-ups
 npm run eagle -- search "application deadline"
 npm run eagle -- pages
+```
+
+Sites built with React/Vue send an empty page until JavaScript runs (the crawl will index 0 pages). Add
+`--render` (one-time setup: `npx playwright install chromium`):
+
+```bash
+npm run eagle -- crawl https://your-react-site.org --max-pages 30 --render
 ```
 
 Answers are **extractive** by default: quoted from the site, with citations, and they cannot hallucinate.
@@ -98,7 +106,10 @@ brand/         logos
 
 - Retrieval is keyword-based (BM25 plus hand-written synonyms). Unusual wording can be wrongly declined;
   semantic retrieval is planned and will be adopted only if it wins on the evaluation set.
-- JavaScript-rendered pages need the optional Playwright renderer, which is implemented but untested.
+- `--render` is slow (3-6 s per page) and uses a real browser; the browser's DNS cannot be pinned, so run it in an
+  isolated sandbox for untrusted URLs in a hosted setting (ADR-004).
+- Without a language model, answers are quoted sentences: accurate and cited, but they can land on the right page and
+  quote the wrong part, and they cannot summarise. A model (Ollama etc.) is the intended way to get conversational answers.
 - No streaming responses yet, and a single API key (per-project keys come with the hosted service).
 - `node:sqlite` is flagged experimental by Node and prints a warning.
 - English-oriented text processing.

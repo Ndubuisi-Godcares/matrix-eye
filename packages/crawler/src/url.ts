@@ -65,3 +65,19 @@ export function isSameSite(a: string, b: string): boolean {
     return false;
   }
 }
+
+/**
+ * True when two URLs are the same page apart from `www.` and http/https. Sites routinely redirect
+ * example.com to www.example.com while their canonical tags name the other form; treating those as
+ * different pages sends a crawler in circles.
+ */
+export function isSameResource(a: string, b: string): boolean {
+  const key = (value: string) => {
+    const normalised = normalizeUrl(value);
+    if (!normalised) return null;
+    const u = new URL(normalised);
+    return `${u.hostname.replace(/^www\./, "")}${u.port}${u.pathname}${u.search}`;
+  };
+  const ka = key(a);
+  return ka !== null && ka === key(b);
+}

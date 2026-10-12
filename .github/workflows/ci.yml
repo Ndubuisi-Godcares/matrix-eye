@@ -19,6 +19,9 @@ jobs:
 
       - run: npm ci
 
+      # Chromium for the JavaScript-rendering tests (skipped locally when it is not installed).
+      - run: npx playwright install --with-deps chromium
+
       # Type errors fail the build before any test runs.
       - run: npm run typecheck
 

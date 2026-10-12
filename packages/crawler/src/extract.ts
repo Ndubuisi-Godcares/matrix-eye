@@ -42,7 +42,10 @@ const LEAF_BLOCKS = new Set(["p", "li", "dt", "dd", "pre", "figcaption", "captio
 
 const EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/g;
 /** Conservative phone pattern: optional +country code, then 7+ digits with common separators. */
-const PHONE = /(?<![\w/])(?:\+\d{1,3}[\s.-]?)?(?:\(\d{2,4}\)[\s.-]?)?\d{2,4}(?:[\s.-]\d{2,4}){2,4}(?![\w/])/g;
+// Two shapes: US-style "(503) 771-1112", and groups of digits joined by spaces, dots or hyphens, with an
+// optional +country code. The lookbehind also rejects a leading hyphen so a ZIP+4 ("97202-8199 503-771-1112")
+// is not glued onto the phone number.
+const PHONE = /(?<![\w/-])(?:\+\d{1,3}[\s.-]?)?(?:\(\d{2,4}\)[\s.-]?\d{2,4}[\s.-]\d{2,4}|\d{2,4}(?:[\s.-]\d{2,4}){2,4})(?![\w/])/g;
 
 /**
  * Phrases that address an AI model rather than a human visitor. Real websites essentially never
@@ -252,8 +255,10 @@ function extractContacts($: cheerio.CheerioAPI, trustedText: string): ExtractedC
   // A tel: link holds digits only ("+15550147788"); the page's own formatting ("+1 555 014 7788") is
   // what visitors recognise, so keep the link's number only if the visible text did not show it.
   const digitsOf = (p: string) => p.replace(/\D/g, "");
-  const visibleDigits = new Set(phones.map(digitsOf));
-  for (const link of telLinks) if (!visibleDigits.has(digitsOf(link))) phones.push(link);
+  // Same number if one is the other plus a country code ("+1 503..." vs "503...").
+  const sameNumber = (a: string, b: string) => a.endsWith(b) || b.endsWith(a);
+  const visibleDigits = phones.map(digitsOf);
+  for (const link of telLinks) if (!visibleDigits.some((d) => sameNumber(d, digitsOf(link)))) phones.push(link);
 
   return { emails: unique(emails), phones: unique(phones) };
 }

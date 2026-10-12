@@ -12,7 +12,7 @@ import { HttpFetcher } from "./fetcher";
 import { RobotsPolicy } from "./robots";
 import { collectSitemapUrls } from "./sitemap";
 import { extractPage, type ExtractedContacts } from "./extract";
-import { hasNonPageExtension, isSameSite, normalizeUrl } from "./url";
+import { hasNonPageExtension, isSameResource, isSameSite, normalizeUrl } from "./url";
 import { assertPublicUrl } from "./ssrf";
 import type { PageRenderer } from "./render";
 
@@ -123,8 +123,15 @@ export async function crawlSite(options: CrawlOptions): Promise<CrawlSummary> {
 
   // --- frontier -------------------------------------------------------------
   const queue: QueueItem[] = [{ url: startUrl, depth: 0 }];
+  /**
+   * URLs with a query string (?area=...&search=...) are usually filtered or paginated views of a page
+   * already in `queue`. They are visited only after every plain URL, so the unfiltered page always wins.
+   */
+  const lowPriority: QueueItem[] = [];
   /** Every URL ever queued, so nothing is fetched twice. */
   const queued = new Set<string>([startUrl]);
+  /** Content hashes already indexed, so the same text served at several URLs is stored once. */
+  const seenContent = new Set<string>();
   /** Final page URLs already handled, so two addresses redirecting to one page produce one record. */
   const seenPages = new Set<string>();
 
@@ -134,7 +141,7 @@ export async function crawlSite(options: CrawlOptions): Promise<CrawlSummary> {
     if (!isSameSite(url, startUrl)) return;
     if (hasNonPageExtension(url) || depth > maxDepth) return;
     queued.add(url);
-    queue.push({ url, depth });
+    (url.includes("?") ? lowPriority : queue).push({ url, depth });
   };
 
   // Sitemaps often list pages no link leads to. Capped so a huge sitemap cannot flood the queue.
@@ -152,9 +159,37 @@ export async function crawlSite(options: CrawlOptions): Promise<CrawlSummary> {
 
   let fetched = 0; // pages that consumed budget (indexed + unchanged)
   let active = 0;
+  /**
+   * Every URL tried, including skipped and failed ones. Skipped pages do not use page budget, so without
+   * this cap a site where most pages are skipped (blocked, empty, duplicates) would be crawled in full
+   * just to find a few usable pages, which is slow and unkind to the server, especially when rendering.
+   */
+  let attempts = 0;
+  const maxAttempts = Math.max(maxPages * 4, 40);
+
+  /**
+   * Downloads run in parallel, but the decisions that depend on what came before (is this a duplicate?
+   * which links are new? emit the page) are made strictly in queue order. Without this, two URLs
+   * serving identical content would be resolved by whichever download happened to finish first, so
+   * re-crawling the same site could keep a different URL each time and needlessly re-index it.
+   */
+  let commitChain: Promise<void> = Promise.resolve();
 
   /** Returns true when the URL produced a real page (and so consumed page budget). */
-  async function processItem({ url, depth }: QueueItem): Promise<boolean> {
+  async function processItem(item: QueueItem): Promise<boolean> {
+    const previous = commitChain;
+    let release!: () => void;
+    commitChain = new Promise<void>((resolve) => (release = resolve));
+    try {
+      return await fetchAndCommit(item, previous);
+    } finally {
+      // Even a skipped or failed item must wait its turn before releasing the next one.
+      await previous;
+      release();
+    }
+  }
+
+  async function fetchAndCommit({ url, depth }: QueueItem, previous: Promise<void>): Promise<boolean> {
     const robots = await robotsFor(url);
     if (!robots.isAllowed(url)) return skip(url, "disallowed by robots.txt");
 
@@ -189,6 +224,9 @@ export async function crawlSite(options: CrawlOptions): Promise<CrawlSummary> {
     if (extracted.noindex) return skip(url, "page is marked noindex");
     if (extracted.page.text.length === 0) return skip(url, "no readable content");
 
+    // ---- ordered section: wait until every earlier URL has been decided ----
+    await previous;
+
     // Follow links even from pages we will not re-index: unchanged pages still reveal new ones.
     for (const link of extracted.links) enqueue(link, depth + 1);
 
@@ -197,13 +235,15 @@ export async function crawlSite(options: CrawlOptions): Promise<CrawlSummary> {
     // which alias happened to be fetched first. A canonical pointing at the site root is ignored:
     // sites commonly (mis)configure every page that way, and honouring it would discard the site.
     const canonical = extracted.page.canonicalUrl;
-    if (canonical !== extracted.page.url && new URL(canonical).pathname !== "/") {
+    if (!isSameResource(canonical, extracted.page.url) && new URL(canonical).pathname !== "/") {
       enqueue(canonical, depth);
       return skip(url, `canonical is ${canonical}`);
     }
 
     if (seenPages.has(extracted.page.url)) return skip(url, "duplicate page");
+    if (seenContent.has(extracted.page.contentHash)) return skip(url, "same content as another page");
     seenPages.add(extracted.page.url);
+    seenContent.add(extracted.page.contentHash);
     summary.seenUrls.push(extracted.page.url);
 
     if (options.knownHashes?.get(extracted.page.url) === extracted.page.contentHash) {
@@ -225,10 +265,14 @@ export async function crawlSite(options: CrawlOptions): Promise<CrawlSummary> {
       }
       if (fetched >= maxPages) {
         // Anything still queued means the site is larger than the budget we were given.
-        if (queue.length > 0) summary.reachedPageLimit = true;
+        if (queue.length + lowPriority.length > 0) summary.reachedPageLimit = true;
         return;
       }
-      const item = queue.shift();
+      if (attempts >= maxAttempts) {
+        if (queue.length + lowPriority.length > 0) summary.reachedPageLimit = true;
+        return;
+      }
+      const item = queue.shift() ?? lowPriority.shift();
       if (!item) {
         // Nothing queued: finished only if no other worker could still add links.
         if (active === 0) return;
@@ -236,6 +280,7 @@ export async function crawlSite(options: CrawlOptions): Promise<CrawlSummary> {
         continue;
       }
       active++;
+      attempts++;
       fetched++; // reserve budget up front so concurrent workers cannot overshoot maxPages
       try {
         // Errors, 404s and skipped pages do not count against the page budget.

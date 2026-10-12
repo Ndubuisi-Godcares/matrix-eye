@@ -2,6 +2,7 @@
  * Evidence selection: from raw search hits to the passages an answer may be built on.
  */
 import { contentTerms, stem, synonymsOf, tokenize, type SearchHit } from "@eagles-eye/core";
+import { urlWords } from "@eagles-eye/knowledge";
 
 /**
  * Pick up to `limit` hits in rank order, allowing at most `maxPerPage` from one page.
@@ -34,7 +35,7 @@ export function coverage(question: string, evidence: readonly SearchHit[]): numb
 
   const haystack = new Set<string>();
   for (const { chunk } of evidence) {
-    for (const token of tokenize(`${chunk.pageTitle} ${chunk.headingPath.join(" ")} ${chunk.text}`)) haystack.add(stem(token));
+    for (const token of tokenize(`${chunk.pageTitle} ${chunk.headingPath.join(" ")} ${urlWords(chunk.pageUrl)} ${chunk.text}`)) haystack.add(stem(token));
   }
   // A term is covered if the evidence contains it or a known synonym ("cost" is covered by "tuition").
   const covered = (term: string) => haystack.has(term) || synonymsOf(term).some((syn) => haystack.has(stem(syn)));
@@ -79,7 +80,7 @@ export function unsupportedKeyTerm(
 
   const haystack = new Set<string>();
   for (const { chunk } of evidence) {
-    for (const token of tokenize(`${chunk.pageTitle} ${chunk.headingPath.join(" ")} ${chunk.text}`)) haystack.add(stem(token));
+    for (const token of tokenize(`${chunk.pageTitle} ${chunk.headingPath.join(" ")} ${urlWords(chunk.pageUrl)} ${chunk.text}`)) haystack.add(stem(token));
   }
   const covered = (term: string) => haystack.has(term) || synonymsOf(term).some((syn) => haystack.has(stem(syn)));
 

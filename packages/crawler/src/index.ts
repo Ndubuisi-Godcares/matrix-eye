@@ -4,5 +4,5 @@ export { HttpFetcher, type FetchedDocument, type FetcherOptions } from "./fetche
 export { RobotsPolicy } from "./robots";
 export { collectSitemapUrls } from "./sitemap";
 export { assertPublicUrl, isBlockedAddress, createGuardedDispatcher } from "./ssrf";
-export { normalizeUrl, isSameSite, hasNonPageExtension } from "./url";
-export { createPlaywrightRenderer, type PageRenderer } from "./render";
+export { normalizeUrl, isSameSite, isSameResource, hasNonPageExtension } from "./url";
+export { createPlaywrightRenderer, createRequestGuard, type PageRenderer, type RendererOptions } from "./render";

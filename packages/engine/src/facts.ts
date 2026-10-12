@@ -50,10 +50,10 @@ function host(url: string): string {
  * Compose a contact answer from stored facts, or null if none are known.
  * Emails on the site's own domain are preferred over third-party addresses.
  */
-export function answerFromFacts(facts: readonly Fact[]): { answer: string; citations: Citation[] } | null {
+export function answerFromFacts(facts: readonly Fact[], limits: { maxEmails?: number; maxPhones?: number } = {}): { answer: string; citations: Citation[] } | null {
   const rank = (f: Fact) => (f.kind === "email" && f.value.endsWith(`@${host(f.pageUrl)}`) ? 0 : 1);
-  const emails = facts.filter((f) => f.kind === "email").sort((a, b) => rank(a) - rank(b)).slice(0, 3);
-  const phones = facts.filter((f) => f.kind === "phone").slice(0, 2);
+  const emails = facts.filter((f) => f.kind === "email").sort((a, b) => rank(a) - rank(b)).slice(0, limits.maxEmails ?? 3);
+  const phones = facts.filter((f) => f.kind === "phone").slice(0, limits.maxPhones ?? 2);
   if (emails.length === 0 && phones.length === 0) return null;
 
   const citations: Citation[] = [];

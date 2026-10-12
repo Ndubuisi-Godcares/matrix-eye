@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hasNonPageExtension, isSameSite, normalizeUrl } from "../src";
+import { hasNonPageExtension, isSameResource, isSameSite, normalizeUrl } from "../src";
 
 describe("normalizeUrl", () => {
   it("resolves relative links and strips fragments", () => {
@@ -24,6 +24,18 @@ describe("normalizeUrl", () => {
 
   it("removes embedded credentials", () => {
     expect(normalizeUrl("https://user:pass@example.com/x")).toBe("https://example.com/x");
+  });
+});
+
+describe("isSameResource", () => {
+  it("ignores www and http/https differences, which sites routinely mix up in canonical tags", () => {
+    expect(isSameResource("https://aiit.network/about", "https://www.aiit.network/about")).toBe(true);
+    expect(isSameResource("http://example.com/a/", "https://www.example.com/a")).toBe(true);
+  });
+  it("still tells different pages and different sites apart", () => {
+    expect(isSameResource("https://example.com/a", "https://example.com/b")).toBe(false);
+    expect(isSameResource("https://example.com/a?x=1", "https://example.com/a?x=2")).toBe(false);
+    expect(isSameResource("https://example.com/a", "https://evil.com/a")).toBe(false);
   });
 });
 

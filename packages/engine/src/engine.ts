@@ -19,6 +19,7 @@ import type { LlmProvider } from "@eagles-eye/llm";
 import { containsNumber, expectsNumber } from "./answer-type";
 import { answerFromFacts, isContactQuestion } from "./facts";
 import { composeExtractive } from "./extractive";
+import { isOverviewQuestion } from "./overview";
 import { buildMessages } from "./prompt";
 import { coverage, inverseDocumentFrequency, selectEvidence, unsupportedKeyTerm } from "./retrieve";
 import { rewriteHeuristic, rewriteQuery } from "./rewrite";
@@ -81,6 +82,18 @@ export class ConversationEngine {
       const fromFacts = answerFromFacts(facts);
       if (fromFacts) {
         return { ...fromFacts, abstained: false, route: "facts", debug: this.debug(question, [], 1, [], timings) };
+      }
+    }
+
+    // 2b. Broad "what is this site about?" questions are answered from the front page itself.
+    if (isOverviewQuestion(question)) {
+      const root = this.store.rootPage(input.projectId);
+      if (root) {
+        const summary = root.description.length >= 40 ? root.description : truncate(root.text, 300);
+        const answer = summary ? `${root.title ? root.title + ": " : ""}${summary} [1]` : "";
+        if (answer) {
+          return { answer, abstained: false, route: "overview", citations: [{ id: 1, url: root.url, title: root.title, snippet: truncate(summary, 220) }], debug: this.debug(question, [], 1, [], timings) };
+        }
       }
     }
 
@@ -174,7 +187,8 @@ export class ConversationEngine {
 
   /** Honest "not found" reply, offering contact details when we know them. */
   private abstain(facts: ReturnType<KnowledgeStore["getFacts"]>): Omit<ChatResponse, "debug"> {
-    const contact = answerFromFacts(facts);
+    // When declining, offer one email and one phone, not every department address on the site.
+    const contact = answerFromFacts(facts, { maxEmails: 1, maxPhones: 1 });
     return contact
       ? { answer: `${ABSTAIN_TEXT} ${contact.answer}`, abstained: true, route: "abstain", citations: contact.citations }
       : { answer: ABSTAIN_TEXT, abstained: true, route: "abstain", citations: [] };

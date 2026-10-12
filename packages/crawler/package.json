@@ -17,5 +17,8 @@
   },
   "devDependencies": {
     "@eagles-eye/testing": "0.1.0"
+  },
+  "optionalDependencies": {
+    "playwright": "^1.64.0"
   }
 }

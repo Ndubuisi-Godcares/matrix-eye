@@ -60,6 +60,12 @@ export async function startFixtureServer(site = "education-demo"): Promise<Fixtu
         res.writeHead(200, { "content-type": "image/png" }).end(Buffer.from([0x89, 0x50, 0x4e, 0x47]));
         return;
       }
+      // Empty HTML shell whose content only exists after JavaScript runs, like a React single-page app.
+      if (path === "/_test/spa-rendered") {
+        const script = `document.getElementById('root').innerHTML = '<main><h1>Rendered Page</h1><p>' + 'This sentence exists only after JavaScript runs in a real browser. '.repeat(6) + '</p><a href="/about">About</a></main>';`;
+        res.writeHead(200, { "content-type": "text/html" }).end(`<html><head><title>Rendered</title></head><body><div id="root"></div><script>${script}</script></body></html>`);
+        return;
+      }
       if (path === "/_test/spa") {
         res.writeHead(200, { "content-type": "text/html" }).end('<html><head><title>App</title></head><body><div id="root"></div><script>/* renders later */</script></body></html>');
         return;

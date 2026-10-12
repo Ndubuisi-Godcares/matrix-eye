@@ -33,6 +33,9 @@ function splitUnits(block: string): string[] {
     .filter((s) => s.length > 0);
 }
 
+/** Sentences shorter than this are labels or fragments and are never quoted on their own. */
+const MIN_SENTENCE_WORDS = 5;
+
 /** A sentence is quoted only if its relevance is at least this fraction of the best sentence's. */
 const RELATIVE_CUTOFF = 0.75;
 
@@ -55,17 +58,24 @@ export function composeExtractive(
     const units = splitUnits(hit.chunk.text);
     // The first pipe-delimited line in a chunk is normally a table header; reuse it as column context.
     const header = units.find((u) => u.includes(" | "));
-    // Heading words give a sentence its context ("Sports" > "The university has football teams ...").
-    const context = hit.chunk.headingPath.join(" ");
+    // Heading words give a sentence its context ("Sports" > "The university has football teams ..."),
+    // but only half the weight of the sentence's own words, so a fragment under a good heading
+    // cannot outrank a sentence that actually says something about the question.
+    const context = new Set(tokenize(hit.chunk.headingPath.join(" ")).map(stem));
     units.forEach((unit, order) => {
+      const isRow = unit.includes(" | ");
+      // Fragments such as "FAFSA." or "See Eligible Dates." are labels, not answers.
+      if (!isRow && unit.split(/\s+/).length < MIN_SENTENCE_WORDS) return;
+
       // Table rows are shown with their column names, and scored with them too, so a row matches
       // a question about "fees" through its "Annual tuition" column even if the row lacks the word.
-      const text = unit.includes(" | ") && header && header !== unit ? `${unit} (columns: ${header})` : unit;
-      const stems = new Set(tokenize(`${context} ${text}`).map(stem));
-      const hasTerm = (t: string) => stems.has(t) || synonymsOf(t).some((syn) => stems.has(stem(syn)));
+      const text = isRow && header && header !== unit ? `${unit} (columns: ${header})` : unit;
+      const own = new Set(tokenize(text).map(stem));
+      const has = (set: Set<string>, t: string) => set.has(t) || synonymsOf(t).some((syn) => set.has(stem(syn)));
+
       // Rare question words count for more than common ones ("january" beats "apply").
       const total = terms.reduce((sum, t) => sum + weight(t), 0);
-      const matched = terms.filter(hasTerm).reduce((sum, t) => sum + weight(t), 0);
+      const matched = terms.reduce((sum, t) => sum + (has(own, t) ? weight(t) : has(context, t) ? weight(t) * 0.5 : 0), 0);
       const overlap = total > 0 ? matched / total : 0;
       // Only reward a figure in a sentence that also relates to the question, never a stray number on its own.
       const figureBonus = wantsNumber && overlap > 0 && containsNumber(unit) ? 0.25 : 0;

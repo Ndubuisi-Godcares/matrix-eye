@@ -37,6 +37,28 @@ deeper page is ignored, since sites commonly misconfigure this and honouring it 
 ## Consequences
 
 - Some legitimate private/intranet use cases need the explicit opt-in.
-- JavaScript-only pages need the optional Playwright renderer (`render.ts`), which is implemented behind
-  an interface but **not yet exercised by automated tests**.
+- JavaScript-only pages need the optional Playwright renderer (`--render`, `render.ts`); see below.
 - The `User-Agent` documentation URL must exist before public launch.
+
+## Rendering JavaScript sites (`--render`)
+
+Single-page apps send an empty HTML shell, so there is nothing to read until a browser runs the page.
+`--render` starts headless Chromium (Playwright, an *optional* dependency plus a one-time ~120 MB browser
+download) and uses it only for pages whose plain HTML has almost no text.
+
+A browser runs the page's own JavaScript, which can request any URL, so **every request the browser makes is
+intercepted** (`createRequestGuard`): non-web schemes, localhost, private and link-local addresses and
+unresolvable hosts are refused; images, media and fonts are blocked for speed; service workers are disabled;
+each page gets an isolated context. Known limit: the browser resolves DNS itself, so a hostile DNS server could
+rebind between our check and the connection. For the hosted service, run rendering inside a network-isolated
+sandbox. Verified on a real React site (aiit.network): 15 pages and 159 passages in 38 s, none before.
+
+## Crawl determinism and loop-safety (found on real sites)
+
+- Downloads run in parallel but duplicate/new-link decisions are made **in queue order**, so identical content
+  at several URLs always resolves the same way and re-crawls stay incremental.
+- A canonical tag that differs only by `www.` or `http`/`https` is the same page (sites redirect one way and
+  declare the other, which would otherwise loop).
+- URLs with query strings are visited last and dropped when their content duplicates a plain URL.
+- Total fetch attempts are capped (4x the page limit, minimum 40) so a site where most URLs are skipped
+  cannot trigger hundreds of slow renders.
