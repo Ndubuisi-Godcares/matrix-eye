@@ -6,7 +6,7 @@
  * (the whole message must be small talk) so a real question is never swallowed, and answered without
  * retrieval or a model.
  */
-import { tokenize } from "@eagles-eye/core";
+import { tokenize } from "@matrix-eye/core";
 
 export type SmallTalk = "greeting" | "thanks" | "goodbye" | "how-are-you";
 

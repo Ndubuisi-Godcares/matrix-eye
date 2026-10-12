@@ -13,7 +13,7 @@
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { contentWords, expandWithSynonyms, stem, tokenize, type Chunk, type CrawledPage, type Fact, type SearchHit } from "@eagles-eye/core";
+import { contentWords, expandWithSynonyms, stem, tokenize, type Chunk, type CrawledPage, type Fact, type SearchHit } from "@matrix-eye/core";
 import { pagePrior, urlWords } from "./ranking";
 import type { KnowledgeStats, KnowledgeStore, StoredPage } from "./store";
 

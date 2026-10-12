@@ -12,7 +12,7 @@ code must serve hosted and self-hosted deployments.
 ## Decision
 
 - **Protocol:** the OpenAI-compatible chat API. One client (`OpenAiCompatibleProvider`) serves Ollama, vLLM, LM Studio and
-  hosted providers; switching is configuration (`EAGLE_LLM_BASE_URL`, `EAGLE_LLM_MODEL`), not code.
+  hosted providers; switching is configuration (`MATRIX_EYE_LLM_BASE_URL`, `MATRIX_EYE_LLM_MODEL`), not code.
 - **Development and self-hosting:** Ollama (free, MIT-licensed, runs locally, no account needed; its optional cloud
   service is not used and not part of the product).
 - **Default model for small machines:** `qwen3:4b-instruct` (Apache-2.0, 2.5 GB). Licence is checked per model before
@@ -20,7 +20,7 @@ code must serve hosted and self-hosted deployments.
 - **Non-thinking models only.** The default `qwen3:4b` is a *thinking* model. On Ollama 0.40 its reasoning arrives in the
   answer text without `<think>` tags (and `think:false`/`reasoning_effort:none` did not suppress it), so it cannot be
   filtered reliably, costs most of the token budget, and cold-starts for over a minute on a 4 GB GPU.
-  The client still strips `<think>...</think>` where providers emit tags, and `eagle llm-check` warns when a model
+  The client still strips `<think>...</think>` where providers emit tags, and `matrix llm-check` warns when a model
   answers a one-word request at length.
 - The engine's validation (citations, figures, abstention) applies to model output exactly as before, so a weak model
   degrades to the extractive answer rather than to a wrong one.

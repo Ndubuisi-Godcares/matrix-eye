@@ -1,7 +1,7 @@
 /**
  * Writes vercel.json from the shared header definitions (scripts/headers.mjs).
  *
- *   PUBLIC_API_URL=https://api.example.com npm run deploy-config --workspace @eagles-eye/website
+ *   PUBLIC_API_URL=https://api.example.com npm run deploy-config --workspace @matrix-eye/website
  *
  * The API address is added to the Content-Security-Policy so the forms may talk to it and nothing else.
  * Re-run whenever the API address changes; a test fails if the committed file is out of date.
@@ -14,7 +14,7 @@ import { vercelConfig } from "./headers.mjs";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 // PLACEHOLDER until the API's domain is chosen: the same address the rest of the site assumes. Always set PUBLIC_API_URL
 // for a real deployment, otherwise the browser will refuse to let the forms talk to your API.
-const apiUrl = process.env.PUBLIC_API_URL ?? "https://api.eagleseye.ai";
+const apiUrl = process.env.PUBLIC_API_URL ?? "https://api.matrixeye.ai";
 const apiOrigin = new URL(apiUrl).origin;
 
 // Two copies, so the deployment works whichever folder the Vercel project's Root Directory points at.

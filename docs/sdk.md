@@ -8,33 +8,33 @@ Two clients, because they have different trust levels:
 | Class | Needs | Use it |
 |---|---|---|
 | `PublicClient` | project id only | in a browser: chat, streaming, feedback, display settings |
-| `EagleEyeClient` | API key | on your server: projects, crawling, rules, settings, feedback review |
+| `MatrixEyeClient` | API key | on your server: projects, crawling, rules, settings, feedback review |
 
-**Never put the API key in a web page.** Use `PublicClient` in browsers; `EagleEyeClient` is for servers.
+**Never put the API key in a web page.** Use `PublicClient` in browsers; `MatrixEyeClient` is for servers.
 
 ## Server: set up a project
 
 ```ts
-import { EagleEyeClient } from "@eagles-eye/sdk";
+import { MatrixEyeClient } from "@matrix-eye/sdk";
 
-const eagle = new EagleEyeClient({ baseUrl: "https://api.example.com", apiKey: process.env.EAGLE_API_KEY });
+const matrix = new MatrixEyeClient({ baseUrl: "https://api.example.com", apiKey: process.env.MATRIX_EYE_API_KEY });
 
-const project = await eagle.createProject({
+const project = await matrix.createProject({
   name: "Riverside University",
   siteUrl: "https://riverside.edu",
   settings: { allowedOrigins: ["https://riverside.edu"], suggestedQuestions: ["How do I apply?"] },
 });
-const job = await eagle.startCrawl(project.id, { maxPages: 200 });
-await eagle.waitForCrawl(job.id);                    // rejects if the crawl fails or times out
+const job = await matrix.startCrawl(project.id, { maxPages: 200 });
+await matrix.waitForCrawl(job.id);                    // rejects if the crawl fails or times out
 
-console.log((await eagle.chat(project.id, "When is the application deadline?")).answer);
-console.log(await eagle.listFeedback(project.id, "down")); // what visitors found unhelpful
+console.log((await matrix.chat(project.id, "When is the application deadline?")).answer);
+console.log(await matrix.listFeedback(project.id, "down")); // what visitors found unhelpful
 ```
 
 ## Anywhere: chat
 
 ```ts
-import { PublicClient } from "@eagles-eye/sdk";
+import { PublicClient } from "@matrix-eye/sdk";
 const chat = new PublicClient({ baseUrl: "https://api.example.com" }, "PROJECT_ID");
 
 const reply = await chat.chat("How much is tuition?");
@@ -62,7 +62,7 @@ Pass earlier turns as `history: [{ role: "user" | "assistant", content }]` (at m
 
 ## Errors
 
-Every failure is an `EagleEyeError` with `status` (0 if the server was unreachable), a stable `code` and optional `details`:
+Every failure is an `MatrixEyeError` with `status` (0 if the server was unreachable), a stable `code` and optional `details`:
 
 | `code` | Meaning |
 |---|---|

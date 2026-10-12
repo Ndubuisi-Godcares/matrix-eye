@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { afterAll, describe, expect, it } from "vitest";
-import type { Chunk, CrawledPage } from "@eagles-eye/core";
+import type { Chunk, CrawledPage } from "@matrix-eye/core";
 import { SqliteKnowledgeStore, buildMatchQuery, pagePrior, urlWords } from "../src";
 
 const page = (url: string, title: string): CrawledPage => ({ url, canonicalUrl: url, title, description: "d", sections: [], text: "", contentHash: url, fetchedAt: "2026-01-01T00:00:00Z" });
@@ -59,7 +59,7 @@ describe("front page lookup", () => {
 });
 
 describe("schema migration", () => {
-  const dir = mkdtempSync(join(tmpdir(), "eagle-"));
+  const dir = mkdtempSync(join(tmpdir(), "matrix-"));
   afterAll(() => rmSync(dir, { recursive: true, force: true }));
 
   it("rebuilds an older database instead of crashing, keeping non-derived tables", () => {

@@ -1,6 +1,6 @@
 # How it works
 
-A question goes through the same path every time. Understanding it explains both what Eagle's Eye does well and why
+A question goes through the same path every time. Understanding it explains both what Matrix Eye does well and why
 it sometimes says "I couldn't find that".
 
 ```
@@ -14,7 +14,7 @@ pages no link leads to. To be a good guest it:
 
 - obeys `robots.txt`, including crawl delays, and does not crawl at all if it cannot read that file reliably;
 - reads at most about four pages a second, two at a time, and caps pages per crawl, page size and time per page;
-- identifies itself as `EaglesEyeBot`, only sends `GET` requests, and skips pages marked `noindex`;
+- identifies itself as `MatrixEyeBot`, only sends `GET` requests, and skips pages marked `noindex`;
 - ignores copies of the same page (other addresses, filtered views) and keeps the official one.
 
 Sites that draw their content with JavaScript arrive as an empty shell. With rendering switched on, a built-in
@@ -65,7 +65,7 @@ When streaming, the text appears as it is written; the verified version replaces
 
 ## Safety
 
-Eagle's Eye faces unusual risks because it reads other people's pages and shows results to other people's visitors:
+Matrix Eye faces unusual risks because it reads other people's pages and shows results to other people's visitors:
 
 - **Page text is untrusted.** Instruction-like paragraphs ("ignore all previous instructions…") are removed at reading time,
   the rest is fenced off from the model's instructions, and the answer is checked afterwards.

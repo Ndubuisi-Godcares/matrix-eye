@@ -1,7 +1,7 @@
 /**
  * The demo server: the real API plus a tiny web page that embeds the real widget.
  *
- * Purpose: see Eagle's Eye on any website in one command, exactly as a customer's visitors would. It is also the
+ * Purpose: see Matrix Eye on any website in one command, exactly as a customer's visitors would. It is also the
  * page the browser tests drive, so what you see here is what is tested. It is a development tool, not the
  * product's hosting: it serves one project, keeps data in a local file, and allows only its own origin.
  */
@@ -9,16 +9,16 @@ import { randomBytes } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { PageRenderer } from "@eagles-eye/crawler";
-import { Repositories, buildApp, loadConfig } from "@eagles-eye/api";
-import type { SqliteKnowledgeStore } from "@eagles-eye/knowledge";
-import type { LlmProvider } from "@eagles-eye/llm";
+import type { PageRenderer } from "@matrix-eye/crawler";
+import { Repositories, buildApp, loadConfig } from "@matrix-eye/api";
+import type { SqliteKnowledgeStore } from "@matrix-eye/knowledge";
+import type { LlmProvider } from "@matrix-eye/llm";
 import type { FastifyInstance } from "fastify";
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = join(here, "..", "..", "..");
-export const WIDGET_FILE = join(REPO_ROOT, "packages", "widget", "dist", "eagles-eye-widget.js");
-const LOGO_FILE = join(REPO_ROOT, "brand", "eagles-eye-logo-primary.png");
+export const WIDGET_FILE = join(REPO_ROOT, "packages", "widget", "dist", "matrix-eye-widget.js");
+const LOGO_FILE = join(REPO_ROOT, "brand", "matrix-eye-logo-light.png");
 
 export interface DemoOptions {
   store: SqliteKnowledgeStore;
@@ -55,7 +55,7 @@ function demoPage(projectId: string, siteName: string, siteUrl: string, query: R
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Eagle's Eye demo: ${escapeHtml(siteName)}</title>
+<title>Matrix Eye demo: ${escapeHtml(siteName)}</title>
 <style>
   body { font: 16px/1.6 system-ui, sans-serif; margin: 0; color: #14202e; background: #f6f1e7; }
   main { max-width: 760px; margin: 0 auto; padding: 48px 20px 120px; }
@@ -68,12 +68,12 @@ function demoPage(projectId: string, siteName: string, siteUrl: string, query: R
 </head>
 <body>
 <main>
-  <img src="/logo.png" alt="Eagle's Eye">
+  <img src="/logo.png" alt="Matrix Eye">
   <h1>Chat assistant demo for ${escapeHtml(siteName)}</h1>
   <p>This assistant answers from the content of <a href="${escapeHtml(siteUrl)}" rel="noopener noreferrer" target="_blank">${escapeHtml(siteUrl)}</a>
   and cites the pages it used. Open the chat button at the bottom corner and ask a question.</p>
   <p>To add it to any website, paste this before <code>&lt;/body&gt;</code>:</p>
-  <pre>&lt;script src="https://YOUR-HOST/eagles-eye-widget.js" defer
+  <pre>&lt;script src="https://YOUR-HOST/matrix-eye-widget.js" defer
         data-project="${escapeHtml(projectId)}"
         data-api="https://YOUR-API-HOST"&gt;&lt;/script&gt;</pre>
   <p>Try the look: <a href="/?theme=dark">dark</a> · <a href="/?position=left">left side</a> · <a href="/?color=%231b6b4a">green</a> · <a href="/">default</a></p>
@@ -89,7 +89,7 @@ export async function startDemo(options: DemoOptions): Promise<RunningDemo> {
   const say = options.onStatus ?? (() => undefined);
   const apiKey = randomBytes(24).toString("hex"); // required by the API's config; the demo never uses or prints it
 
-  const config = loadConfig({ EAGLE_API_KEY: apiKey, EAGLE_ALLOW_PRIVATE_NETWORKS: String(options.allowPrivateNetworks ?? false), EAGLE_PUBLIC_RATE_LIMIT_PER_MINUTE: "60" });
+  const config = loadConfig({ MATRIX_EYE_API_KEY: apiKey, MATRIX_EYE_ALLOW_PRIVATE_NETWORKS: String(options.allowPrivateNetworks ?? false), MATRIX_EYE_PUBLIC_RATE_LIMIT_PER_MINUTE: "60" });
   const { app, crawls } = await buildApp({ config, store, llm: options.llm ?? null, renderer: options.renderer, crawlDelayMs: options.crawlDelayMs });
 
   // The page is served from this same server, so the widget's own origin is the only one that needs access.
@@ -104,7 +104,7 @@ export async function startDemo(options: DemoOptions): Promise<RunningDemo> {
   app.get("/", async (request, reply) => reply.type("text/html; charset=utf-8").send(demoPage(project.id, siteName, siteUrl, request.query as Record<string, string | undefined>)));
   // Read per request so rebuilding the widget while the demo runs takes effect on refresh.
   app.get("/widget.js", async (_request, reply) => reply.type("application/javascript; charset=utf-8").header("cache-control", "no-store").send(readFileSync(WIDGET_FILE)));
-  app.get("/eagles-eye-widget.js", async (_request, reply) => reply.type("application/javascript; charset=utf-8").send(readFileSync(WIDGET_FILE)));
+  app.get("/matrix-eye-widget.js", async (_request, reply) => reply.type("application/javascript; charset=utf-8").send(readFileSync(WIDGET_FILE)));
   app.get("/logo.png", async (_request, reply) => reply.type("image/png").send(readFileSync(LOGO_FILE)));
 
   say(`Reading ${siteUrl} (up to ${options.maxPages ?? 50} pages)...`);

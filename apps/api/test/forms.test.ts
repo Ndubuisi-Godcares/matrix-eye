@@ -2,21 +2,21 @@
  * The marketing website's waitlist and contact forms: validation, spam defences, privacy requests.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { SqliteKnowledgeStore } from "@eagles-eye/knowledge";
+import { SqliteKnowledgeStore } from "@matrix-eye/knowledge";
 import type { FastifyInstance } from "fastify";
 import { buildApp } from "../src/app";
 import { loadConfig } from "../src/config";
 
 const API_KEY = "test-key-0123456789abcdef";
 const admin = { authorization: `Bearer ${API_KEY}` };
-const SITE = "https://eagleseye.example";
+const SITE = "https://matrixeye.example";
 
 let app: FastifyInstance;
 let store: SqliteKnowledgeStore;
 
 beforeAll(async () => {
   store = new SqliteKnowledgeStore(":memory:");
-  ({ app } = await buildApp({ config: loadConfig({ EAGLE_API_KEY: API_KEY, EAGLE_SITE_ORIGINS: `${SITE},http://localhost:4321`, EAGLE_FORM_RATE_LIMIT_PER_MINUTE: "500" }), store }));
+  ({ app } = await buildApp({ config: loadConfig({ MATRIX_EYE_API_KEY: API_KEY, MATRIX_EYE_SITE_ORIGINS: `${SITE},http://localhost:4321`, MATRIX_EYE_FORM_RATE_LIMIT_PER_MINUTE: "500" }), store }));
 });
 afterAll(async () => {
   await app.close();
@@ -132,7 +132,7 @@ describe("owner tools and privacy requests", () => {
   });
 
   it("rate-limits form submissions per visitor", async () => {
-    const limited = await buildApp({ config: loadConfig({ EAGLE_API_KEY: API_KEY, EAGLE_SITE_ORIGINS: SITE }), store });
+    const limited = await buildApp({ config: loadConfig({ MATRIX_EYE_API_KEY: API_KEY, MATRIX_EYE_SITE_ORIGINS: SITE }), store });
     const codes: number[] = [];
     for (let i = 0; i < 7; i++) {
       codes.push((await limited.app.inject({ method: "POST", url: "/v1/public/waitlist", headers: { origin: SITE }, payload: { email: `rl${i}@example.com`, consent: true } })).statusCode);

@@ -5,7 +5,7 @@
  * ideal for self-hosting and tests); the hosted service will add a PostgreSQL implementation
  * behind the same interface, so nothing above this layer changes. See docs/adr/ADR-002.
  */
-import type { Chunk, CrawledPage, Fact, SearchHit } from "@eagles-eye/core";
+import type { Chunk, CrawledPage, Fact, SearchHit } from "@matrix-eye/core";
 
 export interface StoredPage {
   url: string;

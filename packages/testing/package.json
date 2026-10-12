@@ -1,5 +1,5 @@
 {
-  "name": "@eagles-eye/testing",
+  "name": "@matrix-eye/testing",
   "version": "0.1.0",
   "private": true,
   "description": "Test support: fixture websites and a local server that serves them.",

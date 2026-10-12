@@ -14,7 +14,7 @@ export const DIST = join(SITE_ROOT, "dist");
 const REPO = join(SITE_ROOT, "..", "..");
 
 /** The placeholder production address baked into canonical links until the real domain is chosen. */
-export const SITE_URL = "https://eagleseye.ai";
+export const SITE_URL = "https://matrixeye.ai";
 /** Pages that must stay out of search results and the sitemap (drafts awaiting legal review, and the 404 page). */
 export const UNLISTED = ["/privacy/", "/terms/", "/404.html"];
 

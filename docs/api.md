@@ -1,6 +1,6 @@
 # API reference (v1)
 
-Base URL: `http://localhost:8787`. All `/v1` routes need `Authorization: Bearer <EAGLE_API_KEY>`.
+Base URL: `http://localhost:8787`. All `/v1` routes need `Authorization: Bearer <MATRIX_EYE_API_KEY>`.
 Errors always have the shape `{ "error": { "code": "...", "message": "...", "details"?: [...] } }`.
 
 | Method | Path | Purpose |
@@ -20,8 +20,8 @@ Errors always have the shape `{ "error": { "code": "...", "message": "...", "det
 
 ## Website forms (waitlist and contact)
 
-Used by the marketing website. They need no key but only accept requests from the origins in `EAGLE_SITE_ORIGINS`,
-are rate-limited per visitor (`EAGLE_FORM_RATE_LIMIT_PER_MINUTE`, default 5 a minute), and answer `204` whether or
+Used by the marketing website. They need no key but only accept requests from the origins in `MATRIX_EYE_SITE_ORIGINS`,
+are rate-limited per visitor (`MATRIX_EYE_FORM_RATE_LIMIT_PER_MINUTE`, default 5 a minute), and answer `204` whether or
 not the address was already registered, so they never reveal who is on the list.
 
 | Method | Path | Purpose |
@@ -52,7 +52,7 @@ Called from visitors' browsers, so they take **no API key**. See [How it works](
 
 A browser request is accepted only if its `Origin` is in the project's `allowedOrigins` (or the list contains `"*"`).
 Requests without an Origin header (servers, curl) are accepted. Each visitor is limited per project
-(`EAGLE_PUBLIC_RATE_LIMIT_PER_MINUTE`, default 20). Preflight (`OPTIONS`) answers only for allowed origins.
+(`MATRIX_EYE_PUBLIC_RATE_LIMIT_PER_MINUTE`, default 20). Preflight (`OPTIONS`) answers only for allowed origins.
 
 ### Streaming events
 

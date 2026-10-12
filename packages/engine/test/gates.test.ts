@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { SearchHit } from "@eagles-eye/core";
-import { stem } from "@eagles-eye/core";
+import type { SearchHit } from "@matrix-eye/core";
+import { stem } from "@matrix-eye/core";
 import { containsNumber, expectsNumber, inverseDocumentFrequency, unsupportedKeyTerm } from "../src";
 
 const hit = (text: string, headingPath: string[] = []): SearchHit => ({

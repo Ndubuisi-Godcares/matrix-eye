@@ -2,7 +2,7 @@
  * A tiny static server for the built site (dist/) that behaves like production: same security headers, same caching,
  * directory URLs, the real 404 page. Used by the browser tests and for checking a build by hand:
  *
- *   npm run serve --workspace @eagles-eye/website          (serves http://localhost:4400)
+ *   npm run serve --workspace @matrix-eye/website          (serves http://localhost:4400)
  *
  * It is NOT meant for hosting. It exists so the site is tested with its production headers rather than without.
  */

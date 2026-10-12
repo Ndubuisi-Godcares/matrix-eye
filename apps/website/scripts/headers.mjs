@@ -58,9 +58,9 @@ export function vercelConfig(options = {}) {
   // install from the repository root, so the commands differ by where the Vercel project's Root Directory points.
   const build = {
     // Root Directory left at the repository root (the default).
-    repo: { installCommand: "npm ci", buildCommand: "npm run build -w @eagles-eye/widget && npm run build -w @eagles-eye/website", outputDirectory: "apps/website/dist" },
+    repo: { installCommand: "npm ci", buildCommand: "npm run build -w @matrix-eye/widget && npm run build -w @matrix-eye/website", outputDirectory: "apps/website/dist" },
     // Root Directory set to apps/website.
-    site: { installCommand: "cd ../.. && npm ci", buildCommand: "cd ../.. && npm run build -w @eagles-eye/widget && npm run build -w @eagles-eye/website", outputDirectory: "dist" },
+    site: { installCommand: "cd ../.. && npm ci", buildCommand: "cd ../.. && npm run build -w @matrix-eye/widget && npm run build -w @matrix-eye/website", outputDirectory: "dist" },
   }[options.build ?? "site"];
   return {
     $schema: "https://openapi.vercel.sh/vercel.json",

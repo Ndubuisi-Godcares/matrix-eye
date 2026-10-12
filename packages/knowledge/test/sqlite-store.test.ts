@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import type { Chunk, CrawledPage } from "@eagles-eye/core";
+import type { Chunk, CrawledPage } from "@matrix-eye/core";
 import { SqliteKnowledgeStore, buildMatchQuery } from "../src";
 
 function makePage(url: string, title: string, hash = "h1"): CrawledPage {

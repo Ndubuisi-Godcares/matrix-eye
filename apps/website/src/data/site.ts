@@ -5,19 +5,19 @@
  * obvious in the source so they are not forgotten before launch; `docs/website.md` lists them.
  */
 export const SITE = {
-  name: "Eagle's Eye",
+  name: "Matrix Eye",
   /** Short line used in titles and link previews. */
   tagline: "Turn any website into an assistant that cites its sources",
   /** Under about 160 characters so search results show it whole. */
-  description: "Eagle's Eye reads your website and answers visitors in a chat window, citing the page behind every answer. Self-host it, or use the hosted service when it launches.",
+  description: "Matrix Eye reads your website and answers visitors in a chat window, citing the page behind every answer. Self-host it, or use the hosted service when it launches.",
   /** PLACEHOLDER: replace when the domain is chosen (set PUBLIC_SITE_URL at build time). */
-  url: import.meta.env.PUBLIC_SITE_URL ?? "https://eagleseye.ai",
+  url: import.meta.env.PUBLIC_SITE_URL ?? "https://matrixeye.ai",
   /** PLACEHOLDER: the legal entity that operates the service. Shown on the legal pages. */
   legalEntity: import.meta.env.PUBLIC_LEGAL_ENTITY ?? "[Legal entity name to be added]",
   /** PLACEHOLDER: public contact address. When unset the site offers the contact form only. */
   contactEmail: import.meta.env.PUBLIC_CONTACT_EMAIL as string | undefined,
   /** Name of the crawler, matching the user-agent it sends (see /bot/). */
-  botName: "EaglesEyeBot",
+  botName: "MatrixEyeBot",
   year: 2026,
 } as const;
 
@@ -57,7 +57,7 @@ export const FOOTER_GROUPS: Array<{ title: string; links: NavItem[] }> = [
     title: "Trust",
     links: [
       { label: "Security", href: "/security/" },
-      { label: "Crawler (EaglesEyeBot)", href: "/bot/" },
+      { label: "Crawler (MatrixEyeBot)", href: "/bot/" },
       { label: "Privacy policy (draft)", href: "/privacy/" },
       { label: "Terms (draft)", href: "/terms/" },
     ],

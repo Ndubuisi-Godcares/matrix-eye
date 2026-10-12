@@ -4,10 +4,10 @@
  * Fine for self-hosting and the alpha. The hosted service moves this to a separate worker with a
  * real queue (Phase 4); the contract (start a job, poll its status) stays the same.
  */
-import { EagleError } from "@eagles-eye/core";
-import { ingestSite } from "@eagles-eye/engine";
-import type { PageRenderer } from "@eagles-eye/crawler";
-import type { KnowledgeStore } from "@eagles-eye/knowledge";
+import { MatrixError } from "@matrix-eye/core";
+import { ingestSite } from "@matrix-eye/engine";
+import type { PageRenderer } from "@matrix-eye/crawler";
+import type { KnowledgeStore } from "@matrix-eye/knowledge";
 import type { CrawlJob, Project, Repositories } from "./repositories";
 
 export interface CrawlRequest {
@@ -29,7 +29,7 @@ export class CrawlRunner {
   /** Start a crawl and return immediately with the new (running) job. */
   start(project: Project, request: CrawlRequest): CrawlJob {
     if (this.repos.runningJobFor(project.id)) {
-      throw new EagleError("invalid_request", "A crawl is already running for this project");
+      throw new MatrixError("invalid_request", "A crawl is already running for this project");
     }
     const job = this.repos.createJob(project.id);
     const run = this.execute(job.id, project, request).finally(() => this.inFlight.delete(job.id));

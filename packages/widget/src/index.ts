@@ -4,21 +4,21 @@
  * Three ways to use it, all producing the same window:
  *
  *   1. One script tag (most websites):
- *        <script src="https://cdn.example.com/eagles-eye-widget.js" defer
+ *        <script src="https://cdn.example.com/matrix-eye-widget.js" defer
  *                data-project="PROJECT_ID" data-api="https://api.example.com"></script>
  *
  *   2. The custom element, e.g. from a framework:
- *        <eagles-eye-chat project="PROJECT_ID" api="https://api.example.com"></eagles-eye-chat>
+ *        <matrix-eye-chat project="PROJECT_ID" api="https://api.example.com"></matrix-eye-chat>
  *
  *   3. JavaScript:
- *        const handle = EaglesEye.init({ project: "...", api: "...", color: "#0f2238" });
+ *        const handle = MatrixEye.init({ project: "...", api: "...", color: "#0f2238" });
  *        handle.open();  handle.destroy();
  *
  * Settings are the same everywhere (as data-* attributes on the script, plain attributes on the element, or
  * properties for init()): project, api, position, title, color, accent, theme, greeting, placeholder, open,
  * branding, persist. See docs/widget.md.
  */
-import { PublicClient } from "@eagles-eye/sdk";
+import { PublicClient } from "@matrix-eye/sdk";
 import { ChatWidget, type WidgetOptions } from "./widget";
 
 export { ChatWidget, DEFAULT_LABELS, type ChatClient, type Labels, type WidgetOptions } from "./widget";
@@ -49,7 +49,7 @@ export interface WidgetHandle {
   destroy(): void;
 }
 
-const TAG = "eagles-eye-chat";
+const TAG = "matrix-eye-chat";
 
 const bool = (value: string | null | undefined, fallback: boolean) => (value == null ? fallback : !/^(false|0|no|off)$/i.test(value.trim()));
 const oneOf = <T extends string>(value: string | null | undefined, allowed: readonly T[]): T | undefined => (allowed.includes(value as T) ? (value as T) : undefined);
@@ -59,7 +59,7 @@ function optionsFromAttributes(get: (name: string) => string | null): EmbedOptio
   const project = get("project")?.trim();
   const api = get("api")?.trim();
   if (!project || !api) {
-    console.error("[Eagle's Eye] The widget needs both a project id and an api address (data-project and data-api).");
+    console.error("[Matrix Eye] The widget needs both a project id and an api address (data-project and data-api).");
     return null;
   }
   return {
@@ -85,12 +85,12 @@ function start(root: ShadowRoot, embed: EmbedOptions): ChatWidget {
   return new ChatWidget(root, { projectId: project, position: rest.position, title: rest.title, color: rest.color, accent: rest.accent, theme: rest.theme, greeting: rest.greeting, placeholder: rest.placeholder, startOpen: rest.open, branding: rest.branding, persist: rest.persist, labels: rest.labels }, client);
 }
 
-/** `<eagles-eye-chat>`: a self-contained chat window. Styles are isolated in a Shadow DOM. */
+/** `<matrix-eye-chat>`: a self-contained chat window. Styles are isolated in a Shadow DOM. */
 // `HTMLElement` does not exist on a server. Falling back to an empty class lets this module be imported during
 // server-side rendering (Next.js, Astro...) without crashing; the element is only ever created in a browser.
 const ElementBase: typeof HTMLElement = typeof HTMLElement !== "undefined" ? HTMLElement : (class {} as unknown as typeof HTMLElement);
 
-export class EaglesEyeChatElement extends ElementBase {
+export class MatrixEyeChatElement extends ElementBase {
   private widget: ChatWidget | null = null;
   private embedOptions: EmbedOptions | null = null;
 
@@ -117,11 +117,11 @@ export class EaglesEyeChatElement extends ElementBase {
   }
 }
 
-if (typeof customElements !== "undefined" && !customElements.get(TAG)) customElements.define(TAG, EaglesEyeChatElement);
+if (typeof customElements !== "undefined" && !customElements.get(TAG)) customElements.define(TAG, MatrixEyeChatElement);
 
 /** Create a widget from JavaScript. Returns a handle to control it. */
 export function init(options: EmbedOptions, parent: HTMLElement = document.body): WidgetHandle {
-  const element = document.createElement(TAG) as EaglesEyeChatElement;
+  const element = document.createElement(TAG) as MatrixEyeChatElement;
   element.setOptions(options); // full settings (including labels) go straight to the widget
   parent.appendChild(element); // attaching starts the widget
   const widget = element.chat as ChatWidget;
@@ -151,4 +151,4 @@ if (script?.dataset.project) {
 }
 
 // A global for plain-JavaScript users when loaded as a classic script.
-if (typeof window !== "undefined") (window as unknown as { EaglesEye: unknown }).EaglesEye = { init };
+if (typeof window !== "undefined") (window as unknown as { MatrixEye: unknown }).MatrixEye = { init };

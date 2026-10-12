@@ -10,8 +10,8 @@
  *  2. language-model rewrite (optional): asks the model for a standalone query, and falls back
  *     to the heuristic on any failure so a flaky model never breaks search.
  */
-import { REFERENCE_WORDS, contentWords, tokenize, type ChatTurn } from "@eagles-eye/core";
-import type { LlmProvider } from "@eagles-eye/llm";
+import { REFERENCE_WORDS, contentWords, tokenize, type ChatTurn } from "@matrix-eye/core";
+import type { LlmProvider } from "@matrix-eye/llm";
 
 /** A question with this few content words almost certainly relies on earlier context. */
 const SHORT_QUESTION_TERMS = 2;

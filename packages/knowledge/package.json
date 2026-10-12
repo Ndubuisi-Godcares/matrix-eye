@@ -1,5 +1,5 @@
 {
-  "name": "@eagles-eye/knowledge",
+  "name": "@matrix-eye/knowledge",
   "version": "0.1.0",
   "private": true,
   "description": "Chunking, the knowledge store interface and its SQLite (FTS5/BM25) implementation.",
@@ -9,6 +9,6 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@eagles-eye/core": "0.1.0"
+    "@matrix-eye/core": "0.1.0"
   }
 }

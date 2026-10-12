@@ -8,9 +8,9 @@
  * crawl. A crawl that stopped at the page limit or was aborted has not seen the whole site,
  * so pruning then would wrongly delete pages that merely weren't reached.
  */
-import { crawlSite, type CrawlOptions, type CrawlSummary } from "@eagles-eye/crawler";
-import type { Fact } from "@eagles-eye/core";
-import { chunkPage, type KnowledgeStore } from "@eagles-eye/knowledge";
+import { crawlSite, type CrawlOptions, type CrawlSummary } from "@matrix-eye/crawler";
+import type { Fact } from "@matrix-eye/core";
+import { chunkPage, type KnowledgeStore } from "@matrix-eye/knowledge";
 import { dedupeFacts, factsFromPage } from "./facts";
 
 export interface IngestOptions extends Omit<CrawlOptions, "onPage" | "knownHashes"> {

@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="brand/eagles-eye-logo-primary.png" alt="Eagle's Eye" width="360">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand/matrix-eye-logo-dark.png">
+    <img src="brand/matrix-eye-logo-light.png" alt="Matrix Eye" width="360">
+  </picture>
 </p>
 
 <p align="center"><strong>Turn any website into a source-grounded, conversational assistant.</strong><br>
@@ -43,18 +46,18 @@ npm run typecheck
 ### Try it on a real website (no server, no model needed)
 
 ```bash
-npm run eagle -- crawl https://your-university.edu --max-pages 100
-npm run eagle -- ask "How much is tuition for computer science?"
-npm run eagle -- chat                      # interactive, remembers follow-ups
-npm run eagle -- search "application deadline"
-npm run eagle -- pages
+npm run matrix -- crawl https://your-university.edu --max-pages 100
+npm run matrix -- ask "How much is tuition for computer science?"
+npm run matrix -- chat                      # interactive, remembers follow-ups
+npm run matrix -- search "application deadline"
+npm run matrix -- pages
 ```
 
 Sites built with React/Vue send an empty page until JavaScript runs (the crawl will index 0 pages). Add
 `--render` (one-time setup: `npx playwright install chromium`):
 
 ```bash
-npm run eagle -- crawl https://your-react-site.org --max-pages 30 --render
+npm run matrix -- crawl https://your-react-site.org --max-pages 30 --render
 ```
 
 Without a language model, answers are **extractive**: sentences quoted from the site with their sources. They are accurate
@@ -65,11 +68,11 @@ settings are needed, and they say so when they do (`--no-model` forces quoted an
 
 ```bash
 ollama pull qwen3:4b-instruct          # once: 2.5 GB, Apache-2.0, a NON-thinking model
-npm run eagle -- llm-check             # confirms the model works
-npm run eagle -- chat
+npm run matrix -- llm-check             # confirms the model works
+npm run matrix -- chat
 ```
 
-To use another OpenAI-compatible server (vLLM, LM Studio, a hosted API), set `EAGLE_LLM_BASE_URL` and `EAGLE_LLM_MODEL`;
+To use another OpenAI-compatible server (vLLM, LM Studio, a hosted API), set `MATRIX_EYE_LLM_BASE_URL` and `MATRIX_EYE_LLM_MODEL`;
 explicit settings always win over detection. The API server never auto-detects: a deployment must name its model.
 
 Use non-thinking models; see [ADR-005](docs/adr/ADR-005-language-model-and-ollama.md) for why and for measured results.
@@ -90,7 +93,7 @@ language-model variables above for conversational, streamed answers. Try `?theme
 ### Add the widget to a website
 
 ```html
-<script src="https://YOUR-HOST/eagles-eye-widget.js" defer
+<script src="https://YOUR-HOST/matrix-eye-widget.js" defer
         data-project="PROJECT_ID" data-api="https://YOUR-API-HOST"></script>
 ```
 
@@ -100,9 +103,9 @@ TypeScript client for servers and browsers: [docs/sdk.md](docs/sdk.md).
 ### Run the API
 
 ```bash
-cp .env.example .env     # set EAGLE_API_KEY (16+ chars)
+cp .env.example .env     # set MATRIX_EYE_API_KEY (16+ chars)
 npm run dev:api
-curl -H "authorization: Bearer $EAGLE_API_KEY" -X POST localhost:8787/v1/projects \
+curl -H "authorization: Bearer $MATRIX_EYE_API_KEY" -X POST localhost:8787/v1/projects \
      -H "content-type: application/json" -d '{"name":"My Uni","siteUrl":"https://your-university.edu"}'
 ```
 
@@ -140,7 +143,7 @@ packages/
   widget-react/ React / Next.js component
 apps/
   api/         Fastify HTTP API (admin routes + key-less public routes for the widget)
-  cli/         `eagle` command line tool
+  cli/         `matrix` command line tool
   demo/        `npm run demo`: read a site and chat with it through the real widget
 evals/         labelled questions, scoring, report + CI quality gate
 docs/          website.md, api.md, architecture decision records (adr/), planning PDFs (planning/)
@@ -158,7 +161,7 @@ brand/         logos
 - A single admin API key (per-project keys, quotas and billing come with the hosted service).
 - The widget's origin check stops other *websites* embedding it, not scripts outside a browser; those are rate-limited (ADR-006).
 - Accessibility is tested automatically (axe-core) but not yet with real screen readers.
-- The `eagleseye.ai` addresses (branding link, crawler user-agent) are placeholders until a domain is chosen.
+- The `matrixeye.ai` addresses (branding link, crawler user-agent) are placeholders until a domain is chosen.
 - `node:sqlite` is flagged experimental by Node and prints a warning.
 - English-oriented text processing.
 

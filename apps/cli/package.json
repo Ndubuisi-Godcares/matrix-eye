@@ -1,17 +1,17 @@
 {
-  "name": "@eagles-eye/cli",
+  "name": "@matrix-eye/cli",
   "version": "0.1.0",
   "private": true,
   "description": "Command-line interface: crawl a site, then search it or chat with it.",
   "license": "Apache-2.0",
   "type": "module",
   "bin": {
-    "eagle": "./src/main.ts"
+    "matrix": "./src/main.ts"
   },
   "dependencies": {
-    "@eagles-eye/core": "0.1.0",
-    "@eagles-eye/engine": "0.1.0",
-    "@eagles-eye/knowledge": "0.1.0",
-    "@eagles-eye/llm": "0.1.0"
+    "@matrix-eye/core": "0.1.0",
+    "@matrix-eye/engine": "0.1.0",
+    "@matrix-eye/knowledge": "0.1.0",
+    "@matrix-eye/llm": "0.1.0"
   }
 }

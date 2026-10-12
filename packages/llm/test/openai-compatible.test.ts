@@ -68,8 +68,8 @@ describe("OpenAiCompatibleProvider", () => {
 describe("llmFromEnv and ScriptedProvider", () => {
   it("returns null unless both base URL and model are configured", () => {
     expect(llmFromEnv({})).toBeNull();
-    expect(llmFromEnv({ EAGLE_LLM_BASE_URL: "http://x/v1" })).toBeNull();
-    expect(llmFromEnv({ EAGLE_LLM_BASE_URL: "http://x/v1", EAGLE_LLM_MODEL: "m" })?.name).toBe("openai-compatible:m");
+    expect(llmFromEnv({ MATRIX_EYE_LLM_BASE_URL: "http://x/v1" })).toBeNull();
+    expect(llmFromEnv({ MATRIX_EYE_LLM_BASE_URL: "http://x/v1", MATRIX_EYE_LLM_MODEL: "m" })?.name).toBe("openai-compatible:m");
   });
 
   it("replays scripted replies in order and records requests", async () => {

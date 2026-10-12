@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { SqliteKnowledgeStore } from "@eagles-eye/knowledge";
-import { startFixtureServer, type FixtureServer } from "@eagles-eye/testing";
+import { SqliteKnowledgeStore } from "@matrix-eye/knowledge";
+import { startFixtureServer, type FixtureServer } from "@matrix-eye/testing";
 import { ConversationEngine, ingestSite, isOverviewQuestion } from "../src";
 
 describe("isOverviewQuestion", () => {

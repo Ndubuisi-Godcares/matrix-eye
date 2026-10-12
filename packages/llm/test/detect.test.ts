@@ -63,7 +63,7 @@ describe("resolveLocalModel", () => {
   const detected = async () => ({ baseUrl: "http://localhost:11434/v1", model: "qwen3:4b-instruct" });
 
   it("explicit settings win over detection", async () => {
-    const result = await resolveLocalModel({ env: { EAGLE_LLM_BASE_URL: "http://x/v1", EAGLE_LLM_MODEL: "mine" }, detect: detected });
+    const result = await resolveLocalModel({ env: { MATRIX_EYE_LLM_BASE_URL: "http://x/v1", MATRIX_EYE_LLM_MODEL: "mine" }, detect: detected });
     expect(result.source).toBe("env");
     expect(result.llm?.name).toBe("openai-compatible:mine");
   });
@@ -76,7 +76,7 @@ describe("resolveLocalModel", () => {
 
   it("reports no model when none is configured or found, and when disabled", async () => {
     expect((await resolveLocalModel({ env: {}, detect: async () => null })).source).toBe("none");
-    const off = await resolveLocalModel({ env: { EAGLE_LLM_BASE_URL: "http://x/v1", EAGLE_LLM_MODEL: "m" }, disabled: true, detect: detected });
+    const off = await resolveLocalModel({ env: { MATRIX_EYE_LLM_BASE_URL: "http://x/v1", MATRIX_EYE_LLM_MODEL: "m" }, disabled: true, detect: detected });
     expect(off).toEqual({ llm: null, source: "none" });
   });
 });

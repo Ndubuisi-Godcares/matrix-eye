@@ -5,8 +5,8 @@
  * dropped digit, a plausible-looking invented address). So they are extracted verbatim at
  * crawl time and answered directly from that record, never generated.
  */
-import { type Citation, type CrawledPage, type Fact } from "@eagles-eye/core";
-import type { ExtractedContacts } from "@eagles-eye/crawler";
+import { type Citation, type CrawledPage, type Fact } from "@matrix-eye/core";
+import type { ExtractedContacts } from "@matrix-eye/crawler";
 
 /** Questions asking how to reach the organisation. */
 const CONTACT_INTENT = /\b(contact|e-?mail|phone|telephone|call|reach|get in touch|helpline|hotline)\b/i;

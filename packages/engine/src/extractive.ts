@@ -5,7 +5,7 @@
  * fails validation or the model is unreachable. Because every word comes from the website,
  * it cannot hallucinate — at the cost of sounding like quoted text rather than a conversation.
  */
-import { contentTerms, stem, synonymsOf, tokenize, type SearchHit } from "@eagles-eye/core";
+import { contentTerms, stem, synonymsOf, tokenize, type SearchHit } from "@matrix-eye/core";
 import { containsNumber } from "./answer-type";
 
 export interface ExtractiveAnswer {

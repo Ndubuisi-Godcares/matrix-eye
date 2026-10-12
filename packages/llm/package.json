@@ -1,5 +1,5 @@
 {
-  "name": "@eagles-eye/llm",
+  "name": "@matrix-eye/llm",
   "version": "0.1.0",
   "private": true,
   "description": "Provider-agnostic language-model interface with an OpenAI-compatible implementation.",
@@ -9,6 +9,6 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@eagles-eye/core": "0.1.0"
+    "@matrix-eye/core": "0.1.0"
   }
 }

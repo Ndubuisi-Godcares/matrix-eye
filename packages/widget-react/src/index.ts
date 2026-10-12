@@ -1,20 +1,20 @@
 /**
- * React wrapper for the Eagle's Eye chat widget.
+ * React wrapper for the Matrix Eye chat widget.
  *
- *   import { EaglesEyeChat } from "@eagles-eye/widget-react";
- *   <EaglesEyeChat project="PROJECT_ID" api="https://api.example.com" color="#0f2238" />
+ *   import { MatrixEyeChat } from "@matrix-eye/widget-react";
+ *   <MatrixEyeChat project="PROJECT_ID" api="https://api.example.com" color="#0f2238" />
  *
  * It renders nothing visible itself (the widget floats in a corner) and works with Next.js: the widget code is
  * loaded inside an effect, so it never runs on the server, and the component is safe to import in server code.
  * In the Next.js App Router, use it from a file marked "use client".
  */
 import { createElement, useEffect, useRef, type ReactElement } from "react";
-import type { EmbedOptions, WidgetHandle } from "@eagles-eye/widget";
+import type { EmbedOptions, WidgetHandle } from "@matrix-eye/widget";
 
-export type EaglesEyeChatProps = EmbedOptions;
+export type MatrixEyeChatProps = EmbedOptions;
 
 /** Mounts the chat widget while the component is on screen, and removes it when it unmounts. */
-export function EaglesEyeChat(props: EaglesEyeChatProps): ReactElement {
+export function MatrixEyeChat(props: MatrixEyeChatProps): ReactElement {
   const container = useRef<HTMLDivElement | null>(null);
   // Primitive options are listed individually so the widget is only rebuilt when one actually changes,
   // not on every render (object props such as `labels` are compared by value through JSON).
@@ -27,7 +27,7 @@ export function EaglesEyeChat(props: EaglesEyeChatProps): ReactElement {
     let cancelled = false;
     let handle: WidgetHandle | null = null;
     // Imported here, not at the top: the widget touches browser-only APIs when it loads.
-    void import("@eagles-eye/widget").then((module) => {
+    void import("@matrix-eye/widget").then((module) => {
       if (cancelled) return; // unmounted (or re-rendered with new options) before the code arrived
       handle = module.init({ project, api, position, title, color, accent, theme, greeting, placeholder, open, branding, persist, labels }, parent);
     });
@@ -39,5 +39,5 @@ export function EaglesEyeChat(props: EaglesEyeChatProps): ReactElement {
   }, [project, api, position, title, color, accent, theme, greeting, placeholder, open, branding, persist, labelsKey]);
 
   // An empty, invisible host. The widget positions itself with `position: fixed`.
-  return createElement("div", { ref: container, "data-eagles-eye-host": "" });
+  return createElement("div", { ref: container, "data-matrix-eye-host": "" });
 }

@@ -1,6 +1,6 @@
 ---
 /**
- * Early-access signup. Posts to the Eagle's Eye API (see scripts/forms.ts). The "website" field is a honeypot: it is
+ * Early-access signup. Posts to the Matrix Eye API (see scripts/forms.ts). The "website" field is a honeypot: it is
  * hidden from people but filled by form-spamming bots, which are then silently ignored by the server.
  */
 interface Props {
@@ -43,7 +43,7 @@ const { idPrefix = "wl" } = Astro.props;
     <div class="check">
       <input id={`${idPrefix}-consent`} name="consent" type="checkbox" required aria-describedby={`${idPrefix}-consent-error`} />
       <label for={`${idPrefix}-consent`} style="font-weight: 450; margin: 0;">
-        I agree to be emailed about Eagle's Eye early access. I can ask to be removed at any time. See the <a href="/privacy/">privacy policy (draft)</a>.
+        I agree to be emailed about Matrix Eye early access. I can ask to be removed at any time. See the <a href="/privacy/">privacy policy (draft)</a>.
       </label>
     </div>
     <p class="field-error" id={`${idPrefix}-consent-error`} hidden></p>

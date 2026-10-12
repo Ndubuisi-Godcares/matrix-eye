@@ -8,8 +8,8 @@
  * prompt-injection risk, which is why output is also validated (validate.ts) and the
  * evaluation suite includes hostile pages.
  */
-import { truncate, type ChatTurn, type SearchHit } from "@eagles-eye/core";
-import type { LlmMessage } from "@eagles-eye/llm";
+import { truncate, type ChatTurn, type SearchHit } from "@matrix-eye/core";
+import type { LlmMessage } from "@matrix-eye/llm";
 
 /** The exact phrase the model is told to use when sources lack the answer. */
 export const NO_ANSWER_PHRASE = "I don't have that information";

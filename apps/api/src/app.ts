@@ -7,11 +7,11 @@ import rateLimit from "@fastify/rate-limit";
 import type { OutgoingHttpHeaders } from "node:http";
 import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 import { ZodError } from "zod";
-import { EagleError, type ChatResponse, type ErrorCode } from "@eagles-eye/core";
-import { assertPublicUrl, type PageRenderer } from "@eagles-eye/crawler";
-import { ConversationEngine } from "@eagles-eye/engine";
-import type { SqliteKnowledgeStore } from "@eagles-eye/knowledge";
-import type { LlmProvider } from "@eagles-eye/llm";
+import { MatrixError, type ChatResponse, type ErrorCode } from "@matrix-eye/core";
+import { assertPublicUrl, type PageRenderer } from "@matrix-eye/crawler";
+import { ConversationEngine } from "@matrix-eye/engine";
+import type { SqliteKnowledgeStore } from "@matrix-eye/knowledge";
+import type { LlmProvider } from "@matrix-eye/llm";
 import { createAuthHook } from "./auth";
 import type { AppConfig } from "./config";
 import { CrawlRunner } from "./crawl-runner";
@@ -85,7 +85,7 @@ export async function buildApp(deps: AppDependencies): Promise<BuiltApp> {
     if (err instanceof ZodError) {
       return reply.code(400).send({ error: { code: "invalid_request", message: "Request validation failed", details: err.issues.map((i) => ({ path: i.path.join("."), message: i.message })) } });
     }
-    if (err instanceof EagleError) {
+    if (err instanceof MatrixError) {
       return reply.code(STATUS[err.code] ?? 500).send({ error: { code: err.code, message: err.message } });
     }
     const statusCode = (err as { statusCode?: number }).statusCode;
@@ -103,7 +103,7 @@ export async function buildApp(deps: AppDependencies): Promise<BuiltApp> {
   const requireProject = (rawId: unknown) => {
     const { id } = idParamSchema.parse(rawId);
     const project = repos.getProject(id);
-    if (!project) throw new EagleError("not_found", "Project not found");
+    if (!project) throw new MatrixError("not_found", "Project not found");
     return project;
   };
 
@@ -130,7 +130,7 @@ export async function buildApp(deps: AppDependencies): Promise<BuiltApp> {
 
       v1.delete("/projects/:id", async (request, reply) => {
         const project = requireProject(request.params);
-        if (repos.runningJobFor(project.id)) throw new EagleError("invalid_request", "Cannot delete a project while a crawl is running");
+        if (repos.runningJobFor(project.id)) throw new MatrixError("invalid_request", "Cannot delete a project while a crawl is running");
         store.deleteProject(project.id);
         repos.deleteProject(project.id);
         return reply.code(204).send();
@@ -169,9 +169,9 @@ export async function buildApp(deps: AppDependencies): Promise<BuiltApp> {
 
       v1.delete("/waitlist", async (request, reply) => {
         const email = String((request.query as { email?: string }).email ?? "").trim().toLowerCase();
-        if (!email) throw new EagleError("invalid_request", "Give the address to erase as ?email=");
+        if (!email) throw new MatrixError("invalid_request", "Give the address to erase as ?email=");
         // 404 if absent, so an operator can tell whether the request found anything.
-        if (!repos.deleteWaitlist(email)) throw new EagleError("not_found", "That address is not on the waitlist");
+        if (!repos.deleteWaitlist(email)) throw new MatrixError("not_found", "That address is not on the waitlist");
         return reply.code(204).send();
       });
 
@@ -186,7 +186,7 @@ export async function buildApp(deps: AppDependencies): Promise<BuiltApp> {
       v1.get("/crawls/:id", async (request) => {
         const { id } = idParamSchema.parse(request.params);
         const job = repos.getJob(id);
-        if (!job) throw new EagleError("not_found", "Crawl not found");
+        if (!job) throw new MatrixError("not_found", "Crawl not found");
         return job;
       });
 
@@ -230,7 +230,7 @@ export async function buildApp(deps: AppDependencies): Promise<BuiltApp> {
         const origin = request.headers.origin?.toLowerCase();
         const allowed = project.settings.allowedOrigins;
         if (origin && !allowed.includes("*") && !allowed.includes(origin)) {
-          throw new EagleError("forbidden", "This website is not allowed to use this assistant. Add its origin to the project's allowed origins.");
+          throw new MatrixError("forbidden", "This website is not allowed to use this assistant. Add its origin to the project's allowed origins.");
         }
         return project;
       };
@@ -248,7 +248,7 @@ export async function buildApp(deps: AppDependencies): Promise<BuiltApp> {
       const requireSiteOrigin = (origin: string | undefined) => {
         // Browsers always send Origin on cross-site POSTs. A missing Origin (curl, server code) is allowed;
         // a present but unlisted one is refused so other websites cannot post forms on a visitor's behalf.
-        if (origin && !config.siteOrigins.includes(origin.toLowerCase())) throw new EagleError("forbidden", "This website is not allowed to submit this form.");
+        if (origin && !config.siteOrigins.includes(origin.toLowerCase())) throw new MatrixError("forbidden", "This website is not allowed to submit this form.");
       };
 
       pub.post("/waitlist", { config: formLimit }, async (request, reply) => {
@@ -315,7 +315,7 @@ export async function buildApp(deps: AppDependencies): Promise<BuiltApp> {
           send("final", stripDebug(response));
         } catch (err) {
           if (!abort.signal.aborted) {
-            const known = err instanceof EagleError;
+            const known = err instanceof MatrixError;
             send("error", { code: known ? err.code : "internal", message: known ? err.message : "Something went wrong. Please try again." });
           }
         } finally {

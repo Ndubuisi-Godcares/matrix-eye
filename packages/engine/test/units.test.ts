@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { SearchHit } from "@eagles-eye/core";
-import { ScriptedProvider } from "@eagles-eye/llm";
+import type { SearchHit } from "@matrix-eye/core";
+import { ScriptedProvider } from "@matrix-eye/llm";
 import { answerFromFacts, buildMessages, composeExtractive, coverage, factsFromPage, isContactQuestion, matchRule, rewriteHeuristic, rewriteQuery, selectEvidence, validateAnswer } from "../src";
 
 const hit = (url: string, text: string, score = 1, headingPath: string[] = [], title = "Title"): SearchHit => ({

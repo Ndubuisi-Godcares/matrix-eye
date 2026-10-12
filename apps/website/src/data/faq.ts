@@ -10,7 +10,7 @@ export interface FaqItem {
 
 export const FAQ: FaqItem[] = [
   {
-    q: "What does Eagle's Eye do?",
+    q: "What does Matrix Eye do?",
     a: "<p>It reads your website, builds a searchable index of your pages, and runs a chat window that answers visitors' questions from that content. Every answer links to the pages it came from.</p>",
   },
   {
@@ -31,7 +31,7 @@ export const FAQ: FaqItem[] = [
   },
   {
     q: "Which websites can it read?",
-    a: "<p>Only sites its user owns or has permission to index. It follows <code>robots.txt</code>, identifies itself as <a href=\"/bot/\">EaglesEyeBot</a>, and crawls gently. Private pages behind a login are not read.</p>",
+    a: "<p>Only sites its user owns or has permission to index. It follows <code>robots.txt</code>, identifies itself as <a href=\"/bot/\">MatrixEyeBot</a>, and crawls gently. Private pages behind a login are not read.</p>",
   },
   {
     q: "Which languages does it support?",

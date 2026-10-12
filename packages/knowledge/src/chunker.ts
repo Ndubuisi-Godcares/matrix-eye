@@ -12,7 +12,7 @@
  *  - Merge tiny trailing fragments back into the previous chunk.
  */
 import { createHash } from "node:crypto";
-import { CHUNK_DEFAULTS, wordCount, type Chunk, type CrawledPage } from "@eagles-eye/core";
+import { CHUNK_DEFAULTS, wordCount, type Chunk, type CrawledPage } from "@matrix-eye/core";
 
 export interface ChunkOptions {
   targetWords?: number;

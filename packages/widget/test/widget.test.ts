@@ -3,7 +3,7 @@
  * Widget behaviour, driven through a fake client (no network, no server).
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ChatResponse, PublicConfig, StreamEvent } from "@eagles-eye/sdk";
+import type { ChatResponse, PublicConfig, StreamEvent } from "@matrix-eye/sdk";
 import { ChatWidget, type ChatClient, type WidgetOptions } from "../src/widget";
 
 const CONFIG: PublicConfig = { name: "Riverside University", greeting: null, suggestedQuestions: ["How much is tuition?", "How do I apply?"] };
@@ -449,7 +449,7 @@ describe("saved conversations", () => {
     q<HTMLButtonElement>('[aria-label="Start a new conversation"]').click();
     await tick();
     expect(all(".ee-user")).toHaveLength(0);
-    expect(storage.getItem("eagles-eye:p1")).toBeNull();
+    expect(storage.getItem("matrix-eye:p1")).toBeNull();
     expect(bubbles()[0]).toContain("Hi!");
   });
 
@@ -474,11 +474,11 @@ describe("saved conversations", () => {
   });
 
   it("ignores corrupted saved data instead of crashing", async () => {
-    storage.setItem("eagles-eye:p1", "{not json");
+    storage.setItem("matrix-eye:p1", "{not json");
     mount(fakeClient(), { startOpen: true });
     await tick();
     expect(bubbles()[0]).toContain("Hi!");
-    storage.setItem("eagles-eye:p1", JSON.stringify([{ role: "hacker", text: 5 }, { role: "user", text: "ok" }]));
+    storage.setItem("matrix-eye:p1", JSON.stringify([{ role: "hacker", text: 5 }, { role: "user", text: "ok" }]));
     widget!.destroy();
     root = document.createElement("div").attachShadow({ mode: "open" });
     mount(fakeClient(), { startOpen: true });

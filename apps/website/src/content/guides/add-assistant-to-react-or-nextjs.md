@@ -6,7 +6,7 @@ tags: ["react", "nextjs", "tutorial"]
 ---
 
 This walkthrough adds a chat assistant that answers from your own website to a React or Next.js app. It assumes
-Eagle's Eye is running (see the [quickstart](/docs/quickstart/)) and that you have the address of your API and your
+Matrix Eye is running (see the [quickstart](/docs/quickstart/)) and that you have the address of your API and your
 admin key.
 
 ## 1. Create a project and read your site
@@ -14,11 +14,11 @@ admin key.
 Do this once, from a script on your computer or server, never in browser code, because it uses your secret key.
 
 ```ts
-import { EagleEyeClient } from "@eagles-eye/sdk";
+import { MatrixEyeClient } from "@matrix-eye/sdk";
 
-const eagle = new EagleEyeClient({ baseUrl: "https://api.example.com", apiKey: process.env.EAGLE_API_KEY });
+const matrix = new MatrixEyeClient({ baseUrl: "https://api.example.com", apiKey: process.env.MATRIX_EYE_API_KEY });
 
-const project = await eagle.createProject({
+const project = await matrix.createProject({
   name: "Example Store",
   siteUrl: "https://www.example.com",
   settings: {
@@ -28,7 +28,7 @@ const project = await eagle.createProject({
   },
 });
 
-await eagle.waitForCrawl((await eagle.startCrawl(project.id)).id);
+await matrix.waitForCrawl((await matrix.startCrawl(project.id)).id);
 console.log(project.id); // you will need this next
 ```
 
@@ -42,10 +42,10 @@ In Next.js (App Router), the chat window runs in the browser, so use it from a c
 ```tsx
 // app/assistant.tsx
 "use client";
-import { EaglesEyeChat } from "@eagles-eye/widget-react";
+import { MatrixEyeChat } from "@matrix-eye/widget-react";
 
 export default function Assistant() {
-  return <EaglesEyeChat project="YOUR_PROJECT_ID" api="https://api.example.com" color="#0f2238" />;
+  return <MatrixEyeChat project="YOUR_PROJECT_ID" api="https://api.example.com" color="#0f2238" />;
 }
 ```
 
@@ -73,7 +73,7 @@ browser. In a plain React app, import it the same way.
 For any other site, including WordPress, this is enough, placed just before `</body>`:
 
 ```html
-<script src="https://YOUR-HOST/eagles-eye-widget.js" defer
+<script src="https://YOUR-HOST/matrix-eye-widget.js" defer
         data-project="YOUR_PROJECT_ID"
         data-api="https://api.example.com"></script>
 ```
@@ -89,7 +89,7 @@ For any other site, including WordPress, this is enough, placed just before `</b
 ## 5. Improve it from real use
 
 ```ts
-const unhappy = await eagle.listFeedback(project.id, "down");
+const unhappy = await matrix.listFeedback(project.id, "down");
 for (const item of unhappy) console.log(item.question, "->", item.answer);
 ```
 

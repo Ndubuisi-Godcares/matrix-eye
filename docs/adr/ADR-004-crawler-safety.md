@@ -5,7 +5,7 @@
 
 ## Context
 
-Eagle's Eye fetches URLs supplied by users. That is a server-side request forgery (SSRF) risk, and
+Matrix Eye fetches URLs supplied by users. That is a server-side request forgery (SSRF) risk, and
 crawling other people's sites carries ethical and legal expectations.
 
 ## Decision
@@ -20,12 +20,12 @@ crawling other people's sites carries ethical and legal expectations.
 - Redirects are followed manually (max 5), each re-validated and required to stay on the same site.
 - Responses are streamed with a **hard size cap** (2 MB) and a request timeout; binary types are not
   downloaded.
-- `EAGLE_ALLOW_PRIVATE_NETWORKS=true` lifts the guard for trusted development machines only.
+- `MATRIX_EYE_ALLOW_PRIVATE_NETWORKS=true` lifts the guard for trusted development machines only.
 
 **Politeness**
 
 - Obey `robots.txt` (4xx = allowed, 5xx/unreachable = treated as disallowed for the run) and `Crawl-delay`.
-- Identify as `EaglesEyeBot` with a documentation URL; low concurrency (2) and a minimum request gap.
+- Identify as `MatrixEyeBot` with a documentation URL; low concurrency (2) and a minimum request gap.
 - Respect `noindex` and `rel=nofollow`. Strip tracking parameters; de-duplicate by canonical URL.
 - Only crawl the site the user supplies (www and bare domain count as one site).
 - Product terms must require users to crawl only sites they own or are authorised to index.

@@ -1,7 +1,7 @@
 /**
  * Generates public/og.png (1200x630), the image shown when a link to the site is shared.
  * It is drawn in a real browser from the logo and the site's own heading font so it matches the brand exactly.
- * Re-run after changing the tagline or logo:  npm run og --workspace @eagles-eye/website
+ * Re-run after changing the tagline or logo:  npm run og --workspace @matrix-eye/website
  */
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -24,8 +24,8 @@ body { background: #fbf9f4; position: relative; overflow: hidden; font-family: "
 .glow { position: absolute; right: -200px; top: -250px; width: 900px; height: 900px; border-radius: 50%; background: radial-gradient(closest-side, rgba(193,154,91,.30), rgba(193,154,91,0)); }
 .bar { position: absolute; left: 0; top: 0; bottom: 0; width: 14px; background: #c19a5b; }
 .wrap { position: absolute; left: 90px; top: 70px; right: 90px; bottom: 70px; display: flex; flex-direction: column; justify-content: space-between; }
-img { height: 150px; width: auto; align-self: flex-start; }
-h1 { font-family: "F", serif; font-weight: 580; font-size: 78px; line-height: 1.06; letter-spacing: -0.02em; margin: 0; max-width: 980px; }
+img { height: 165px; width: auto; align-self: flex-start; }
+h1 { font-family: "F", serif; font-weight: 580; font-size: 66px; line-height: 1.08; letter-spacing: -0.02em; margin: 0; max-width: 1020px; }
 p { margin: 0; font-size: 30px; color: #55616f; }
 </style></head><body><div class="glow"></div><div class="bar"></div>
 <div class="wrap"><img src="${logo}" alt=""><h1>An assistant for your website that shows its sources</h1><p>Answers from your own pages, with a link to each one. Early access.</p></div>

@@ -3,9 +3,9 @@
  * A scripted model stands in for a real LLM so behaviour is deterministic.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { ScriptedProvider } from "@eagles-eye/llm";
-import { SqliteKnowledgeStore } from "@eagles-eye/knowledge";
-import { startFixtureServer, type FixtureServer } from "@eagles-eye/testing";
+import { ScriptedProvider } from "@matrix-eye/llm";
+import { SqliteKnowledgeStore } from "@matrix-eye/knowledge";
+import { startFixtureServer, type FixtureServer } from "@matrix-eye/testing";
 import { ConversationEngine, ingestSite } from "../src";
 
 let server: FixtureServer;

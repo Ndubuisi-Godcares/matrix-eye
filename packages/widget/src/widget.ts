@@ -12,7 +12,7 @@
  *  - Colours meet WCAG AA, focus rings are always visible, animations stop under prefers-reduced-motion, and on
  *    narrow screens the panel becomes a full-screen sheet.
  */
-import type { ChatTurn, Citation, PublicConfig, StreamEvent } from "@eagles-eye/sdk";
+import type { ChatTurn, Citation, PublicConfig, StreamEvent } from "@matrix-eye/sdk";
 import { luminance, normalizeHex, readableTextOn } from "./colors";
 import { renderAnswer, renderSources } from "./render";
 import { CSS } from "./styles";
@@ -29,9 +29,9 @@ export interface WidgetOptions {
   position?: "right" | "left";
   /** Header title. Defaults to the project's name. */
   title?: string;
-  /** Brand colour for the header, launcher and your messages (#rgb or #rrggbb). Default: Eagle's Eye navy. */
+  /** Brand colour for the header, launcher and your messages (#rgb or #rrggbb). Default: Matrix Eye navy. */
   color?: string;
-  /** Accent colour for borders and highlights. Default: Eagle's Eye gold. */
+  /** Accent colour for borders and highlights. Default: Matrix Eye gold. */
   accent?: string;
   theme?: "light" | "dark" | "auto";
   /** Opening message. Defaults to the project's greeting, then a generic one. */
@@ -39,7 +39,7 @@ export interface WidgetOptions {
   placeholder?: string;
   /** Open the window immediately. */
   startOpen?: boolean;
-  /** Show the "Powered by Eagle's Eye" line. */
+  /** Show the "Powered by Matrix Eye" line. */
   branding?: boolean;
   /** Keep the conversation for the browser tab (sessionStorage) so a page reload does not lose it. */
   persist?: boolean;
@@ -141,7 +141,7 @@ export class ChatWidget {
   ) {
     this.doc = root.ownerDocument;
     this.labels = { ...DEFAULT_LABELS, ...options.labels };
-    this.storageKey = `eagles-eye:${options.projectId}`;
+    this.storageKey = `matrix-eye:${options.projectId}`;
     this.build();
     this.restore();
     void this.loadConfig();
@@ -329,8 +329,8 @@ export class ChatWidget {
     this.panel.append(head, this.log, this.suggestions, form, this.announcer);
     if (options.branding !== false) {
       const brand = this.el("div", "ee-brand", `${labels.poweredBy} `);
-      const link = this.el("a", undefined, "Eagle's Eye");
-      link.href = "https://eagleseye.ai";
+      const link = this.el("a", undefined, "Matrix Eye");
+      link.href = "https://matrixeye.ai";
       link.target = "_blank";
       link.rel = "noopener noreferrer";
       brand.appendChild(link);
@@ -386,7 +386,7 @@ export class ChatWidget {
         this.input.disabled = true;
         this.sendButton.disabled = true;
         this.notice(this.labels.errorForbidden);
-        console.warn("[Eagle's Eye] This website's origin is not in the project's allowed origins. Add it in the project settings.");
+        console.warn("[Matrix Eye] This website's origin is not in the project's allowed origins. Add it in the project settings.");
       }
       // Any other failure (offline, server down) is not fatal: the widget still opens and reports errors per question.
     }

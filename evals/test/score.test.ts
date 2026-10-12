@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ChatResponse } from "@eagles-eye/core";
+import type { ChatResponse } from "@matrix-eye/core";
 import { checkTargets, computeMetrics, scoreItem, type EvalItem } from "../src/score";
 
 const response = (over: Partial<ChatResponse> = {}): ChatResponse => ({

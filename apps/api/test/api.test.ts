@@ -2,9 +2,9 @@
  * API tests: the whole HTTP surface, in memory, against the education fixture website.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { SqliteKnowledgeStore } from "@eagles-eye/knowledge";
-import { ScriptedProvider } from "@eagles-eye/llm";
-import { startFixtureServer, type FixtureServer } from "@eagles-eye/testing";
+import { SqliteKnowledgeStore } from "@matrix-eye/knowledge";
+import { ScriptedProvider } from "@matrix-eye/llm";
+import { startFixtureServer, type FixtureServer } from "@matrix-eye/testing";
 import type { FastifyInstance } from "fastify";
 import { buildApp } from "../src/app";
 import { keysMatch } from "../src/auth";
@@ -23,7 +23,7 @@ let projectId: string;
 beforeAll(async () => {
   fixture = await startFixtureServer();
   store = new SqliteKnowledgeStore(":memory:");
-  const config = loadConfig({ EAGLE_API_KEY: API_KEY, EAGLE_ALLOW_PRIVATE_NETWORKS: "true", EAGLE_CORS_ORIGINS: "https://client.example" });
+  const config = loadConfig({ MATRIX_EYE_API_KEY: API_KEY, MATRIX_EYE_ALLOW_PRIVATE_NETWORKS: "true", MATRIX_EYE_CORS_ORIGINS: "https://client.example" });
   ({ app, crawls } = await buildApp({ config, store, crawlDelayMs: 0 }));
 });
 afterAll(async () => {
@@ -70,7 +70,7 @@ describe("projects", () => {
   });
 
   it("refuses private site URLs when private networks are not allowed", async () => {
-    const strict = await buildApp({ config: loadConfig({ EAGLE_API_KEY: API_KEY }), store: new SqliteKnowledgeStore(":memory:") });
+    const strict = await buildApp({ config: loadConfig({ MATRIX_EYE_API_KEY: API_KEY }), store: new SqliteKnowledgeStore(":memory:") });
     const res = await strict.app.inject({ method: "POST", url: "/v1/projects", headers: auth, payload: { name: "Evil", siteUrl: "http://169.254.169.254/" } });
     expect(res.statusCode).toBe(400);
     expect(res.json().error.code).toBe("blocked_url");
@@ -180,7 +180,7 @@ describe("crawl, search and chat", () => {
 describe("chat with a language model", () => {
   it("uses the model and shows the model name on /health", async () => {
     const llm = new ScriptedProvider(["Computer Science costs $4,500 per year [1]."]);
-    const config = loadConfig({ EAGLE_API_KEY: API_KEY, EAGLE_ALLOW_PRIVATE_NETWORKS: "true" });
+    const config = loadConfig({ MATRIX_EYE_API_KEY: API_KEY, MATRIX_EYE_ALLOW_PRIVATE_NETWORKS: "true" });
     const withModel = await buildApp({ config, store, llm });
     const res = await withModel.app.inject({ method: "POST", url: `/v1/projects/${projectId}/chat`, headers: auth, payload: { message: "How much is tuition for computer science?" } });
     expect(res.json().route).toBe("llm");
@@ -198,8 +198,8 @@ describe("cors, config and deletion", () => {
   });
 
   it("refuses to start with a weak or missing API key", () => {
-    expect(() => loadConfig({})).toThrowError(/EAGLE_API_KEY/);
-    expect(() => loadConfig({ EAGLE_API_KEY: "short" })).toThrowError(/at least 16/);
+    expect(() => loadConfig({})).toThrowError(/MATRIX_EYE_API_KEY/);
+    expect(() => loadConfig({ MATRIX_EYE_API_KEY: "short" })).toThrowError(/at least 16/);
   });
 
   it("deletes a project and all its knowledge", async () => {

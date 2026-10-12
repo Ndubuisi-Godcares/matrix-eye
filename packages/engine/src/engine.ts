@@ -13,9 +13,9 @@
  *
  * The invariant: any factual answer returned is backed by at least one cited passage.
  */
-import { ANSWER_DEFAULTS, EagleError, truncate, type ChatDebug, type ChatResponse, type ChatTurn, type Citation, type Rule, type SearchHit } from "@eagles-eye/core";
-import type { KnowledgeStore } from "@eagles-eye/knowledge";
-import type { LlmProvider } from "@eagles-eye/llm";
+import { ANSWER_DEFAULTS, MatrixError, truncate, type ChatDebug, type ChatResponse, type ChatTurn, type Citation, type Rule, type SearchHit } from "@matrix-eye/core";
+import type { KnowledgeStore } from "@matrix-eye/knowledge";
+import type { LlmProvider } from "@matrix-eye/llm";
 import { containsNumber, expectsNumber } from "./answer-type";
 import { answerFromFacts, isContactQuestion } from "./facts";
 import { composeExtractive } from "./extractive";
@@ -81,7 +81,7 @@ export class ConversationEngine {
     };
 
     const question = input.question.trim().slice(0, MAX_QUESTION_CHARS);
-    if (!question) throw new EagleError("invalid_request", "Question must not be empty");
+    if (!question) throw new MatrixError("invalid_request", "Question must not be empty");
     const history = (input.history ?? []).slice(-this.tuning.historyTurns);
     const siteName = input.siteName ?? "this website";
 

@@ -1,10 +1,10 @@
 /**
  * Process entry point: load config, open the database, start listening, shut down cleanly.
  *
- *   EAGLE_API_KEY=... npm run dev:api
+ *   MATRIX_EYE_API_KEY=... npm run dev:api
  */
-import { SqliteKnowledgeStore } from "@eagles-eye/knowledge";
-import { llmFromEnv } from "@eagles-eye/llm";
+import { SqliteKnowledgeStore } from "@matrix-eye/knowledge";
+import { llmFromEnv } from "@matrix-eye/llm";
 import { buildApp } from "./app";
 import { loadConfig } from "./config";
 

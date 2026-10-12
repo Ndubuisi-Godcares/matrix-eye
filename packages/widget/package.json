@@ -1,8 +1,8 @@
 {
-  "name": "@eagles-eye/widget",
+  "name": "@matrix-eye/widget",
   "version": "0.1.0",
   "private": true,
-  "description": "Embeddable chat widget (web component) for Eagle's Eye.",
+  "description": "Embeddable chat widget (web component) for Matrix Eye.",
   "license": "Apache-2.0",
   "type": "module",
   "exports": {
@@ -12,6 +12,6 @@
     "build": "node scripts/build.mjs"
   },
   "dependencies": {
-    "@eagles-eye/sdk": "0.1.0"
+    "@matrix-eye/sdk": "0.1.0"
   }
 }

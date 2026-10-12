@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { startFixtureServer, type FixtureServer } from "@eagles-eye/testing";
-import { EagleError } from "@eagles-eye/core";
+import { startFixtureServer, type FixtureServer } from "@matrix-eye/testing";
+import { MatrixError } from "@matrix-eye/core";
 import { HttpFetcher, assertPublicUrl, isBlockedAddress } from "../src";
 
 describe("isBlockedAddress", () => {
@@ -34,7 +34,7 @@ describe("isBlockedAddress", () => {
 describe("assertPublicUrl", () => {
   it("rejects internal hosts and private literals", () => {
     for (const url of ["http://localhost:3000", "http://127.0.0.1", "http://[::1]/", "http://169.254.169.254/latest", "http://printer.local/", "http://db.internal/"]) {
-      expect(() => assertPublicUrl(url), url).toThrowError(EagleError);
+      expect(() => assertPublicUrl(url), url).toThrowError(MatrixError);
     }
   });
 
@@ -69,8 +69,8 @@ describe("HttpFetcher safety limits", () => {
   it("re-validates every redirect hop (public page redirecting to metadata IP)", async () => {
     const fetcher = new HttpFetcher({ allowPrivateNetworks: false });
     // Even though the first hop is the (blocked) local server here, the redirect target alone must also be rejected.
-    expect(() => assertPublicUrl("http://169.254.169.254/latest/meta-data/")).toThrowError(EagleError);
-    await expect(fetcher.get(`${server.baseUrl}/_test/redirect-private`)).rejects.toBeInstanceOf(EagleError);
+    expect(() => assertPublicUrl("http://169.254.169.254/latest/meta-data/")).toThrowError(MatrixError);
+    await expect(fetcher.get(`${server.baseUrl}/_test/redirect-private`)).rejects.toBeInstanceOf(MatrixError);
   });
 
   it("stops reading bodies larger than the cap", async () => {

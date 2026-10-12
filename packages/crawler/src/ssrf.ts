@@ -1,7 +1,7 @@
 /**
  * Server-side request forgery (SSRF) protection.
  *
- * Eagle's Eye fetches URLs supplied by users. Without a guard, someone could point the
+ * Matrix Eye fetches URLs supplied by users. Without a guard, someone could point the
  * crawler at http://169.254.169.254/ (cloud metadata), http://localhost:5432/ or an
  * internal admin panel and read the response back through the chatbot.
  *
@@ -16,7 +16,7 @@
 import dns from "node:dns";
 import { BlockList, isIP } from "node:net";
 import { Agent } from "undici";
-import { EagleError } from "@eagles-eye/core";
+import { MatrixError } from "@matrix-eye/core";
 
 /** Address ranges that must never be reachable from the crawler. */
 const blocked = new BlockList();
@@ -60,19 +60,19 @@ export function assertPublicUrl(rawUrl: string, allowPrivate = false): URL {
   try {
     url = new URL(rawUrl);
   } catch {
-    throw new EagleError("invalid_url", `Not a valid URL: ${rawUrl}`);
+    throw new MatrixError("invalid_url", `Not a valid URL: ${rawUrl}`);
   }
   if (url.protocol !== "http:" && url.protocol !== "https:") {
-    throw new EagleError("invalid_url", `Only http and https URLs can be crawled (got ${url.protocol})`);
+    throw new MatrixError("invalid_url", `Only http and https URLs can be crawled (got ${url.protocol})`);
   }
   if (allowPrivate) return url;
 
   const host = url.hostname.replace(/^\[|\]$/g, "").toLowerCase();
   if (host === "localhost" || host.endsWith(".localhost") || host.endsWith(".internal") || host.endsWith(".local")) {
-    throw new EagleError("blocked_url", `Refusing to crawl internal host: ${host}`);
+    throw new MatrixError("blocked_url", `Refusing to crawl internal host: ${host}`);
   }
   if (isIP(host) !== 0 && isBlockedAddress(host)) {
-    throw new EagleError("blocked_url", `Refusing to crawl private address: ${host}`);
+    throw new MatrixError("blocked_url", `Refusing to crawl private address: ${host}`);
   }
   return url;
 }
@@ -92,12 +92,12 @@ export function createGuardedDispatcher(allowPrivate = false): Agent {
           if (!allowPrivate) {
             const bad = list.find((a) => isBlockedAddress(a.address));
             if (bad) {
-              return callback(new EagleError("blocked_url", `${hostname} resolves to a private address (${bad.address})`));
+              return callback(new MatrixError("blocked_url", `${hostname} resolves to a private address (${bad.address})`));
             }
           }
           if (options.all) return callback(null, list);
           const first = list[0];
-          if (!first) return callback(new EagleError("fetch_failed", `No address found for ${hostname}`));
+          if (!first) return callback(new MatrixError("fetch_failed", `No address found for ${hostname}`));
           return callback(null, first.address, first.family);
         });
       }) as never,

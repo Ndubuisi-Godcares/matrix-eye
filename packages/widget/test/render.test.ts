@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
-import type { Citation } from "@eagles-eye/sdk";
+import type { Citation } from "@matrix-eye/sdk";
 import { contrast, normalizeHex, readableTextOn } from "../src/colors";
 import { hostOf, renderAnswer, renderSources, safeUrl } from "../src/render";
 

@@ -2,4 +2,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://eagleseye.ai/sitemap-index.xml
+Sitemap: https://matrixeye.ai/sitemap-index.xml

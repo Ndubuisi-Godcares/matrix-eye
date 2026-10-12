@@ -23,7 +23,7 @@ export const CRAWL_DEFAULTS = {
   maxRedirects: 5,
   /** Pages with less extracted text than this are treated as "probably needs JavaScript". */
   minTextChars: 200,
-  userAgent: "EaglesEyeBot/0.1 (+https://eagleseye.ai/bot)",
+  userAgent: "MatrixEyeBot/0.1 (+https://matrixeye.ai/bot)",
 } as const;
 
 /** Chunking targets, in words. */

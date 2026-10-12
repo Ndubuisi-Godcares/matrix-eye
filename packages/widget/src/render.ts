@@ -10,7 +10,7 @@
  * Supported formatting is deliberately tiny: paragraphs, "- " lists, "1. " lists, **bold**, and [n] citation
  * markers (which become superscript links to the cited page).
  */
-import type { Citation } from "@eagles-eye/sdk";
+import type { Citation } from "@matrix-eye/sdk";
 
 /** Returns the URL only if it is a plain http(s) address; anything else (javascript:, data:, ...) is refused. */
 export function safeUrl(raw: string): string | null {

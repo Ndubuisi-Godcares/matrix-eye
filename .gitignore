@@ -22,7 +22,7 @@ Thumbs.db
 packages/widget/test/__screenshots__/
 
 # Copied from packages/widget at build time
-apps/website/public/eagles-eye-widget.js
+apps/website/public/matrix-eye-widget.js
 # Built site and search index
 apps/website/dist/
 apps/website/.astro/

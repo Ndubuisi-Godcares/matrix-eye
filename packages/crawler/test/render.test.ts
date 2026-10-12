@@ -3,7 +3,7 @@
  * installed locally; CI installs it, so they always run there.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { startFixtureServer, type FixtureServer } from "@eagles-eye/testing";
+import { startFixtureServer, type FixtureServer } from "@matrix-eye/testing";
 import { crawlSite, createPlaywrightRenderer, createRequestGuard, extractPage, type PageRenderer } from "../src";
 
 describe("request guard (no browser needed)", () => {

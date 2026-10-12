@@ -7,7 +7,7 @@
  */
 import { randomUUID } from "node:crypto";
 import type { DatabaseSync } from "node:sqlite";
-import type { Rule } from "@eagles-eye/core";
+import type { Rule } from "@matrix-eye/core";
 
 /** Settings that shape how a project appears on a website. Stored as one JSON document. */
 export interface ProjectSettings {

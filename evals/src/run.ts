@@ -6,17 +6,17 @@
  *   npm run eval -- --url <url> --dataset <file>
  *                                evaluate against a live site instead of the built-in fixture
  *
- * Uses the language model from EAGLE_LLM_* environment variables when set; otherwise the
+ * Uses the language model from MATRIX_EYE_LLM_* environment variables when set; otherwise the
  * deterministic extractive mode, so the gate can run in CI with no model and no network.
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { fileURLToPath } from "node:url";
-import { ConversationEngine, ingestSite, validateAnswer } from "@eagles-eye/engine";
-import { SqliteKnowledgeStore } from "@eagles-eye/knowledge";
-import { llmFromEnv } from "@eagles-eye/llm";
-import { startFixtureServer } from "@eagles-eye/testing";
+import { ConversationEngine, ingestSite, validateAnswer } from "@matrix-eye/engine";
+import { SqliteKnowledgeStore } from "@matrix-eye/knowledge";
+import { llmFromEnv } from "@matrix-eye/llm";
+import { startFixtureServer } from "@matrix-eye/testing";
 import { TARGETS, checkTargets, computeMetrics, pct, scoreItem, type EvalItem, type ItemResult } from "./score";
 
 const here = dirname(fileURLToPath(import.meta.url));

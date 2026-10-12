@@ -1,8 +1,8 @@
 {
-  "name": "@eagles-eye/widget-react",
+  "name": "@matrix-eye/widget-react",
   "version": "0.1.0",
   "private": true,
-  "description": "React component that adds the Eagle's Eye chat widget to a page (Next.js safe).",
+  "description": "React component that adds the Matrix Eye chat widget to a page (Next.js safe).",
   "license": "Apache-2.0",
   "type": "module",
   "exports": {
@@ -12,7 +12,7 @@
     "build": "node scripts/build.mjs"
   },
   "dependencies": {
-    "@eagles-eye/widget": "0.1.0"
+    "@matrix-eye/widget": "0.1.0"
   },
   "peerDependencies": {
     "react": ">=18"

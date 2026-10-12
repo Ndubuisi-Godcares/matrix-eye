@@ -7,7 +7,7 @@
  * Pages are streamed to the caller through `onPage` rather than collected in memory, so a
  * large site does not need to fit in RAM and indexing can start immediately.
  */
-import { CRAWL_DEFAULTS, EagleError, type CrawledPage } from "@eagles-eye/core";
+import { CRAWL_DEFAULTS, MatrixError, type CrawledPage } from "@matrix-eye/core";
 import { HttpFetcher } from "./fetcher";
 import { RobotsPolicy } from "./robots";
 import { collectSitemapUrls } from "./sitemap";
@@ -76,7 +76,7 @@ export async function crawlSite(options: CrawlOptions): Promise<CrawlSummary> {
 
   // Fail fast, before any network traffic, on unsafe or malformed start URLs.
   const normalizedStart = normalizeUrl(assertPublicUrl(options.startUrl, allowPrivate).toString());
-  if (!normalizedStart) throw new EagleError("invalid_url", `Not a crawlable URL: ${options.startUrl}`);
+  if (!normalizedStart) throw new MatrixError("invalid_url", `Not a crawlable URL: ${options.startUrl}`);
   // Re-bound as a plain `string` so the narrowing also holds inside the nested functions below.
   const startUrl: string = normalizedStart;
 
@@ -113,10 +113,10 @@ export async function crawlSite(options: CrawlOptions): Promise<CrawlSummary> {
 
   const startRobots = await robotsFor(startUrl);
   if (startRobots.denyAll) {
-    throw new EagleError("robots_disallowed", "robots.txt could not be read reliably, so the crawl was not started");
+    throw new MatrixError("robots_disallowed", "robots.txt could not be read reliably, so the crawl was not started");
   }
   if (!startRobots.isAllowed(startUrl)) {
-    throw new EagleError("robots_disallowed", `robots.txt disallows crawling ${startUrl}`);
+    throw new MatrixError("robots_disallowed", `robots.txt disallows crawling ${startUrl}`);
   }
   // A site's own Crawl-delay is respected, but never lowered below our floor.
   const delayMs = Math.max(options.delayMs ?? CRAWL_DEFAULTS.delayMs, (startRobots.crawlDelaySeconds() ?? 0) * 1000);

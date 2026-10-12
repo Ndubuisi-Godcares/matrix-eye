@@ -107,7 +107,7 @@ describe("structure and links", () => {
         ...$('link[href]:not([rel="canonical"]):not([rel="alternate"])').toArray().map((el) => ["stylesheet or icon", $(el).attr("href")!] as const),
       ];
       for (const [kind, raw] of references) {
-        if (/^(mailto:|tel:|https?:\/\/(?!eagleseye\.ai))/.test(raw) || raw.startsWith("data:")) continue;
+        if (/^(mailto:|tel:|https?:\/\/(?!matrixeye\.ai))/.test(raw) || raw.startsWith("data:")) continue;
         const local = raw.replace(SITE_URL, "");
         const target = local.startsWith("#") ? path : local.split("#")[0]!;
         expect(fileFor(target), `${path}: broken ${kind} -> ${raw}`).not.toBeNull();
@@ -145,8 +145,9 @@ describe("weight budgets (gzipped)", () => {
   });
 
   it("keeps images small enough for a fast first view", () => {
-    expect(readFileSync(join(DIST, "brand/logo-light.webp")).length).toBeLessThan(90 * 1024);
-    expect(readFileSync(join(DIST, "brand/logo-dark.webp")).length).toBeLessThan(90 * 1024);
+    // The header and footer load the small eye mark; the full logo is only used to draw the sharing image.
+    for (const mark of ["mark-light", "mark-dark"]) expect(readFileSync(join(DIST, `brand/${mark}.webp`)).length, mark).toBeLessThan(40 * 1024);
+    for (const logo of ["logo-light", "logo-dark"]) expect(readFileSync(join(DIST, `brand/${logo}.webp`)).length, logo).toBeLessThan(120 * 1024);
     expect(readFileSync(join(DIST, "og.png")).length).toBeLessThan(400 * 1024);
   });
 
@@ -164,13 +165,13 @@ describe("weight budgets (gzipped)", () => {
 describe("deployment configuration", () => {
   it("keeps the committed vercel.json in sync with the header definitions", () => {
     const committed = JSON.parse(readFileSync(join(SITE_ROOT, "vercel.json"), "utf8"));
-    expect(committed).toEqual(vercelConfig({ apiOrigin: "https://api.eagleseye.ai", build: "site" }));
+    expect(committed).toEqual(vercelConfig({ apiOrigin: "https://api.matrixeye.ai", build: "site" }));
     // The copy at the repository root serves a Vercel project whose Root Directory is left at its default.
-    expect(JSON.parse(readFileSync(join(SITE_ROOT, "../../vercel.json"), "utf8"))).toEqual(vercelConfig({ apiOrigin: "https://api.eagleseye.ai", build: "repo" }));
+    expect(JSON.parse(readFileSync(join(SITE_ROOT, "../../vercel.json"), "utf8"))).toEqual(vercelConfig({ apiOrigin: "https://api.matrixeye.ai", build: "repo" }));
   });
 
   it("sends a strict Content-Security-Policy", () => {
-    const csp = (vercelConfig({ apiOrigin: "https://api.eagleseye.ai" }).headers[0]!.headers.find((h: { key: string }) => h.key === "Content-Security-Policy") as { value: string }).value;
+    const csp = (vercelConfig({ apiOrigin: "https://api.matrixeye.ai" }).headers[0]!.headers.find((h: { key: string }) => h.key === "Content-Security-Policy") as { value: string }).value;
     expect(csp).toContain("default-src 'self'");
     expect(csp).toContain("frame-ancestors 'none'");
     expect(csp).toContain("object-src 'none'");

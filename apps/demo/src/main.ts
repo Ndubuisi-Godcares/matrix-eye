@@ -4,19 +4,19 @@
  *   npm run demo -- https://www.reed.edu --max-pages 40
  *   npm run demo -- https://aiit.network --render --max-pages 20
  *
- * A language model is used automatically when Ollama is running on this computer (or when EAGLE_LLM_BASE_URL and
- * EAGLE_LLM_MODEL are set); otherwise answers are quoted from the site. --no-model forces the latter.
+ * A language model is used automatically when Ollama is running on this computer (or when MATRIX_EYE_LLM_BASE_URL and
+ * MATRIX_EYE_LLM_MODEL are set); otherwise answers are quoted from the site. --no-model forces the latter.
  */
 import { existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
-import { createPlaywrightRenderer, type PageRenderer } from "@eagles-eye/crawler";
-import { SqliteKnowledgeStore } from "@eagles-eye/knowledge";
-import { resolveLocalModel } from "@eagles-eye/llm";
+import { createPlaywrightRenderer, type PageRenderer } from "@matrix-eye/crawler";
+import { SqliteKnowledgeStore } from "@matrix-eye/knowledge";
+import { resolveLocalModel } from "@matrix-eye/llm";
 import { REPO_ROOT, WIDGET_FILE, startDemo } from "./demo";
 
-const USAGE = `Eagle's Eye demo
+const USAGE = `Matrix Eye demo
 
 Usage: npm run demo -- <website-url> [--max-pages N] [--render] [--port N] [--db file] [--allow-private] [--no-model]
 
@@ -27,7 +27,7 @@ Usage: npm run demo -- <website-url> [--max-pages N] [--render] [--port N] [--db
   --no-model       do not use a language model even if one is available (answers are quoted from the site)
 
 A language model is found automatically: Ollama running on this computer is used if present, or the one set by
-EAGLE_LLM_BASE_URL and EAGLE_LLM_MODEL.`;
+MATRIX_EYE_LLM_BASE_URL and MATRIX_EYE_LLM_MODEL.`;
 
 async function main() {
   const { values, positionals } = parseArgs({

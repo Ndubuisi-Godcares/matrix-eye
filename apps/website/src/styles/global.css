@@ -1,5 +1,5 @@
 /*
-  Eagle's Eye website: design system.
+  Matrix Eye website: design system.
 
   Principles
   - Calm and credible: warm paper, deep navy, gold used for lines and highlights (gold is too light for small text on
@@ -175,7 +175,13 @@ code, kbd, pre { font-family: var(--font-mono); font-size: 0.9em; }
 .nav .brand { justify-self: start; }
 .nav .nav__actions { justify-self: end; }
 .brand { display: inline-flex; align-items: center; line-height: 0; }
-.brand img { height: 2.6rem; width: auto; }
+.brand img { height: 2.5rem; width: auto; }
+.lockup { display: inline-flex; align-items: center; gap: 0.7rem; line-height: 1; }
+.lockup__name { font-family: var(--font-sans); font-weight: 800; letter-spacing: 0.06em; line-height: 1; white-space: nowrap; }
+.lockup__a { color: var(--ink); }
+.lockup__b { color: var(--accent-text); }
+:root[data-theme="dark"] .lockup__b { color: #e3b866; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .lockup__b { color: #e3b866; } }
 .logo-dark { display: none; }
 :root[data-theme="dark"] .logo-light { display: none; }
 :root[data-theme="dark"] .logo-dark { display: block; }

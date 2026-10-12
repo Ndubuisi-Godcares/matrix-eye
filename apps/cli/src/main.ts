@@ -1,40 +1,40 @@
 /**
- * `eagle` — try Eagle's Eye on any website from the terminal, no server needed.
+ * `matrix` — try Matrix Eye on any website from the terminal, no server needed.
  *
- *   npm run eagle -- crawl https://university.edu --max-pages 100
- *   npm run eagle -- ask "How much is tuition for computer science?"
- *   npm run eagle -- chat
- *   npm run eagle -- search "application deadline"
- *   npm run eagle -- pages
+ *   npm run matrix -- crawl https://university.edu --max-pages 100
+ *   npm run matrix -- ask "How much is tuition for computer science?"
+ *   npm run matrix -- chat
+ *   npm run matrix -- search "application deadline"
+ *   npm run matrix -- pages
  *
- * Knowledge is stored in ./data/eagle-cli.sqlite (override with --db). Set EAGLE_LLM_BASE_URL and
- * EAGLE_LLM_MODEL to use a language model (e.g. Ollama); otherwise answers are extractive.
+ * Knowledge is stored in ./data/matrix-eye-cli.sqlite (override with --db). Set MATRIX_EYE_LLM_BASE_URL and
+ * MATRIX_EYE_LLM_MODEL to use a language model (e.g. Ollama); otherwise answers are extractive.
  */
 import { createInterface } from "node:readline/promises";
 import { parseArgs } from "node:util";
-import { isEagleError, type ChatResponse, type ChatTurn } from "@eagles-eye/core";
-import { createPlaywrightRenderer, type PageRenderer } from "@eagles-eye/crawler";
-import { ConversationEngine, ingestSite } from "@eagles-eye/engine";
-import { SqliteKnowledgeStore } from "@eagles-eye/knowledge";
-import { resolveLocalModel } from "@eagles-eye/llm";
+import { isMatrixError, type ChatResponse, type ChatTurn } from "@matrix-eye/core";
+import { createPlaywrightRenderer, type PageRenderer } from "@matrix-eye/crawler";
+import { ConversationEngine, ingestSite } from "@matrix-eye/engine";
+import { SqliteKnowledgeStore } from "@matrix-eye/knowledge";
+import { resolveLocalModel } from "@matrix-eye/llm";
 
 const PROJECT = "cli";
 
-const USAGE = `Eagle's Eye CLI
+const USAGE = `Matrix Eye CLI
 
 Usage:
-  eagle crawl <url> [--max-pages N] [--full] [--allow-private] [--render]
-  eagle ask "<question>" [--debug] [--json]
-  eagle chat
-  eagle search "<query>" [--limit N]
-  eagle pages
-  eagle llm-check          test the language model that will be used
+  matrix crawl <url> [--max-pages N] [--full] [--allow-private] [--render]
+  matrix ask "<question>" [--debug] [--json]
+  matrix chat
+  matrix search "<query>" [--limit N]
+  matrix pages
+  matrix llm-check          test the language model that will be used
 
 Options:
   --render       Run JavaScript for pages that arrive empty (React/Vue sites). Needs a one-time
                  "npx playwright install chromium". Slower: use a small --max-pages first.
   --no-model     answer by quoting the site even if a language model is available
-  --db <file>    SQLite file (default ./data/eagle-cli.sqlite)
+  --db <file>    SQLite file (default ./data/matrix-eye-cli.sqlite)
   --name <text>  Site name used in answers (default: the site's hostname)`;
 
 function printResponse(response: ChatResponse, options: { debug: boolean; json: boolean }) {
@@ -53,7 +53,7 @@ async function main() {
   const { values, positionals } = parseArgs({
     allowPositionals: true,
     options: {
-      db: { type: "string", default: "./data/eagle-cli.sqlite" },
+      db: { type: "string", default: "./data/matrix-eye-cli.sqlite" },
       name: { type: "string" },
       "max-pages": { type: "string" },
       limit: { type: "string", default: "5" },
@@ -70,7 +70,7 @@ async function main() {
   if (!command || values.help) return console.log(USAGE);
 
   const store = new SqliteKnowledgeStore(values.db as string);
-  // A language model is found automatically: the EAGLE_LLM_* settings if present, else Ollama on this computer.
+  // A language model is found automatically: the MATRIX_EYE_LLM_* settings if present, else Ollama on this computer.
   const resolved = await resolveLocalModel({ disabled: values["no-model"] });
   const llm = resolved.llm;
   const modelNote = llm ? `(answers by ${llm.name.replace("openai-compatible:", "")}${resolved.source === "ollama" ? ", found Ollama on this computer" : ""})` : null;
@@ -113,7 +113,7 @@ async function main() {
 
       case "ask": {
         const question = rest.join(" ").trim();
-        if (!question) throw new Error('ask needs a question, e.g. eagle ask "What are the fees?"');
+        if (!question) throw new Error('ask needs a question, e.g. matrix ask "What are the fees?"');
         const engine = new ConversationEngine({ store, llm });
         printResponse(await engine.ask({ projectId: PROJECT, question, siteName: values.name }), { debug: values.debug, json: values.json });
         break;
@@ -183,6 +183,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error(`Error: ${isEagleError(err) ? `${err.message} (${err.code})` : err instanceof Error ? err.message : err}`);
+  console.error(`Error: ${isMatrixError(err) ? `${err.message} (${err.code})` : err instanceof Error ? err.message : err}`);
   process.exit(1);
 });

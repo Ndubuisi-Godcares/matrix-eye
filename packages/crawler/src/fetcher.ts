@@ -9,7 +9,7 @@
  *  - manual redirect handling, so every hop is re-validated and counted
  */
 import { fetch, type Dispatcher } from "undici";
-import { CRAWL_DEFAULTS, EagleError } from "@eagles-eye/core";
+import { CRAWL_DEFAULTS, MatrixError } from "@matrix-eye/core";
 import { assertPublicUrl, createGuardedDispatcher } from "./ssrf";
 
 export interface FetchedDocument {
@@ -49,7 +49,7 @@ export class HttpFetcher {
 
   /**
    * GET a URL. Non-2xx responses are returned (not thrown) so callers can decide what a
-   * 404 or 403 means; transport problems and safety violations throw `EagleError`.
+   * 404 or 403 means; transport problems and safety violations throw `MatrixError`.
    */
   async get(rawUrl: string): Promise<FetchedDocument> {
     let current = assertPublicUrl(rawUrl, this.allowPrivate).toString();
@@ -60,7 +60,7 @@ export class HttpFetcher {
       if (response.status >= 300 && response.status < 400) {
         const location = response.headers.get("location");
         await response.body?.cancel().catch(() => undefined);
-        if (!location) throw new EagleError("fetch_failed", `Redirect without Location from ${current}`);
+        if (!location) throw new MatrixError("fetch_failed", `Redirect without Location from ${current}`);
         // Re-validate every hop: a public URL may redirect to an internal one.
         current = assertPublicUrl(new URL(location, current).toString(), this.allowPrivate).toString();
         continue;
@@ -75,7 +75,7 @@ export class HttpFetcher {
       const body = await this.readCapped(response, contentType);
       return { url: current, status: response.status, contentType, body };
     }
-    throw new EagleError("fetch_failed", `Too many redirects starting at ${rawUrl}`);
+    throw new MatrixError("fetch_failed", `Too many redirects starting at ${rawUrl}`);
   }
 
   private async request(url: string) {
@@ -92,11 +92,11 @@ export class HttpFetcher {
         },
       });
     } catch (err) {
-      // The guarded DNS lookup surfaces EagleError as the cause of undici's generic "fetch failed".
+      // The guarded DNS lookup surfaces MatrixError as the cause of undici's generic "fetch failed".
       const cause = (err as { cause?: unknown }).cause;
-      if (cause instanceof EagleError) throw cause;
-      if (err instanceof EagleError) throw err;
-      throw new EagleError("fetch_failed", `Could not fetch ${url}: ${(cause as Error | undefined)?.message ?? (err as Error).message}`, { cause: err });
+      if (cause instanceof MatrixError) throw cause;
+      if (err instanceof MatrixError) throw err;
+      throw new MatrixError("fetch_failed", `Could not fetch ${url}: ${(cause as Error | undefined)?.message ?? (err as Error).message}`, { cause: err });
     }
   }
 
@@ -112,7 +112,7 @@ export class HttpFetcher {
       total += value.byteLength;
       if (total > this.maxBytes) {
         await reader.cancel().catch(() => undefined);
-        throw new EagleError("fetch_failed", `Response larger than ${this.maxBytes} bytes`);
+        throw new MatrixError("fetch_failed", `Response larger than ${this.maxBytes} bytes`);
       }
       chunks.push(value);
     }

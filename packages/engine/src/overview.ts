@@ -6,7 +6,7 @@
  * it publishes about itself (the meta description), is the authoritative answer, so those questions
  * are routed straight to it.
  */
-import { contentWords } from "@eagles-eye/core";
+import { contentWords } from "@matrix-eye/core";
 
 /** Phrasings that ask for a general description rather than a specific fact. */
 const OVERVIEW_PHRASE = /\b(what\s+(is|are)\s+(this|the|your)|what'?s\s+(this|the|your)|tell\s+me\s+about|about\s+(this|the|your)|who\s+are\s+you|what\s+do\s+you\s+do|what\s+does\s+(this|the)|overview|introduce|describe|all\s+about)\b/i;

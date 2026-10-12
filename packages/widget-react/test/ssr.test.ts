@@ -5,7 +5,7 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { EaglesEyeChat } from "../src";
+import { MatrixEyeChat } from "../src";
 
 describe("server-side rendering", () => {
   it("really is a server-like environment", () => {
@@ -14,13 +14,13 @@ describe("server-side rendering", () => {
   });
 
   it("renders an empty placeholder without touching the browser", () => {
-    const html = renderToString(createElement(EaglesEyeChat, { project: "p1", api: "https://api.example.com" }));
-    expect(html).toContain("data-eagles-eye-host");
+    const html = renderToString(createElement(MatrixEyeChat, { project: "p1", api: "https://api.example.com" }));
+    expect(html).toContain("data-matrix-eye-host");
     expect(html).not.toContain("script");
   });
 
   it("lets the widget module itself be imported on a server (it only defines the element in a browser)", async () => {
-    const widget = await import("@eagles-eye/widget");
+    const widget = await import("@matrix-eye/widget");
     expect(typeof widget.init).toBe("function");
     expect(typeof widget.renderAnswer).toBe("function");
   });

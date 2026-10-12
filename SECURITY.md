@@ -8,7 +8,7 @@ the impact. We aim to acknowledge reports within 3 working days.
 
 ## Threat model (summary)
 
-Eagle's Eye fetches user-supplied URLs and feeds third-party text to a language model, so the main risks are:
+Matrix Eye fetches user-supplied URLs and feeds third-party text to a language model, so the main risks are:
 
 | Risk | Mitigation | Where |
 |---|---|---|
@@ -27,4 +27,4 @@ Eagle's Eye fetches user-supplied URLs and feeds third-party text to a language 
 - Single shared API key; per-project keys and key rotation arrive with the hosted service.
 - User-supplied rule patterns are length-limited but not checked for pathological backtracking.
 - No third-party security audit yet (planned before public beta).
-- The `User-Agent` documentation URL (`eagleseye.ai/bot`) must be live before public use.
+- The `User-Agent` documentation URL (`matrixeye.ai/bot`) must be live before public use.

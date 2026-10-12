@@ -1,8 +1,8 @@
 {
-  "name": "@eagles-eye/website",
+  "name": "@matrix-eye/website",
   "version": "0.1.0",
   "private": true,
-  "description": "Eagle's Eye marketing website and documentation (Astro, static).",
+  "description": "Matrix Eye marketing website and documentation (Astro, static).",
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {

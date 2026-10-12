@@ -30,13 +30,13 @@ const jsonLd = [
 ];
 
 const tabs: Array<{ id: string; label: string; lang: CodeLanguage; code: string }> = [
-  { id: "script", label: "Script tag", lang: "html", code: `<script src="https://YOUR-HOST/eagles-eye-widget.js" defer\n        data-project="PROJECT_ID"\n        data-api="https://YOUR-API-HOST"></script>` },
-  { id: "react", label: "React / Next.js", lang: "tsx", code: `import { EaglesEyeChat } from "@eagles-eye/widget-react";\n\nexport default function Assistant() {\n  return <EaglesEyeChat project="PROJECT_ID" api="https://YOUR-API-HOST" />;\n}` },
+  { id: "script", label: "Script tag", lang: "html", code: `<script src="https://YOUR-HOST/matrix-eye-widget.js" defer\n        data-project="PROJECT_ID"\n        data-api="https://YOUR-API-HOST"></script>` },
+  { id: "react", label: "React / Next.js", lang: "tsx", code: `import { MatrixEyeChat } from "@matrix-eye/widget-react";\n\nexport default function Assistant() {\n  return <MatrixEyeChat project="PROJECT_ID" api="https://YOUR-API-HOST" />;\n}` },
   {
     id: "sdk",
     label: "TypeScript SDK",
     lang: "ts",
-    code: `import { EagleEyeClient } from "@eagles-eye/sdk";\n\nconst eagle = new EagleEyeClient({ baseUrl: "https://YOUR-API-HOST", apiKey: process.env.EAGLE_API_KEY });\n\nconst project = await eagle.createProject({\n  name: "My site",\n  siteUrl: "https://example.com",\n  settings: { allowedOrigins: ["https://example.com"] },\n});\nawait eagle.waitForCrawl((await eagle.startCrawl(project.id)).id);\n\nconst reply = await eagle.project(project.id).chat("How do I apply?");\nconsole.log(reply.answer, reply.citations);`,
+    code: `import { MatrixEyeClient } from "@matrix-eye/sdk";\n\nconst matrix = new MatrixEyeClient({ baseUrl: "https://YOUR-API-HOST", apiKey: process.env.MATRIX_EYE_API_KEY });\n\nconst project = await matrix.createProject({\n  name: "My site",\n  siteUrl: "https://example.com",\n  settings: { allowedOrigins: ["https://example.com"] },\n});\nawait matrix.waitForCrawl((await matrix.startCrawl(project.id)).id);\n\nconst reply = await matrix.project(project.id).chat("How do I apply?");\nconsole.log(reply.answer, reply.citations);`,
   },
 ];
 ---
@@ -47,7 +47,7 @@ const tabs: Array<{ id: string; label: string; lang: CodeLanguage; code: string 
       <div class="hero__copy">
         <span class="eyebrow">Early access</span>
         <h1>An assistant for your website that <span class="accent-underline">shows its sources</span></h1>
-        <p class="lead">Eagle's Eye reads your pages and answers visitors in a chat window. Every answer links to the page it came from. When your site doesn't say, it says so instead of guessing.</p>
+        <p class="lead">Matrix Eye reads your pages and answers visitors in a chat window. Every answer links to the page it came from. When your site doesn't say, it says so instead of guessing.</p>
         <div class="hero__cta">
           <a class="btn btn--primary" href="/waitlist/">Join the waitlist <Icon name="arrow" /></a>
           <a class="btn btn--secondary" href="/docs/quickstart/">Read the quickstart</a>
@@ -63,7 +63,7 @@ const tabs: Array<{ id: string; label: string; lang: CodeLanguage; code: string 
       <div class="section__head">
         <span class="eyebrow">Why it is different</span>
         <h2 id="why">Answers you can trust, because you can check them</h2>
-        <p class="lead">Most chatbots sound confident whether or not they know. Eagle's Eye is built around the opposite habit.</p>
+        <p class="lead">Most chatbots sound confident whether or not they know. Matrix Eye is built around the opposite habit.</p>
       </div>
       <div class="grid grid--3">
         <article class="card">
@@ -137,7 +137,7 @@ const tabs: Array<{ id: string; label: string; lang: CodeLanguage; code: string 
         <h2 id="trust">Built for other people's websites and other people's visitors</h2>
       </div>
       <div class="grid grid--4">
-        <div class="card"><div class="card__icon"><Icon name="eye" /></div><h3>A polite crawler</h3><p>Follows <code>robots.txt</code>, reads a few pages per second, and identifies itself as <a href="/bot/">EaglesEyeBot</a>.</p></div>
+        <div class="card"><div class="card__icon"><Icon name="eye" /></div><h3>A polite crawler</h3><p>Follows <code>robots.txt</code>, reads a few pages per second, and identifies itself as <a href="/bot/">MatrixEyeBot</a>.</p></div>
         <div class="card"><div class="card__icon"><Icon name="lock" /></div><h3>No secrets in the page</h3><p>The chat window only works on websites you allow, and is rate-limited for each visitor.</p></div>
         <div class="card"><div class="card__icon"><Icon name="shield" /></div><h3>Attack-aware</h3><p>Defences against prompt injection and server-side request forgery, with tests for each.</p></div>
         <div class="card"><div class="card__icon"><Icon name="layers" /></div><h3>Your data stays yours</h3><p>Self-host and nothing leaves your servers. No third-party trackers on this site.</p></div>

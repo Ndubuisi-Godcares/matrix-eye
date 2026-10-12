@@ -1,7 +1,7 @@
 /**
  * Scoring for the evaluation harness. Pure functions, unit-tested in evals/test.
  */
-import type { ChatResponse, ChatTurn } from "@eagles-eye/core";
+import type { ChatResponse, ChatTurn } from "@matrix-eye/core";
 
 export interface EvalItem {
   id: string;

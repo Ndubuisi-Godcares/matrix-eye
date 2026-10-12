@@ -12,8 +12,8 @@ import { OpenAiCompatibleProvider } from "./openai-compatible";
  * (the engine then runs in extractive mode, which needs no model).
  */
 export function llmFromEnv(env: Record<string, string | undefined> = process.env): LlmProvider | null {
-  const baseUrl = env.EAGLE_LLM_BASE_URL?.trim();
-  const model = env.EAGLE_LLM_MODEL?.trim();
+  const baseUrl = env.MATRIX_EYE_LLM_BASE_URL?.trim();
+  const model = env.MATRIX_EYE_LLM_MODEL?.trim();
   if (!baseUrl || !model) return null;
-  return new OpenAiCompatibleProvider({ baseUrl, model, apiKey: env.EAGLE_LLM_API_KEY?.trim() || undefined });
+  return new OpenAiCompatibleProvider({ baseUrl, model, apiKey: env.MATRIX_EYE_LLM_API_KEY?.trim() || undefined });
 }

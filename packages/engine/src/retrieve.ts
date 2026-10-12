@@ -1,8 +1,8 @@
 /**
  * Evidence selection: from raw search hits to the passages an answer may be built on.
  */
-import { contentTerms, stem, synonymsOf, tokenize, type SearchHit } from "@eagles-eye/core";
-import { urlWords } from "@eagles-eye/knowledge";
+import { contentTerms, stem, synonymsOf, tokenize, type SearchHit } from "@matrix-eye/core";
+import { urlWords } from "@matrix-eye/knowledge";
 
 /**
  * Pick up to `limit` hits in rank order, allowing at most `maxPerPage` from one page.

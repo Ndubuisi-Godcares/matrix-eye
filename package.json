@@ -1,8 +1,8 @@
 {
-  "name": "eagles-eye",
+  "name": "matrix-eye",
   "version": "0.1.0",
   "private": true,
-  "description": "Eagle's Eye â€” a website intelligence engine that turns a website into a source-grounded conversational assistant.",
+  "description": "Matrix Eye â€” a website intelligence engine that turns a website into a source-grounded conversational assistant.",
   "license": "Apache-2.0",
   "type": "module",
   "engines": {
@@ -14,13 +14,13 @@
     "evals"
   ],
   "scripts": {
-    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p packages/widget/tsconfig.json && tsc --noEmit -p packages/widget-react/tsconfig.json && npm run check -w @eagles-eye/website",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p packages/widget/tsconfig.json && tsc --noEmit -p packages/widget-react/tsconfig.json && npm run check -w @matrix-eye/website",
     "test": "vitest run",
     "test:watch": "vitest",
-    "eval": "npm run run --workspace @eagles-eye/evals",
-    "dev:api": "npm run dev --workspace @eagles-eye/api",
-    "eagle": "tsx apps/cli/src/main.ts",
-    "build": "npm run build --workspace @eagles-eye/sdk --workspace @eagles-eye/widget --workspace @eagles-eye/widget-react",
+    "eval": "npm run run --workspace @matrix-eye/evals",
+    "dev:api": "npm run dev --workspace @matrix-eye/api",
+    "matrix": "tsx apps/cli/src/main.ts",
+    "build": "npm run build --workspace @matrix-eye/sdk --workspace @matrix-eye/widget --workspace @matrix-eye/widget-react",
     "demo": "tsx apps/demo/src/main.ts"
   },
   "devDependencies": {

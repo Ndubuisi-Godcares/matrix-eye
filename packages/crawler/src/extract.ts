@@ -9,7 +9,7 @@
 import { createHash } from "node:crypto";
 import * as cheerio from "cheerio";
 import { isTag, isText, type AnyNode, type Element } from "domhandler";
-import { collapseWhitespace, type CrawledPage, type PageSection } from "@eagles-eye/core";
+import { collapseWhitespace, type CrawledPage, type PageSection } from "@matrix-eye/core";
 import { normalizeUrl, isSameSite } from "./url";
 
 export interface ExtractedContacts {

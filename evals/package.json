@@ -1,5 +1,5 @@
 {
-  "name": "@eagles-eye/evals",
+  "name": "@matrix-eye/evals",
   "version": "0.1.0",
   "private": true,
   "description": "Answer-quality evaluation harness: labelled questions, scoring, reports and a CI gate.",
@@ -9,10 +9,10 @@
     "run": "tsx src/run.ts"
   },
   "dependencies": {
-    "@eagles-eye/core": "0.1.0",
-    "@eagles-eye/engine": "0.1.0",
-    "@eagles-eye/knowledge": "0.1.0",
-    "@eagles-eye/llm": "0.1.0",
-    "@eagles-eye/testing": "0.1.0"
+    "@matrix-eye/core": "0.1.0",
+    "@matrix-eye/engine": "0.1.0",
+    "@matrix-eye/knowledge": "0.1.0",
+    "@matrix-eye/llm": "0.1.0",
+    "@matrix-eye/testing": "0.1.0"
   }
 }

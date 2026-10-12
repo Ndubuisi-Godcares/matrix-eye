@@ -13,9 +13,9 @@ import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { chromium, type Browser, type Page } from "playwright";
 import { startDemo, type RunningDemo } from "../../../apps/demo/src/demo";
-import { SqliteKnowledgeStore } from "@eagles-eye/knowledge";
-import { ScriptedProvider } from "@eagles-eye/llm";
-import { startFixtureServer, type FixtureServer } from "@eagles-eye/testing";
+import { SqliteKnowledgeStore } from "@matrix-eye/knowledge";
+import { ScriptedProvider } from "@matrix-eye/llm";
+import { startFixtureServer, type FixtureServer } from "@matrix-eye/testing";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SHOTS = join(here, "__screenshots__");
@@ -65,7 +65,7 @@ async function openDemo(path = "/", viewport = { width: 1100, height: 800 }): Pr
   await page.locator(".ee-panel").waitFor({ state: "visible" });
   await page.getByText("Riverside University", { exact: false }).first().waitFor();
   // Let the opening animation finish: measuring colours mid-fade (semi-transparent) would be meaningless.
-  await page.evaluate(() => Promise.all(document.querySelector("eagles-eye-chat")!.shadowRoot!.getAnimations().map((a) => a.finished)));
+  await page.evaluate(() => Promise.all(document.querySelector("matrix-eye-chat")!.shadowRoot!.getAnimations().map((a) => a.finished)));
   return page;
 }
 
@@ -127,10 +127,10 @@ describe("widget in a real browser", () => {
     await page.locator(".ee-input").focus();
     await page.keyboard.press("Escape");
     expect(await page.locator(".ee-panel").isHidden()).toBe(true);
-    expect(await page.evaluate(() => document.querySelector("eagles-eye-chat")!.shadowRoot!.activeElement?.className)).toContain("ee-launcher");
+    expect(await page.evaluate(() => document.querySelector("matrix-eye-chat")!.shadowRoot!.activeElement?.className)).toContain("ee-launcher");
     await page.keyboard.press("Enter");
     await page.locator(".ee-panel").waitFor({ state: "visible" });
-    expect(await page.evaluate(() => document.querySelector("eagles-eye-chat")!.shadowRoot!.activeElement?.className)).toContain("ee-input");
+    expect(await page.evaluate(() => document.querySelector("matrix-eye-chat")!.shadowRoot!.activeElement?.className)).toContain("ee-input");
     await page.context().close();
   }, 60_000);
 

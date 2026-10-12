@@ -2,7 +2,7 @@
  * Client behaviour against a fake fetch: request shape, error mapping, streaming edge cases.
  */
 import { describe, expect, it } from "vitest";
-import { EagleEyeClient, EagleEyeError, PublicClient, type StreamEvent } from "../src";
+import { MatrixEyeClient, MatrixEyeError, PublicClient, type StreamEvent } from "../src";
 
 interface Call {
   url: string;
@@ -45,7 +45,7 @@ async function collect(stream: AsyncIterable<StreamEvent>) {
 describe("requests", () => {
   it("sends the API key as a bearer token for admin calls only", async () => {
     const { impl, calls } = fakeFetch(() => json({ id: "p1" }));
-    const client = new EagleEyeClient({ baseUrl: "http://api.test/", apiKey: "secret-key", fetch: impl });
+    const client = new MatrixEyeClient({ baseUrl: "http://api.test/", apiKey: "secret-key", fetch: impl });
     await client.createProject({ name: "Uni", siteUrl: "https://uni.test" });
     expect(calls[0]!.url).toBe("http://api.test/v1/projects"); // trailing slash on baseUrl tolerated
     expect((calls[0]!.init.headers as Record<string, string>).authorization).toBe("Bearer secret-key");
@@ -54,7 +54,7 @@ describe("requests", () => {
 
   it("never sends the API key from the visitor-facing client, even when created from the admin client", async () => {
     const { impl, calls } = fakeFetch(() => json({ answer: "hi", abstained: false, route: "smalltalk", citations: [] }));
-    await new EagleEyeClient({ baseUrl: "http://api.test", apiKey: "secret-key", fetch: impl }).project("p1").chat("Hello");
+    await new MatrixEyeClient({ baseUrl: "http://api.test", apiKey: "secret-key", fetch: impl }).project("p1").chat("Hello");
     expect((calls[0]!.init.headers as Record<string, string>).authorization).toBeUndefined();
     expect(calls[0]!.url).toBe("http://api.test/v1/public/projects/p1/chat");
   });
@@ -74,22 +74,22 @@ describe("requests", () => {
 });
 
 describe("errors", () => {
-  it("maps the API error format to EagleEyeError with status and code", async () => {
+  it("maps the API error format to MatrixEyeError with status and code", async () => {
     const { impl } = fakeFetch(() => json({ error: { code: "forbidden", message: "Not allowed here" } }, 403));
     const err = await new PublicClient({ baseUrl: "http://api.test", fetch: impl }, "p").chat("hi").catch((e: unknown) => e);
-    expect(err).toBeInstanceOf(EagleEyeError);
+    expect(err).toBeInstanceOf(MatrixEyeError);
     expect(err).toMatchObject({ status: 403, code: "forbidden", message: "Not allowed here" });
   });
 
   it("keeps validation details", async () => {
     const { impl } = fakeFetch(() => json({ error: { code: "invalid_request", message: "bad", details: [{ path: "message", message: "required" }] } }, 400));
-    const err = (await new PublicClient({ baseUrl: "http://api.test", fetch: impl }, "p").chat("").catch((e: unknown) => e)) as EagleEyeError;
+    const err = (await new PublicClient({ baseUrl: "http://api.test", fetch: impl }, "p").chat("").catch((e: unknown) => e)) as MatrixEyeError;
     expect(err.details).toEqual([{ path: "message", message: "required" }]);
   });
 
   it("copes with non-JSON error bodies such as proxy error pages", async () => {
     const { impl } = fakeFetch(() => new Response("<html>Bad gateway</html>", { status: 502 }));
-    const err = (await new PublicClient({ baseUrl: "http://api.test", fetch: impl }, "p").chat("hi").catch((e: unknown) => e)) as EagleEyeError;
+    const err = (await new PublicClient({ baseUrl: "http://api.test", fetch: impl }, "p").chat("hi").catch((e: unknown) => e)) as MatrixEyeError;
     expect(err).toMatchObject({ status: 502, code: "http_error" });
   });
 
@@ -97,7 +97,7 @@ describe("errors", () => {
     const impl = (async () => {
       throw new TypeError("fetch failed");
     }) as unknown as typeof fetch;
-    const err = (await new PublicClient({ baseUrl: "http://api.test", fetch: impl }, "p").chat("hi").catch((e: unknown) => e)) as EagleEyeError;
+    const err = (await new PublicClient({ baseUrl: "http://api.test", fetch: impl }, "p").chat("hi").catch((e: unknown) => e)) as MatrixEyeError;
     expect(err).toMatchObject({ status: 0, code: "network_error" });
   });
 });
@@ -135,7 +135,7 @@ describe("streaming", () => {
     expect(events.at(-1)?.type).toBe("final");
   });
 
-  it("throws the server's error event as an EagleEyeError", async () => {
+  it("throws the server's error event as an MatrixEyeError", async () => {
     const { impl } = fakeFetch(() => sse(['event: error\ndata: {"code":"llm_failed","message":"model down"}\n\n']));
     await expect(collect(new PublicClient({ baseUrl: "http://api.test", fetch: impl }, "p").stream("x"))).rejects.toMatchObject({ code: "llm_failed", message: "model down" });
   });
@@ -176,16 +176,16 @@ describe("crawl helper", () => {
   it("polls until the crawl completes", async () => {
     let polls = 0;
     const { impl } = fakeFetch(() => json({ id: "j1", status: ++polls < 3 ? "running" : "completed", error: null }));
-    const job = await new EagleEyeClient({ baseUrl: "http://api.test", apiKey: "k", fetch: impl }).waitForCrawl("j1", { pollMs: 1 });
+    const job = await new MatrixEyeClient({ baseUrl: "http://api.test", apiKey: "k", fetch: impl }).waitForCrawl("j1", { pollMs: 1 });
     expect(job.status).toBe("completed");
     expect(polls).toBe(3);
   });
 
   it("rejects when the crawl fails, and when it times out", async () => {
     const failing = fakeFetch(() => json({ id: "j", status: "failed", error: "robots.txt disallows crawling" }));
-    await expect(new EagleEyeClient({ baseUrl: "http://api.test", apiKey: "k", fetch: failing.impl }).waitForCrawl("j", { pollMs: 1 })).rejects.toMatchObject({ code: "crawl_failed", message: "robots.txt disallows crawling" });
+    await expect(new MatrixEyeClient({ baseUrl: "http://api.test", apiKey: "k", fetch: failing.impl }).waitForCrawl("j", { pollMs: 1 })).rejects.toMatchObject({ code: "crawl_failed", message: "robots.txt disallows crawling" });
 
     const stuck = fakeFetch(() => json({ id: "j", status: "running", error: null }));
-    await expect(new EagleEyeClient({ baseUrl: "http://api.test", apiKey: "k", fetch: stuck.impl }).waitForCrawl("j", { pollMs: 1, timeoutMs: 20 })).rejects.toMatchObject({ code: "timeout" });
+    await expect(new MatrixEyeClient({ baseUrl: "http://api.test", apiKey: "k", fetch: stuck.impl }).waitForCrawl("j", { pollMs: 1, timeoutMs: 20 })).rejects.toMatchObject({ code: "timeout" });
   });
 });

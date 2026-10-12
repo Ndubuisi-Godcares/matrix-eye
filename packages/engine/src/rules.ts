@@ -5,7 +5,7 @@
  * "we don't offer X". A site owner configures those as rules, and a matching rule short-circuits
  * everything else (no retrieval, no model), so the model can never contradict them.
  */
-import { tokenize, type Rule } from "@eagles-eye/core";
+import { tokenize, type Rule } from "@matrix-eye/core";
 
 /** Return the highest-priority rule matching `question`, or null. */
 export function matchRule(rules: readonly Rule[], question: string): Rule | null {

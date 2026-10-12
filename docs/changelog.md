@@ -1,6 +1,6 @@
 # Changelog
 
-Eagle's Eye is in early access and has not had a numbered release yet. This is the history so far, newest first.
+Matrix Eye is in early access and has not had a numbered release yet. This is the history so far, newest first.
 
 ## October 2026: early access preparation
 

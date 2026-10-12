@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { wordCount, type CrawledPage } from "@eagles-eye/core";
+import { wordCount, type CrawledPage } from "@matrix-eye/core";
 import { chunkPage } from "../src";
 
 function page(sections: CrawledPage["sections"]): CrawledPage {

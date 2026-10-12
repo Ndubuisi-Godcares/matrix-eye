@@ -1,6 +1,6 @@
 # Accuracy and evaluation
 
-An assistant that is usually right and sometimes confidently wrong is worse than useless, so Eagle's Eye measures
+An assistant that is usually right and sometimes confidently wrong is worse than useless, so Matrix Eye measures
 itself, in public, including where it falls short.
 
 ## What is measured

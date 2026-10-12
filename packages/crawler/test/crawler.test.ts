@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { startFixtureServer, type FixtureServer } from "@eagles-eye/testing";
-import type { CrawledPage } from "@eagles-eye/core";
+import { startFixtureServer, type FixtureServer } from "@matrix-eye/testing";
+import type { CrawledPage } from "@matrix-eye/core";
 import { crawlSite, type CrawlEvent } from "../src";
 
 let server: FixtureServer;

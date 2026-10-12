@@ -1,8 +1,8 @@
 {
-  "name": "@eagles-eye/sdk",
+  "name": "@matrix-eye/sdk",
   "version": "0.1.0",
   "private": true,
-  "description": "TypeScript client for the Eagle's Eye API: admin operations, chat, streaming answers and feedback.",
+  "description": "TypeScript client for the Matrix Eye API: admin operations, chat, streaming answers and feedback.",
   "license": "Apache-2.0",
   "type": "module",
   "exports": {
@@ -12,8 +12,8 @@
     "build": "node scripts/build.mjs"
   },
   "devDependencies": {
-    "@eagles-eye/core": "0.1.0",
-    "@eagles-eye/testing": "0.1.0",
-    "@eagles-eye/api": "0.1.0"
+    "@matrix-eye/core": "0.1.0",
+    "@matrix-eye/testing": "0.1.0",
+    "@matrix-eye/api": "0.1.0"
   }
 }

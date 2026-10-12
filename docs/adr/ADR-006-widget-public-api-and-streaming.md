@@ -5,7 +5,7 @@
 
 ## Context
 
-Phase 2 puts Eagle's Eye in front of website visitors. A web page cannot keep a secret, so the admin API key can never
+Phase 2 puts Matrix Eye in front of website visitors. A web page cannot keep a secret, so the admin API key can never
 be used there. The widget runs inside someone else's page, so it must be small, isolated, accessible and safe against
 hostile content. Answers take seconds with a local model, so waiting for the whole answer feels broken.
 
@@ -65,4 +65,4 @@ test renders it with `renderToString`.
 - Visitors can briefly see model text that is later replaced. Acceptable; the final answer is always the checked one.
 - Phase 4 adds per-project keys, quotas and billing on the same routes.
 - Not yet done: real screen-reader testing, translations beyond overriding `labels`, and a published npm/CDN release
-  (the `eagleseye.ai` addresses in the branding link and crawler user-agent are placeholders until the domain is chosen).
+  (the `matrixeye.ai` addresses in the branding link and crawler user-agent are placeholders until the domain is chosen).

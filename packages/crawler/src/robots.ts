@@ -8,7 +8,7 @@
  *                                          guessing "allowed" could violate the owner's wishes
  */
 import robotsParser from "robots-parser";
-import { EagleError } from "@eagles-eye/core";
+import { MatrixError } from "@matrix-eye/core";
 import type { HttpFetcher } from "./fetcher";
 
 export class RobotsPolicy {
@@ -29,7 +29,7 @@ export class RobotsPolicy {
       return new RobotsPolicy(robotsParser(robotsUrl, doc.body), userAgent, false);
     } catch (err) {
       // Safety violations (SSRF) must propagate; plain network failures mean "be cautious".
-      if (err instanceof EagleError && err.code === "blocked_url") throw err;
+      if (err instanceof MatrixError && err.code === "blocked_url") throw err;
       return new RobotsPolicy(null, userAgent, true);
     }
   }

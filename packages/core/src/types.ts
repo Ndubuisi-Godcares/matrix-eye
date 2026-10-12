@@ -1,5 +1,5 @@
 /**
- * Domain types shared by every Eagle's Eye package.
+ * Domain types shared by every Matrix Eye package.
  *
  * These describe the data that flows through the pipeline:
  *   website -> CrawledPage -> Chunk -> SearchHit -> ChatResponse (with Citations)

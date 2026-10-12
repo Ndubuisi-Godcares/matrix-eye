@@ -4,18 +4,18 @@
  */
 import type { AddressInfo } from "node:net";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { SqliteKnowledgeStore } from "@eagles-eye/knowledge";
-import { ScriptedProvider } from "@eagles-eye/llm";
-import { startFixtureServer, type FixtureServer } from "@eagles-eye/testing";
+import { SqliteKnowledgeStore } from "@matrix-eye/knowledge";
+import { ScriptedProvider } from "@matrix-eye/llm";
+import { startFixtureServer, type FixtureServer } from "@matrix-eye/testing";
 import type { FastifyInstance } from "fastify";
-import { buildApp, loadConfig } from "@eagles-eye/api";
-import { EagleEyeClient, EagleEyeError, type StreamEvent } from "../src";
+import { buildApp, loadConfig } from "@matrix-eye/api";
+import { MatrixEyeClient, MatrixEyeError, type StreamEvent } from "../src";
 
 const API_KEY = "sdk-test-key-0123456789abcdef";
 let site: FixtureServer;
 let app: FastifyInstance;
 let store: SqliteKnowledgeStore;
-let admin: EagleEyeClient;
+let admin: MatrixEyeClient;
 let baseUrl: string;
 let projectId: string;
 
@@ -23,10 +23,10 @@ beforeAll(async () => {
   site = await startFixtureServer();
   store = new SqliteKnowledgeStore(":memory:");
   const llm = new ScriptedProvider(["Computer Science costs $4,500 per year [1]."]);
-  ({ app } = await buildApp({ config: loadConfig({ EAGLE_API_KEY: API_KEY, EAGLE_ALLOW_PRIVATE_NETWORKS: "true" }), store, llm, crawlDelayMs: 0 }));
+  ({ app } = await buildApp({ config: loadConfig({ MATRIX_EYE_API_KEY: API_KEY, MATRIX_EYE_ALLOW_PRIVATE_NETWORKS: "true" }), store, llm, crawlDelayMs: 0 }));
   await app.listen({ port: 0, host: "127.0.0.1" });
   baseUrl = `http://127.0.0.1:${(app.server.address() as AddressInfo).port}`;
-  admin = new EagleEyeClient({ baseUrl, apiKey: API_KEY });
+  admin = new MatrixEyeClient({ baseUrl, apiKey: API_KEY });
 }, 30_000);
 afterAll(async () => {
   await app.close();
@@ -61,7 +61,7 @@ describe("admin client", () => {
   });
 
   it("raises typed errors", async () => {
-    const wrongKey = new EagleEyeClient({ baseUrl, apiKey: "not-the-key" });
+    const wrongKey = new MatrixEyeClient({ baseUrl, apiKey: "not-the-key" });
     await expect(wrongKey.getProject(projectId)).rejects.toMatchObject({ status: 401, code: "unauthorized" });
     await expect(admin.getProject("00000000-0000-4000-8000-000000000000")).rejects.toMatchObject({ status: 404, code: "not_found" });
   });
@@ -93,10 +93,10 @@ describe("visitor client", () => {
 
   it("enforces the origin allow-list through the browser's Origin header", async () => {
     const asBrowser = (origin: string) => ((input, init) => fetch(input, { ...init, headers: { ...(init?.headers as object), origin } })) as typeof fetch;
-    const allowed = new EagleEyeClient({ baseUrl, fetch: asBrowser("https://school.example") }).project(projectId);
-    const denied = new EagleEyeClient({ baseUrl, fetch: asBrowser("https://evil.example") }).project(projectId);
+    const allowed = new MatrixEyeClient({ baseUrl, fetch: asBrowser("https://school.example") }).project(projectId);
+    const denied = new MatrixEyeClient({ baseUrl, fetch: asBrowser("https://evil.example") }).project(projectId);
     expect((await allowed.chat("Hello")).route).toBe("smalltalk");
-    const error = (await denied.chat("Hello").catch((e: unknown) => e)) as EagleEyeError;
+    const error = (await denied.chat("Hello").catch((e: unknown) => e)) as MatrixEyeError;
     expect(error).toMatchObject({ status: 403, code: "forbidden" });
   });
 

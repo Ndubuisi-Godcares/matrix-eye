@@ -10,7 +10,7 @@
  * The base URL comes from trusted operator configuration, not from end users, so it is not
  * subject to the crawler's SSRF restrictions (localhost is a normal and intended value).
  */
-import { EagleError } from "@eagles-eye/core";
+import { MatrixError } from "@matrix-eye/core";
 import type { LlmProvider, LlmRequest, LlmResult } from "./provider";
 import { ReasoningFilter, stripReasoning } from "./reasoning";
 
@@ -61,11 +61,11 @@ export class OpenAiCompatibleProvider implements LlmProvider {
         }),
       });
     } catch (err) {
-      throw new EagleError("llm_failed", `Could not reach the language model at ${this.endpoint}: ${(err as Error).message}`, { cause: err });
+      throw new MatrixError("llm_failed", `Could not reach the language model at ${this.endpoint}: ${(err as Error).message}`, { cause: err });
     }
     if (!response.ok) {
       const detail = (await response.text().catch(() => "")).slice(0, 300);
-      throw new EagleError("llm_failed", `Language model returned HTTP ${response.status}: ${detail}`);
+      throw new MatrixError("llm_failed", `Language model returned HTTP ${response.status}: ${detail}`);
     }
     return response;
   }
@@ -74,7 +74,7 @@ export class OpenAiCompatibleProvider implements LlmProvider {
     const response = await this.post(request, false);
     const data = (await response.json()) as CompletionResponse;
     const text = data.choices?.[0]?.message?.content;
-    if (typeof text !== "string") throw new EagleError("llm_failed", "Language model response had no message content");
+    if (typeof text !== "string") throw new MatrixError("llm_failed", "Language model response had no message content");
     return {
       text: stripReasoning(text),
       usage: data.usage ? { promptTokens: data.usage.prompt_tokens ?? 0, completionTokens: data.usage.completion_tokens ?? 0 } : undefined,
@@ -85,7 +85,7 @@ export class OpenAiCompatibleProvider implements LlmProvider {
   async *stream(request: LlmRequest): AsyncIterable<string> {
     const response = await this.post(request, true);
     const reader = response.body?.getReader();
-    if (!reader) throw new EagleError("llm_failed", "Language model returned no stream");
+    if (!reader) throw new MatrixError("llm_failed", "Language model returned no stream");
     const decoder = new TextDecoder();
     const filter = new ReasoningFilter(); // hides <think> blocks even when split across fragments
     let pending = "";

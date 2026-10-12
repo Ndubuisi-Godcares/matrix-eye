@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { ScriptedProvider } from "@eagles-eye/llm";
-import { SqliteKnowledgeStore } from "@eagles-eye/knowledge";
+import { ScriptedProvider } from "@matrix-eye/llm";
+import { SqliteKnowledgeStore } from "@matrix-eye/knowledge";
 import { ConversationEngine } from "../src";
 
 /** A tiny indexed site, built directly in the store (no crawl needed). */

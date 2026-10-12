@@ -17,17 +17,17 @@ export type ErrorCode =
   | "llm_failed"
   | "internal";
 
-export class EagleError extends Error {
+export class MatrixError extends Error {
   readonly code: ErrorCode;
 
   constructor(code: ErrorCode, message: string, options?: { cause?: unknown }) {
     super(message, options);
-    this.name = "EagleError";
+    this.name = "MatrixError";
     this.code = code;
   }
 }
 
 /** Narrowing helper for `catch (err)` blocks. */
-export function isEagleError(err: unknown): err is EagleError {
-  return err instanceof EagleError;
+export function isMatrixError(err: unknown): err is MatrixError {
+  return err instanceof MatrixError;
 }

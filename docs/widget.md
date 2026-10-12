@@ -11,7 +11,7 @@ A new project is closed until you do this.
 
 ```bash
 curl -X PATCH $API/v1/projects/$PROJECT/settings \
-  -H "authorization: Bearer $EAGLE_API_KEY" -H "content-type: application/json" \
+  -H "authorization: Bearer $MATRIX_EYE_API_KEY" -H "content-type: application/json" \
   -d '{"allowedOrigins": ["https://www.school.edu", "https://school.edu"]}'
 ```
 
@@ -21,7 +21,7 @@ origins; list both if both are used.
 ## 2. Add it to a page
 
 ```html
-<script src="https://YOUR-HOST/eagles-eye-widget.js" defer
+<script src="https://YOUR-HOST/matrix-eye-widget.js" defer
         data-project="PROJECT_ID"
         data-api="https://YOUR-API-HOST"></script>
 ```
@@ -29,11 +29,11 @@ origins; list both if both are used.
 Other ways, same widget:
 
 ```html
-<eagles-eye-chat project="PROJECT_ID" api="https://YOUR-API-HOST"></eagles-eye-chat>
+<matrix-eye-chat project="PROJECT_ID" api="https://YOUR-API-HOST"></matrix-eye-chat>
 ```
 
 ```js
-const chat = EaglesEye.init({ project: "PROJECT_ID", api: "https://YOUR-API-HOST", color: "#0f2238" });
+const chat = MatrixEye.init({ project: "PROJECT_ID", api: "https://YOUR-API-HOST", color: "#0f2238" });
 chat.open(); chat.ask("How do I apply?"); chat.destroy();
 ```
 
@@ -41,9 +41,9 @@ React / Next.js:
 
 ```tsx
 "use client"; // Next.js App Router: required, because the widget runs in the browser
-import { EaglesEyeChat } from "@eagles-eye/widget-react";
+import { MatrixEyeChat } from "@matrix-eye/widget-react";
 export default function Assistant() {
-  return <EaglesEyeChat project="PROJECT_ID" api="https://YOUR-API-HOST" />;
+  return <MatrixEyeChat project="PROJECT_ID" api="https://YOUR-API-HOST" />;
 }
 ```
 
@@ -62,7 +62,7 @@ Try it locally on any site: `npm run demo -- https://example.edu` (see the [quic
 | `greeting` | opening message (else the project's greeting, else a default) | |
 | `placeholder` | input hint | `Ask a question…` |
 | `open` | start with the window open | closed |
-| `branding` | `false` hides "Powered by Eagle's Eye" | shown |
+| `branding` | `false` hides "Powered by Matrix Eye" | shown |
 | `persist` | `false` stops saving the conversation for the browser tab | saved |
 | `labels` (init only) | override any text, e.g. to translate | English |
 
@@ -101,5 +101,5 @@ before public launch.
 
 ## 7. Build
 
-`npm run build` writes `packages/widget/dist/eagles-eye-widget.js` (script tag) and an ES module. The build fails if the
+`npm run build` writes `packages/widget/dist/matrix-eye-widget.js` (script tag) and an ES module. The build fails if the
 script exceeds 30 KB gzipped.

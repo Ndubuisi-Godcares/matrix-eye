@@ -1,5 +1,5 @@
 {
-  "name": "@eagles-eye/engine",
+  "name": "@matrix-eye/engine",
   "version": "0.1.0",
   "private": true,
   "description": "Conversation runtime: rules, retrieval, grounded answering, validation and site ingestion.",
@@ -9,12 +9,12 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@eagles-eye/core": "0.1.0",
-    "@eagles-eye/crawler": "0.1.0",
-    "@eagles-eye/knowledge": "0.1.0",
-    "@eagles-eye/llm": "0.1.0"
+    "@matrix-eye/core": "0.1.0",
+    "@matrix-eye/crawler": "0.1.0",
+    "@matrix-eye/knowledge": "0.1.0",
+    "@matrix-eye/llm": "0.1.0"
   },
   "devDependencies": {
-    "@eagles-eye/testing": "0.1.0"
+    "@matrix-eye/testing": "0.1.0"
   }
 }

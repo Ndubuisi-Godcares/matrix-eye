@@ -1,4 +1,4 @@
-// Astro configuration for the Eagle's Eye website (a static site: no server is needed to host it).
+// Astro configuration for the Matrix Eye website (a static site: no server is needed to host it).
 import sitemap from "@astrojs/sitemap";
 import { satteri } from "@astrojs/markdown-satteri";
 import { defineConfig } from "astro/config";
@@ -8,7 +8,7 @@ import { defineMdastPlugin } from "satteri";
  * The public address of the site. A placeholder until the domain is chosen; set PUBLIC_SITE_URL when building for
  * production so canonical links, the sitemap and social previews point at the real address.
  */
-const site = process.env.PUBLIC_SITE_URL ?? "https://eagleseye.ai";
+const site = process.env.PUBLIC_SITE_URL ?? "https://matrixeye.ai";
 
 /** Pages that must not appear in search results or the sitemap (drafts awaiting legal review). */
 const UNLISTED = ["/privacy", "/terms", "/404"];

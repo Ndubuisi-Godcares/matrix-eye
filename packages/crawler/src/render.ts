@@ -18,7 +18,7 @@
  * the hosted service should run inside a network-isolated sandbox.
  */
 import dns from "node:dns/promises";
-import { EagleError } from "@eagles-eye/core";
+import { MatrixError } from "@matrix-eye/core";
 import { assertPublicUrl, isBlockedAddress } from "./ssrf";
 
 export interface PageRenderer {
@@ -101,14 +101,14 @@ export async function createPlaywrightRenderer(options: RendererOptions = {}): P
     const moduleName = "playwright";
     playwright = (await import(moduleName)) as PlaywrightLike;
   } catch (err) {
-    throw new EagleError("internal", "Playwright is not installed. Run: npm i playwright && npx playwright install chromium", { cause: err });
+    throw new MatrixError("internal", "Playwright is not installed. Run: npm i playwright && npx playwright install chromium", { cause: err });
   }
 
   let browser: PlaywrightBrowser;
   try {
     browser = await playwright.chromium.launch();
   } catch (err) {
-    throw new EagleError("internal", "Could not start Chromium. Run: npx playwright install chromium", { cause: err });
+    throw new MatrixError("internal", "Could not start Chromium. Run: npx playwright install chromium", { cause: err });
   }
   // One isolated context: no shared cookies, and service workers (which could bypass routing) are off.
   const context = await browser.newContext({ serviceWorkers: "block" });

@@ -18,20 +18,20 @@ beforeAll(() => {
 describe("built SDK", () => {
   it("emits ESM, CommonJS and declarations", () => {
     for (const file of ["dist/index.js", "dist/index.cjs", "dist/index.d.ts", "dist/types.d.ts"]) expect(existsSync(join(root, file)), file).toBe(true);
-    expect(readFileSync(join(root, "dist/index.d.ts"), "utf8")).toContain("EagleEyeClient");
+    expect(readFileSync(join(root, "dist/index.d.ts"), "utf8")).toContain("MatrixEyeClient");
   });
 
   it("works when imported as an ES module", async () => {
     const sdk = await import(pathToFileURL(join(root, "dist/index.js")).href);
-    expect(typeof sdk.EagleEyeClient).toBe("function");
+    expect(typeof sdk.MatrixEyeClient).toBe("function");
     expect(typeof sdk.PublicClient).toBe("function");
     expect(new sdk.SseParser().push("event: a\ndata: b\n\n")).toEqual([{ event: "a", data: "b" }]);
   });
 
   it("works when required from CommonJS", () => {
     const sdk = createRequire(import.meta.url)(join(root, "dist/index.cjs"));
-    expect(typeof sdk.EagleEyeClient).toBe("function");
-    expect(new sdk.EagleEyeError("x", 500, "internal").code).toBe("internal");
+    expect(typeof sdk.MatrixEyeClient).toBe("function");
+    expect(new sdk.MatrixEyeError("x", 500, "internal").code).toBe("internal");
   });
 
   it("has no runtime dependencies (nothing to install besides the SDK itself)", () => {

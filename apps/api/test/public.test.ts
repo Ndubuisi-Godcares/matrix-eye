@@ -3,8 +3,8 @@
  * Knowledge is written straight into the store, so these tests need no crawl and run in milliseconds.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { SqliteKnowledgeStore } from "@eagles-eye/knowledge";
-import { ScriptedProvider, type LlmProvider, type LlmRequest } from "@eagles-eye/llm";
+import { SqliteKnowledgeStore } from "@matrix-eye/knowledge";
+import { ScriptedProvider, type LlmProvider, type LlmRequest } from "@matrix-eye/llm";
 import type { AddressInfo } from "node:net";
 import type { FastifyInstance } from "fastify";
 import { buildApp } from "../src/app";
@@ -35,7 +35,7 @@ function parseSse(body: string): Array<{ event: string; data: any }> {
 beforeAll(async () => {
   store = new SqliteKnowledgeStore(":memory:");
   llm = new ScriptedProvider(["Computer Science tuition is $4,500 per year [1]."]);
-  ({ app } = await buildApp({ config: loadConfig({ EAGLE_API_KEY: API_KEY, EAGLE_PUBLIC_RATE_LIMIT_PER_MINUTE: "50" }), store, llm }));
+  ({ app } = await buildApp({ config: loadConfig({ MATRIX_EYE_API_KEY: API_KEY, MATRIX_EYE_PUBLIC_RATE_LIMIT_PER_MINUTE: "50" }), store, llm }));
 
   const created = await app.inject({ method: "POST", url: "/v1/projects", headers: admin, payload: { name: "Riverside University", siteUrl: "https://riverside.example" } });
   projectId = created.json().id;
@@ -144,7 +144,7 @@ describe("streaming", () => {
 
   it("replaces an unsafe streamed answer with the validated one", async () => {
     const lying = new ScriptedProvider(["Computer Science tuition is $9,999 per year [1]."]);
-    const other = await buildApp({ config: loadConfig({ EAGLE_API_KEY: API_KEY }), store, llm: lying });
+    const other = await buildApp({ config: loadConfig({ MATRIX_EYE_API_KEY: API_KEY }), store, llm: lying });
     const res = await other.app.inject({ method: "POST", url: pub("/chat/stream"), payload: { message: "How much is computer science tuition?" } });
     const events = parseSse(res.body);
     expect(events.filter((e) => e.event === "token").map((e) => e.data.text).join("")).toContain("9,999");
@@ -182,7 +182,7 @@ describe("feedback", () => {
 
 describe("abuse limits", () => {
   it("rate-limits each visitor per project", async () => {
-    const limited = await buildApp({ config: loadConfig({ EAGLE_API_KEY: API_KEY, EAGLE_PUBLIC_RATE_LIMIT_PER_MINUTE: "3" }), store });
+    const limited = await buildApp({ config: loadConfig({ MATRIX_EYE_API_KEY: API_KEY, MATRIX_EYE_PUBLIC_RATE_LIMIT_PER_MINUTE: "3" }), store });
     const codes: number[] = [];
     for (let i = 0; i < 5; i++) codes.push((await limited.app.inject({ method: "POST", url: pub("/chat"), payload: { message: "Hello" } })).statusCode);
     expect(codes).toEqual([200, 200, 200, 429, 429]);
@@ -215,7 +215,7 @@ class SignalAwareProvider implements LlmProvider {
 
 describe("stream cancellation (real HTTP connection)", () => {
   async function serve(model: SignalAwareProvider) {
-    const built = await buildApp({ config: loadConfig({ EAGLE_API_KEY: API_KEY, EAGLE_PUBLIC_RATE_LIMIT_PER_MINUTE: "50" }), store, llm: model });
+    const built = await buildApp({ config: loadConfig({ MATRIX_EYE_API_KEY: API_KEY, MATRIX_EYE_PUBLIC_RATE_LIMIT_PER_MINUTE: "50" }), store, llm: model });
     await built.app.listen({ port: 0, host: "127.0.0.1" });
     return { app: built.app, url: `http://127.0.0.1:${(built.app.server.address() as AddressInfo).port}` };
   }

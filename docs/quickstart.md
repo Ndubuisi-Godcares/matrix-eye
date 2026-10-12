@@ -1,7 +1,7 @@
 # Quickstart
 
-Eagle's Eye is in early access, so today you run it from its repository. This page takes you from nothing to a chat
-window answering from your own website, in about ten minutes. Nothing here changes your website: Eagle's Eye only
+Matrix Eye is in early access, so today you run it from its repository. This page takes you from nothing to a chat
+window answering from your own website, in about ten minutes. Nothing here changes your website: Matrix Eye only
 reads it, the way a visitor would.
 
 ## What you need
@@ -16,13 +16,13 @@ reads it, the way a visitor would.
 Run these in the folder where you want the project:
 
 ```bash
-git clone REPOSITORY-ADDRESS eagle-eye
-cd eagle-eye
+git clone REPOSITORY-ADDRESS matrix-eye
+cd matrix-eye
 npm install
 npm run build
 ```
 
-Always run commands from inside the `eagle-eye` folder, never from your website's own project.
+Always run commands from inside the `matrix-eye` folder, never from your website's own project.
 
 ## 2. See it on your website
 
@@ -49,8 +49,8 @@ The demo is a preview. To put the assistant on your website for real you run the
 **Start the API.** Create a file named `.env` in the repository folder with at least:
 
 ```bash
-EAGLE_API_KEY=choose-a-long-random-secret-of-at-least-16-characters
-EAGLE_DB_PATH=./data/eagle.sqlite
+MATRIX_EYE_API_KEY=choose-a-long-random-secret-of-at-least-16-characters
+MATRIX_EYE_DB_PATH=./data/matrix-eye.sqlite
 ```
 
 then run `npm run dev:api`. The API listens on `http://127.0.0.1:8787`. Keep the key secret: it controls your projects.
@@ -58,29 +58,29 @@ then run `npm run dev:api`. The API listens on `http://127.0.0.1:8787`. Keep the
 **Create a project and read your site.** With the [TypeScript SDK](sdk.md) (or the [API](api.md) directly):
 
 ```ts
-import { EagleEyeClient } from "@eagles-eye/sdk";
+import { MatrixEyeClient } from "@matrix-eye/sdk";
 
-const eagle = new EagleEyeClient({ baseUrl: "http://127.0.0.1:8787", apiKey: process.env.EAGLE_API_KEY });
+const matrix = new MatrixEyeClient({ baseUrl: "http://127.0.0.1:8787", apiKey: process.env.MATRIX_EYE_API_KEY });
 
-const project = await eagle.createProject({
+const project = await matrix.createProject({
   name: "My website",
   siteUrl: "https://your-website.example",
   // Only websites listed here may show the chat window. A new project is closed until you add yours.
   settings: { allowedOrigins: ["https://your-website.example"] },
 });
-await eagle.waitForCrawl((await eagle.startCrawl(project.id)).id);
+await matrix.waitForCrawl((await matrix.startCrawl(project.id)).id);
 console.log("Project id:", project.id);
 ```
 
 **Add the chat window** to your pages, just before `</body>`:
 
 ```html
-<script src="https://YOUR-HOST/eagles-eye-widget.js" defer
+<script src="https://YOUR-HOST/matrix-eye-widget.js" defer
         data-project="PROJECT_ID"
         data-api="https://YOUR-API-HOST"></script>
 ```
 
-`eagles-eye-widget.js` is built by `npm run build` at `packages/widget/dist/`; host it anywhere your site can load
+`matrix-eye-widget.js` is built by `npm run build` at `packages/widget/dist/`; host it anywhere your site can load
 scripts from. See the [widget guide](widget.md) for colours, position, React and Next.js.
 
 ## 4. Make it better

@@ -1,10 +1,10 @@
 /**
- * The Eagle's Eye client.
+ * The Matrix Eye client.
  *
  * Two audiences, two classes:
  *  - `PublicClient`: what a website visitor's browser may do (chat, stream, feedback, display settings).
  *    No secret needed, which is why the chat widget uses it.
- *  - `EagleEyeClient`: the server-side admin client (projects, crawling, rules, feedback review). It needs an
+ *  - `MatrixEyeClient`: the server-side admin client (projects, crawling, rules, feedback review). It needs an
  *    API key, so it must never be shipped to a browser. Its `project(id)` gives the public client.
  *
  * Works in Node 18+ and modern browsers; uses only `fetch`, `AbortController` and `TextDecoder`.
@@ -38,7 +38,7 @@ export interface ClientOptions {
 }
 
 /** An error response from the API, with its machine-readable code. */
-export class EagleEyeError extends Error {
+export class MatrixEyeError extends Error {
   constructor(
     message: string,
     /** HTTP status (0 when the request never reached the server). */
@@ -48,7 +48,7 @@ export class EagleEyeError extends Error {
     readonly details?: unknown,
   ) {
     super(message);
-    this.name = "EagleEyeError";
+    this.name = "MatrixEyeError";
   }
 }
 
@@ -83,7 +83,7 @@ class Transport {
       });
     } catch (err) {
       if (extra.signal?.aborted) throw err; // the caller cancelled; let the abort propagate unchanged
-      throw new EagleEyeError(`Could not reach the Eagle's Eye server: ${(err as Error).message}`, 0, "network_error");
+      throw new MatrixEyeError(`Could not reach the Matrix Eye server: ${(err as Error).message}`, 0, "network_error");
     }
     if (!response.ok) throw await toError(response);
     return response;
@@ -95,7 +95,7 @@ class Transport {
   }
 }
 
-async function toError(response: Response): Promise<EagleEyeError> {
+async function toError(response: Response): Promise<MatrixEyeError> {
   let code = "http_error";
   let message = `Request failed with status ${response.status}`;
   let details: unknown;
@@ -107,7 +107,7 @@ async function toError(response: Response): Promise<EagleEyeError> {
   } catch {
     // Not JSON (a proxy error page, for instance): keep the generic message.
   }
-  return new EagleEyeError(message, response.status, code, details);
+  return new MatrixEyeError(message, response.status, code, details);
 }
 
 /** Visitor-facing operations for one project. Safe to use in a browser. */
@@ -143,7 +143,7 @@ export class PublicClient {
   async *stream(message: string, options: ChatOptions = {}): AsyncGenerator<StreamEvent, void, void> {
     const response = await this.http.send("POST", `${this.root}/chat/stream`, { message, history: options.history ?? [] }, { signal: options.signal, stream: true });
     const reader = response.body?.getReader();
-    if (!reader) throw new EagleEyeError("The server returned no stream", response.status, "no_stream");
+    if (!reader) throw new MatrixEyeError("The server returned no stream", response.status, "no_stream");
 
     const decoder = new TextDecoder();
     const parser = new SseParser();
@@ -159,7 +159,7 @@ export class PublicClient {
             sawFinal = true;
             yield { type: "final", response: data as unknown as ChatResponse };
           } else if (message.event === "error") {
-            throw new EagleEyeError(String(data.message ?? "The assistant failed"), response.status, String(data.code ?? "internal"));
+            throw new MatrixEyeError(String(data.message ?? "The assistant failed"), response.status, String(data.code ?? "internal"));
           }
         }
       }
@@ -167,7 +167,7 @@ export class PublicClient {
       reader.releaseLock();
     }
     // A stream that ends without a final event was cut off (network drop, server restart).
-    if (!sawFinal && !options.signal?.aborted) throw new EagleEyeError("The answer was interrupted before it finished", 0, "stream_interrupted");
+    if (!sawFinal && !options.signal?.aborted) throw new MatrixEyeError("The answer was interrupted before it finished", 0, "stream_interrupted");
   }
 
   /** Record a thumbs up or down on an answer. */
@@ -177,7 +177,7 @@ export class PublicClient {
 }
 
 /** Server-side admin client. Needs an API key; never use it in a browser. */
-export class EagleEyeClient {
+export class MatrixEyeClient {
   private readonly http: Transport;
 
   constructor(private readonly options: ClientOptions) {
@@ -218,8 +218,8 @@ export class EagleEyeClient {
     for (;;) {
       const job = await this.getCrawl(jobId);
       if (job.status === "completed") return job;
-      if (job.status === "failed") throw new EagleEyeError(job.error ?? "The crawl failed", 0, "crawl_failed", job);
-      if (Date.now() > deadline) throw new EagleEyeError("Timed out waiting for the crawl", 0, "timeout", job);
+      if (job.status === "failed") throw new MatrixEyeError(job.error ?? "The crawl failed", 0, "crawl_failed", job);
+      if (Date.now() > deadline) throw new MatrixEyeError("Timed out waiting for the crawl", 0, "timeout", job);
       await new Promise((resolve) => setTimeout(resolve, options.pollMs ?? 1000));
     }
   }
