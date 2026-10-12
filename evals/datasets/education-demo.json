@@ -65,8 +65,11 @@
         "/admissions"
       ],
       "mustContain": [
-        "five credits"
-      ]
+        "five credits",
+        "five secondary school credits",
+        "minimum of five"
+      ],
+      "mustContainAny": true
     },
     {
       "id": "ielts",

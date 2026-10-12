@@ -12,6 +12,7 @@
  */
 import { EagleError } from "@eagles-eye/core";
 import type { LlmProvider, LlmRequest, LlmResult } from "./provider";
+import { ReasoningFilter, stripReasoning } from "./reasoning";
 
 export interface OpenAiCompatibleOptions {
   baseUrl: string;
@@ -75,7 +76,7 @@ export class OpenAiCompatibleProvider implements LlmProvider {
     const text = data.choices?.[0]?.message?.content;
     if (typeof text !== "string") throw new EagleError("llm_failed", "Language model response had no message content");
     return {
-      text: text.trim(),
+      text: stripReasoning(text),
       usage: data.usage ? { promptTokens: data.usage.prompt_tokens ?? 0, completionTokens: data.usage.completion_tokens ?? 0 } : undefined,
     };
   }
@@ -86,6 +87,7 @@ export class OpenAiCompatibleProvider implements LlmProvider {
     const reader = response.body?.getReader();
     if (!reader) throw new EagleError("llm_failed", "Language model returned no stream");
     const decoder = new TextDecoder();
+    const filter = new ReasoningFilter(); // hides <think> blocks even when split across fragments
     let pending = "";
 
     for (;;) {
@@ -99,10 +101,15 @@ export class OpenAiCompatibleProvider implements LlmProvider {
         const trimmed = line.trim();
         if (!trimmed.startsWith("data:")) continue;
         const payload = trimmed.slice(5).trim();
-        if (payload === "[DONE]") return;
+        if (payload === "[DONE]") {
+          const rest = filter.flush();
+          if (rest) yield rest;
+          return;
+        }
         try {
           const delta = (JSON.parse(payload) as StreamChunk).choices?.[0]?.delta?.content;
-          if (delta) yield delta;
+          const visible = delta ? filter.push(delta) : "";
+          if (visible) yield visible;
         } catch {
           // Ignore malformed keep-alive or partial lines rather than failing the whole answer.
         }

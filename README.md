@@ -47,11 +47,16 @@ npm run eagle -- crawl https://your-react-site.org --max-pages 30 --render
 ```
 
 Answers are **extractive** by default: quoted from the site, with citations, and they cannot hallucinate.
-For conversational answers, point at any OpenAI-compatible model (Ollama, vLLM, LM Studio, a hosted API):
+For conversational answers, point at any OpenAI-compatible model (Ollama, vLLM, LM Studio, a hosted API). With
+[Ollama](https://ollama.com) (free, runs locally, no account):
 
 ```bash
-EAGLE_LLM_BASE_URL=http://localhost:11434/v1 EAGLE_LLM_MODEL=qwen2.5:7b-instruct npm run eagle -- chat
+ollama pull qwen3:4b-instruct          # 2.5 GB, Apache-2.0, a NON-thinking model
+EAGLE_LLM_BASE_URL=http://localhost:11434/v1 EAGLE_LLM_MODEL=qwen3:4b-instruct npm run eagle -- llm-check
+EAGLE_LLM_BASE_URL=http://localhost:11434/v1 EAGLE_LLM_MODEL=qwen3:4b-instruct npm run eagle -- chat
 ```
+
+Use non-thinking models; see [ADR-005](docs/adr/ADR-005-language-model-and-ollama.md) for why and for measured results.
 
 Score it against your own labelled questions: copy `evals/datasets/education-demo.json`, write questions
 and expected pages for your site, then `npm run eval -- --url https://your-university.edu --dataset my.json`.

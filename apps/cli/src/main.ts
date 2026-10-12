@@ -28,6 +28,7 @@ Usage:
   eagle chat
   eagle search "<query>" [--limit N]
   eagle pages
+  eagle llm-check          test the configured language model (EAGLE_LLM_BASE_URL / EAGLE_LLM_MODEL)
 
 Options:
   --render       Run JavaScript for pages that arrive empty (React/Vue sites). Needs a one-time
@@ -136,6 +137,25 @@ async function main() {
           console.log(`\n${hit.score.toFixed(4)}  ${hit.chunk.pageTitle}${hit.chunk.headingPath.length ? " > " + hit.chunk.headingPath.join(" > ") : ""}`);
           console.log(`        ${hit.chunk.pageUrl}`);
           console.log(`        ${hit.chunk.text.slice(0, 200).replace(/\s+/g, " ")}`);
+        }
+        break;
+      }
+
+      case "llm-check": {
+        const llm = llmFromEnv();
+        if (!llm) throw new Error("No model configured. Set EAGLE_LLM_BASE_URL and EAGLE_LLM_MODEL (see the command guide).");
+        console.log(`Testing ${llm.name} ...`);
+        const started = performance.now();
+        const { text, usage } = await llm.complete({ messages: [{ role: "user", content: "Reply with exactly one word: OK" }], maxTokens: 16, temperature: 0 });
+        const seconds = (performance.now() - started) / 1000;
+        console.log(`Reply: "${text}"  (${seconds.toFixed(1)} s, includes loading the model on the first call)`);
+        if (usage) console.log(`Tokens: ${usage.promptTokens} in, ${usage.completionTokens} out`);
+        if (text.length === 0) {
+          console.log("Model answered with nothing. It may be a 'thinking' model that used its whole budget thinking; try a non-thinking one (e.g. qwen3:4b-instruct).");
+        } else if (text.length > 40) {
+          console.log("Model is reachable, but it answered a one-word request at length. That usually means a 'thinking' model, which is slow and can leak its reasoning. Prefer a non-thinking model (e.g. qwen3:4b-instruct).");
+        } else {
+          console.log("Model is reachable and answers directly.");
         }
         break;
       }
