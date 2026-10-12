@@ -117,3 +117,70 @@ document.querySelectorAll<HTMLTableElement>("main table").forEach((table) => {
   table.replaceWith(wrap);
   wrap.append(table);
 });
+
+/* ---------- motion ---------- */
+// Visual polish only. Skipped entirely for visitors who ask for reduced motion, so their page is simply static.
+const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// Header shadow once the page has scrolled.
+const header = document.querySelector<HTMLElement>(".site-header");
+const paintHeader = () => header?.classList.toggle("is-scrolled", scrollY > 8);
+paintHeader();
+addEventListener("scroll", paintHeader, { passive: true });
+
+if (!calm) {
+  // Reveal content as it scrolls into view. Only elements that start below the fold are hidden, so nothing flashes
+  // at load, and each element is shown again by the observer (or immediately if the observer is unavailable).
+  if ("IntersectionObserver" in window) {
+    const seen = new IntersectionObserver(
+      (entries) => entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-in");
+        seen.unobserve(entry.target);
+      }),
+      { rootMargin: "0px 0px -8% 0px", threshold: 0.08 },
+    );
+    const targets = document.querySelectorAll<HTMLElement>(
+      "main :is(.section__head, .card, .plan, .steps > li, .cta-band, .faq details, .split > *, .callout, .table-wrap, .guide-card):not(.hero *):not(.prose *)",
+    );
+    targets.forEach((element) => {
+      if (element.getBoundingClientRect().top < innerHeight) return; // already on screen at load: leave it alone
+      const siblings = Array.from(element.parentElement?.children ?? []);
+      element.style.setProperty("--sr-i", String(Math.min(siblings.indexOf(element), 5)));
+      element.classList.add("sr");
+      seen.observe(element);
+    });
+  }
+
+  // Reading progress bar on long text pages.
+  const article = document.querySelector<HTMLElement>(".prose");
+  if (article) {
+    const bar = document.createElement("div");
+    bar.className = "progress";
+    bar.setAttribute("aria-hidden", "true");
+    document.body.append(bar);
+    const update = () => {
+      const box = article.getBoundingClientRect();
+      const total = box.height - innerHeight * 0.6;
+      bar.style.setProperty("--p", String(Math.max(0, Math.min(1, total > 0 ? -box.top / total : 0))));
+    };
+    update();
+    addEventListener("scroll", update, { passive: true });
+    addEventListener("resize", update);
+  }
+}
+
+// "On this page": mark the section being read (useful for everyone, so it runs even with reduced motion).
+const tocLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('.docs__toc a[href^="#"]'));
+if (tocLinks.length && "IntersectionObserver" in window) {
+  const byId = new Map(tocLinks.map((link) => [decodeURIComponent(link.hash.slice(1)), link]));
+  const mark = (id: string) => tocLinks.forEach((link) => (byId.get(id) === link ? link.setAttribute("aria-current", "location") : link.removeAttribute("aria-current")));
+  const spy = new IntersectionObserver(
+    (entries) => entries.forEach((entry) => entry.isIntersecting && mark(entry.target.id)),
+    { rootMargin: "-80px 0px -70% 0px" },
+  );
+  byId.forEach((_, id) => {
+    const heading = document.getElementById(id);
+    if (heading) spy.observe(heading);
+  });
+}

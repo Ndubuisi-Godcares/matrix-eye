@@ -67,9 +67,9 @@ afterAll(async () => {
 });
 
 /** A page that records problems as they happen: console errors, security-policy violations, off-site requests. */
-async function open(path: string, options: { colorScheme?: "light" | "dark"; width?: number; height?: number; permissions?: string[]; bypassCSP?: boolean } = {}) {
+async function open(path: string, options: { colorScheme?: "light" | "dark"; width?: number; height?: number; permissions?: string[]; bypassCSP?: boolean; motion?: boolean } = {}) {
   // bypassCSP only for the accessibility audit, which must inject the axe-core script; every other test runs under the real policy.
-  const context = await browser!.newContext({ bypassCSP: options.bypassCSP, colorScheme: options.colorScheme ?? "light", viewport: { width: options.width ?? 1280, height: options.height ?? 900 } });
+  const context = await browser!.newContext({ reducedMotion: options.motion ? "no-preference" : "reduce", bypassCSP: options.bypassCSP, colorScheme: options.colorScheme ?? "light", viewport: { width: options.width ?? 1280, height: options.height ?? 900 } });
   if (options.permissions) await context.grantPermissions(options.permissions);
   const page = await context.newPage();
   const problems: string[] = [];
@@ -170,6 +170,46 @@ describe("every page, in a real browser", () => {
     expect(perf.cls, `layout shift ${perf.cls.toFixed(3)}`).toBeLessThan(0.1);
     await context.close();
   }, 60_000);
+});
+
+describe("layout and motion", () => {
+  it("gives documentation a comfortable reading column on wide screens, without breaking words in tables", async (ctx) => {
+    if (!browser) return ctx.skip();
+    for (const width of [1280, 1697, 2560]) {
+      const { page, context } = await open("/docs/accuracy/", { width, height: 900 });
+      const column = await page.locator(".docs .prose").evaluate((el) => el.getBoundingClientRect().width);
+      expect(column, `article width at ${width}px`).toBeGreaterThanOrEqual(width === 1280 ? 600 : 700);
+      // No table cell may be so narrow that a word has to be split across lines.
+      const split = await page.locator(".prose td, .prose th").evaluateAll((cells) => cells.filter((c) => c.scrollWidth > c.clientWidth + 1).map((c) => c.textContent?.slice(0, 30)));
+      expect(split).toEqual([]);
+      await context.close();
+    }
+  });
+
+  it("reveals content as it scrolls into view, and never hides anything for reduced-motion visitors", async (ctx) => {
+    if (!browser) return ctx.skip();
+    const moving = await open("/pricing/", { motion: true });
+    const hidden = await moving.page.locator(".sr:not(.is-in)").count();
+    expect(hidden, "elements below the fold start hidden").toBeGreaterThan(0);
+    expect(await moving.page.locator(".hero, .section").first().evaluate((el) => getComputedStyle(el).opacity)).toBe("1"); // the first screen never flashes
+    await moving.page.evaluate(() => scrollTo(0, document.body.scrollHeight));
+    await moving.page.waitForTimeout(1200);
+    expect(await moving.page.locator(".sr:not(.is-in)").count(), "everything is shown after scrolling").toBeLessThan(hidden);
+    await moving.context.close();
+
+    const still = await open("/pricing/"); // reduced motion by default in these tests
+    expect(await still.page.locator(".sr").count()).toBe(0);
+    await still.context.close();
+  });
+
+  it("marks the section being read in the docs table of contents", async (ctx) => {
+    if (!browser) return ctx.skip();
+    const { page, context } = await open("/docs/accuracy/", { width: 1400, height: 900 });
+    await page.locator(".prose h2").nth(2).scrollIntoViewIfNeeded();
+    await page.evaluate(() => scrollBy(0, 200));
+    await expect.poll(() => page.locator('.docs__toc a[aria-current="location"]').count()).toBe(1);
+    await context.close();
+  });
 });
 
 describe("keyboard and interaction", () => {
