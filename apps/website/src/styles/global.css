@@ -176,12 +176,10 @@ code, kbd, pre { font-family: var(--font-mono); font-size: 0.9em; }
 .nav .nav__actions { justify-self: end; }
 .brand { display: inline-flex; align-items: center; line-height: 0; }
 .brand img { height: 2.5rem; width: auto; }
-.logo-glow { position: relative; display: inline-flex; line-height: 0; }
-.logo-glow img { position: relative; z-index: 1; }
-/* In dark mode the original-colour logo sits on a soft light glow that is solid behind the logo and fades to nothing
-   at its edges, so there is no visible box. */
-:root[data-theme="dark"] .logo-glow::before { content: ""; position: absolute; inset: -0.55rem -1.4rem; border-radius: 50%; background: radial-gradient(closest-side, rgb(238 233 221 / 0.94) 0, rgb(238 233 221 / 0.94) 56%, rgb(238 233 221 / 0.35) 80%, rgb(238 233 221 / 0) 100%); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .logo-glow::before { content: ""; position: absolute; inset: -0.55rem -1.4rem; border-radius: 50%; background: radial-gradient(closest-side, rgb(238 233 221 / 0.94) 0, rgb(238 233 221 / 0.94) 56%, rgb(238 233 221 / 0.35) 80%, rgb(238 233 221 / 0) 100%); } }
+.logo-badge { display: inline-flex; line-height: 0; }
+/* In dark mode the original-colour logo sits on a light rounded rectangle, so the navy lettering stays readable. */
+:root[data-theme="dark"] .logo-badge { background: #faf8f3; padding: 0.3rem 0.55rem; border-radius: 10px; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .logo-badge { background: #faf8f3; padding: 0.3rem 0.55rem; border-radius: 10px; } }
 .nav__links { display: flex; align-items: center; gap: 0.25rem; list-style: none; padding: 0; margin-block: 0; }
 .nav__links a { display: block; padding: 0.55rem 0.8rem; border-radius: 999px; text-decoration: none; font-weight: 550; font-size: 0.98rem; color: var(--text); }
 .nav__links a:hover { background: var(--accent-soft); color: var(--ink); }

@@ -1,8 +1,7 @@
 ---
 /**
  * The brand logo: the eye with the MATRIXEYE lettering underneath, exactly as designed, in its original colours in
- * both themes. In dark mode CSS lays a soft light glow behind it, fading out toward the edges, so the navy stays readable
- * without a hard box (see `.logo-glow` in global.css).
+ * both themes. In dark mode CSS puts it on a light rounded rectangle so the navy stays readable (see `.logo-badge` in global.css).
  * Width and height are set so the page does not shift while the image loads.
  */
 import { SITE } from "../data/site";
@@ -13,4 +12,4 @@ const { height = 40 } = Astro.props;
 const width = Math.round(height * (700 / 390)); // the logo's aspect ratio
 ---
 
-<span class="logo-glow"><img class="logo" src="/brand/lockup-light.webp" alt={SITE.name} width={width} height={height} decoding="async" fetchpriority="high" /></span>
+<span class="logo-badge"><img class="logo" src="/brand/lockup-light.webp" alt={SITE.name} width={width} height={height} decoding="async" fetchpriority="high" /></span>
