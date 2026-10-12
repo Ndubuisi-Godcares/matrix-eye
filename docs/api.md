@@ -27,7 +27,7 @@ Errors always have the shape `{ "error": { "code": "...", "message": "...", "det
 }
 ```
 
-`route` is one of `rule`, `facts`, `llm`, `extractive`, `abstain`. Citation numbers in `answer` refer to `citations[].id`.
+`route` is one of `rule`, `smalltalk`, `facts`, `overview`, `llm`, `extractive`, `abstain`. Citation numbers in `answer` refer to `citations[].id`.
 
 ## Rules
 

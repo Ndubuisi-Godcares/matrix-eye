@@ -10,3 +10,4 @@ export { factsFromPage, dedupeFacts, isContactQuestion, answerFromFacts } from "
 export { expectsNumber, containsNumber } from "./answer-type";
 export { unsupportedKeyTerm, inverseDocumentFrequency } from "./retrieve";
 export { isOverviewQuestion } from "./overview";
+export { detectSmallTalk, smallTalkReply, shortSiteName } from "./smalltalk";

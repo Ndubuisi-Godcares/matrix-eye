@@ -20,18 +20,22 @@ import { containsNumber, expectsNumber } from "./answer-type";
 import { answerFromFacts, isContactQuestion } from "./facts";
 import { composeExtractive } from "./extractive";
 import { isOverviewQuestion } from "./overview";
+import { detectSmallTalk, shortSiteName, smallTalkReply } from "./smalltalk";
 import { buildMessages } from "./prompt";
 import { coverage, inverseDocumentFrequency, selectEvidence, unsupportedKeyTerm } from "./retrieve";
 import { rewriteHeuristic, rewriteQuery } from "./rewrite";
 import { matchRule } from "./rules";
 import { validateAnswer } from "./validate";
 
+/** Retrieval and answering settings; the defaults in core are fixed literals, so widen them to plain numbers. */
+export type AnswerTuning = { -readonly [K in keyof typeof ANSWER_DEFAULTS]: number };
+
 export interface EngineOptions {
   store: KnowledgeStore;
   /** Language model. When null/omitted the engine answers extractively (no model needed). */
   llm?: LlmProvider | null;
   /** Override any retrieval/answering threshold (see ANSWER_DEFAULTS). */
-  tuning?: Partial<typeof ANSWER_DEFAULTS>;
+  tuning?: Partial<AnswerTuning>;
 }
 
 export interface AskInput {
@@ -50,12 +54,15 @@ const MAX_QUESTION_CHARS = 1000;
 export class ConversationEngine {
   private readonly store: KnowledgeStore;
   private readonly llm: LlmProvider | null;
-  private readonly tuning: typeof ANSWER_DEFAULTS;
+  private readonly tuning: AnswerTuning;
 
   constructor(options: EngineOptions) {
     this.store = options.store;
     this.llm = options.llm ?? null;
-    this.tuning = { ...ANSWER_DEFAULTS, ...options.tuning };
+    // A model can read and combine more passages than a sentence-quoting fallback can use well. Listing
+    // questions ("what courses do you offer?") need several sources, so give it more by default.
+    const modelDefaults = options.llm ? { evidenceChunks: 6, maxChunksPerPage: 3 } : {};
+    this.tuning = { ...ANSWER_DEFAULTS, ...modelDefaults, ...options.tuning };
   }
 
   async ask(input: AskInput): Promise<ChatResponse> {
@@ -74,6 +81,13 @@ export class ConversationEngine {
     const rule = matchRule(input.rules ?? [], question);
     if (rule) {
       return { answer: rule.response, abstained: false, route: "rule", citations: [], debug: this.debug(question, [], 0, [`rule:${rule.id}`], timings) };
+    }
+
+    // 1b. Greetings, thanks and goodbyes need no search and no model.
+    const smallTalk = detectSmallTalk(question);
+    if (smallTalk) {
+      const name = input.siteName && input.siteName !== "this website" ? input.siteName : shortSiteName(this.store.rootPage(input.projectId)?.title);
+      return { answer: smallTalkReply(smallTalk, name), abstained: false, route: "smalltalk", citations: [], debug: this.debug(question, [], 1, [], timings) };
     }
 
     // 2. Contact details come from extracted facts, never from generation.

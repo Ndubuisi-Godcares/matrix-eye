@@ -120,6 +120,15 @@ describe("ConversationEngine (extractive, no model)", () => {
     expect(r.answer).toBe("Application fees are non-refundable.");
   });
 
+  it("greets without searching and without claiming it found nothing", async () => {
+    const r = await engine().ask({ projectId: PROJECT, question: "Hello" });
+    expect(r.route).toBe("smalltalk");
+    expect(r.abstained).toBe(false);
+    expect(r.answer).not.toMatch(/couldn't find/i);
+    // A greeting with a real question after it is still a question.
+    expect((await engine().ask({ projectId: PROJECT, question: "Hello, how much is tuition for nursing?" })).route).not.toBe("smalltalk");
+  });
+
   it("rejects empty questions and bounds very long ones", async () => {
     await expect(engine().ask({ projectId: PROJECT, question: "   " })).rejects.toMatchObject({ code: "invalid_request" });
     const r = await engine().ask({ projectId: PROJECT, question: "tuition ".repeat(5000) });

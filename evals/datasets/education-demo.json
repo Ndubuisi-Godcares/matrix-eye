@@ -79,8 +79,10 @@
         "/admissions"
       ],
       "mustContain": [
-        "IELTS"
-      ]
+        "IELTS",
+        "6.0"
+      ],
+      "mustContainAny": true
     },
     {
       "id": "app-fee",
