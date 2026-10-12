@@ -24,7 +24,7 @@ body { background: #0a1320; position: relative; overflow: hidden; font-family: "
 .glow { position: absolute; right: -200px; top: -250px; width: 900px; height: 900px; border-radius: 50%; background: radial-gradient(closest-side, rgba(40,255,170,.20), rgba(40,255,170,0)); }
 .bar { position: absolute; left: 0; top: 0; bottom: 0; width: 14px; background: linear-gradient(#b2fc07, #19f2c4); }
 .wrap { position: absolute; left: 90px; top: 70px; right: 90px; bottom: 70px; display: flex; flex-direction: column; justify-content: space-between; }
-img { height: 190px; width: auto; align-self: flex-start; }
+img { height: 120px; width: auto; align-self: flex-start; }
 h1 { font-family: "F", serif; font-weight: 580; font-size: 66px; line-height: 1.08; letter-spacing: -0.02em; margin: 0; max-width: 1020px; }
 p { margin: 0; font-size: 30px; color: #a9b4c2; }
 </style></head><body><div class="glow"></div><div class="bar"></div>

@@ -145,9 +145,9 @@ describe("weight budgets (gzipped)", () => {
   });
 
   it("keeps images small enough for a fast first view", () => {
-    // The header and footer load the small lockup; the full logo is only used to draw the sharing image.
-    expect(readFileSync(join(DIST, "brand/lockup.webp")).length, "lockup").toBeLessThan(40 * 1024);
-    expect(readFileSync(join(DIST, "brand/logo.webp")).length, "logo").toBeLessThan(120 * 1024);
+    // The header and footer load the small mark; the larger emblem is only used to draw the sharing image.
+    expect(readFileSync(join(DIST, "brand/mark.webp")).length, "mark").toBeLessThan(20 * 1024);
+    expect(readFileSync(join(DIST, "brand/logo.webp")).length, "logo").toBeLessThan(80 * 1024);
     expect(readFileSync(join(DIST, "og.png")).length).toBeLessThan(400 * 1024);
   });
 

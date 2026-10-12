@@ -2,10 +2,12 @@
  * Generates the website's image assets from the original logo (brand/matrix-eye-logo.png, neon on a black background).
  * The logo's colours are never changed.
  *
- *   public/brand/logo.webp     the full logo with a transparent background (used to draw the sharing image)
- *   public/brand/lockup.webp   the same logo, small, for the header and footer
+ *   public/brand/logo.webp   the emblem (no lettering) with a transparent background (used to draw the sharing image)
+ *   public/brand/mark.webp   the same emblem, small, for the header and footer
  *   public/favicon-32.png, apple-touch-icon.png, icon-512.png   the emblem on a dark tile
- *   brand/matrix-eye-logo-transparent.png   full-size transparent copy for any other use
+ *   brand/matrix-eye-emblem.png   full-size transparent emblem for any other use
+ *
+ * The website shows the emblem alone; the original logo's MATRIXEYE lettering is not used on the site.
  *
  * The black is removed with "colour to alpha": a pixel's brightness becomes its opacity and its colour is restored
  * to full strength, which is the exact inverse of laying the logo on black. Glowing edges therefore fade smoothly
@@ -24,7 +26,7 @@ const out = join(here, "../public");
 mkdirSync(join(out, "brand"), { recursive: true });
 
 // Earlier logos produced files with other names; they are no longer used.
-for (const old of ["logo-light.webp", "logo-dark.webp", "lockup-light.webp", "lockup-dark.webp", "mark-light.webp", "mark-dark.webp"]) rmSync(join(out, "brand", old), { force: true });
+for (const old of ["lockup.webp", "logo-light.webp", "logo-dark.webp", "lockup-light.webp", "lockup-dark.webp", "mark-light.webp", "mark-dark.webp"]) rmSync(join(out, "brand", old), { force: true });
 
 const TILE = { r: 10, g: 19, b: 32, alpha: 1 }; // the site's dark background, for the small icons
 
@@ -47,17 +49,18 @@ async function transparent() {
 
 // Trimming is a separate step from cropping: sharp cannot extract and trim in one pipeline.
 const trimmed = async (png) => sharp(png).trim({ threshold: 4 }).png().toBuffer();
-const full = await trimmed(await transparent());
-await sharp(full).toFile(join(brandDir, "matrix-eye-logo-transparent.png"));
+const withLettering = await trimmed(await transparent());
+// The emblem is everything above the lettering, which starts about 83% of the way down (the emblem itself ends near 75%).
+const lettered = await sharp(withLettering).metadata();
+const emblem = await trimmed(await sharp(withLettering).extract({ left: 0, top: 0, width: lettered.width, height: Math.round(lettered.height * 0.79) }).png().toBuffer());
+await sharp(emblem).toFile(join(brandDir, "matrix-eye-emblem.png"));
+rmSync(join(brandDir, "matrix-eye-logo-transparent.png"), { force: true });
 
 const webp = (buffer, file, width) =>
   sharp(buffer).resize({ width }).webp({ quality: 90, alphaQuality: 95 }).toFile(join(out, "brand", file));
-await webp(full, "logo.webp", 700);
-await webp(full, "lockup.webp", 360);
-
-// The emblem alone (everything above the lettering, which starts about 74% of the way down) for the small icons.
-const fullMeta = await sharp(full).metadata();
-const emblem = await trimmed(await sharp(full).extract({ left: 0, top: 0, width: fullMeta.width, height: Math.round(fullMeta.height * 0.72) }).png().toBuffer());
+await webp(emblem, "logo.webp", 600);
+await webp(emblem, "mark.webp", 200);
+const fullMeta = await sharp(emblem).metadata();
 
 async function icon(size, file, padding) {
   const inner = Math.round(size * (1 - padding * 2));
@@ -73,4 +76,4 @@ await icon(32, "favicon-32.png", 0.06);
 await icon(180, "apple-touch-icon.png", 0.12);
 await icon(512, "icon-512.png", 0.14);
 const meta = await sharp(source).metadata();
-console.log(`Assets written to apps/website/public (source ${meta.width}x${meta.height}, trimmed ${fullMeta.width}x${fullMeta.height})`);
+console.log(`Assets written to apps/website/public (source ${meta.width}x${meta.height}, emblem ${fullMeta.width}x${fullMeta.height})`);

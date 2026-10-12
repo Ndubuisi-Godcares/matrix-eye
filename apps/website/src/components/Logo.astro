@@ -1,16 +1,16 @@
 ---
 /**
- * The brand logo: the emblem with the MATRIXEYE lettering underneath, exactly as designed. The picture has a
- * transparent background, so on the dark theme it blends straight into the page. Its colours are bright neon, which
- * need a dark backdrop, so on the light theme CSS puts it on a small dark rounded tile (see `.logo-badge` in global.css).
+ * The brand emblem on its own (the site does not use the logo's MATRIXEYE lettering). The picture has a transparent
+ * background, so on the dark theme it blends straight into the page. Its colours are bright neon, which need a dark
+ * backdrop, so on the light theme CSS puts it on a small dark rounded tile (see `.logo-badge` in global.css).
  * Width and height are set so the page does not shift while the image loads.
  */
 import { SITE } from "../data/site";
 interface Props {
   height?: number;
 }
-const { height = 40 } = Astro.props;
-const width = Math.round(height * (700 / 444)); // the logo's aspect ratio
+const { height = 30 } = Astro.props;
+const width = Math.round(height * (1058 / 546)); // the emblem's aspect ratio
 ---
 
-<span class="logo-badge"><img class="logo" src="/brand/lockup.webp" alt={SITE.name} width={width} height={height} decoding="async" fetchpriority="high" /></span>
+<span class="logo-badge"><img class="logo" src="/brand/mark.webp" alt={SITE.name} width={width} height={height} decoding="async" fetchpriority="high" /></span>

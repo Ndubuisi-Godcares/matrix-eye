@@ -175,8 +175,8 @@ code, kbd, pre { font-family: var(--font-mono); font-size: 0.9em; }
 .nav .brand { justify-self: start; }
 .nav .nav__actions { justify-self: end; }
 .brand { display: inline-flex; align-items: center; line-height: 0; }
-.brand img { height: 2.5rem; width: auto; }
-.logo-badge { display: inline-flex; line-height: 0; background: #0a1320; padding: 0.3rem 0.6rem; border-radius: 10px; }
+.brand img { height: 1.9rem; width: auto; }
+.logo-badge { display: inline-flex; line-height: 0; background: #0a1320; padding: 0.35rem 0.6rem; border-radius: 10px; }
 /* The logo is neon on transparent: on the dark theme it needs no tile, so it blends into the page. */
 :root[data-theme="dark"] .logo-badge { background: transparent; padding: 0; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .logo-badge { background: transparent; padding: 0; } }
