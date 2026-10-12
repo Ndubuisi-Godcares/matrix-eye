@@ -2,6 +2,7 @@ export type { LlmProvider, LlmMessage, LlmRequest, LlmResult } from "./provider"
 export { OpenAiCompatibleProvider, type OpenAiCompatibleOptions } from "./openai-compatible";
 export { ScriptedProvider, type ScriptedReply } from "./scripted";
 export { ReasoningFilter, stripReasoning } from "./reasoning";
+export { chooseModel, detectOllama, resolveLocalModel, type DetectedModel, type ResolvedModel } from "./detect";
 
 import type { LlmProvider } from "./provider";
 import { OpenAiCompatibleProvider } from "./openai-compatible";

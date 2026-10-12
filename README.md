@@ -56,15 +56,20 @@ Sites built with React/Vue send an empty page until JavaScript runs (the crawl w
 npm run eagle -- crawl https://your-react-site.org --max-pages 30 --render
 ```
 
-Answers are **extractive** by default: quoted from the site, with citations, and they cannot hallucinate.
-For conversational answers, point at any OpenAI-compatible model (Ollama, vLLM, LM Studio, a hosted API). With
-[Ollama](https://ollama.com) (free, runs locally, no account):
+Without a language model, answers are **extractive**: sentences quoted from the site with their sources. They are accurate
+and cannot hallucinate, but they cannot summarise. With a model, the same passages become a natural, cited answer.
+
+**If [Ollama](https://ollama.com) is running on your computer, the CLI and the demo find and use it automatically.** No
+settings are needed, and they say so when they do (`--no-model` forces quoted answers):
 
 ```bash
-ollama pull qwen3:4b-instruct          # 2.5 GB, Apache-2.0, a NON-thinking model
-EAGLE_LLM_BASE_URL=http://localhost:11434/v1 EAGLE_LLM_MODEL=qwen3:4b-instruct npm run eagle -- llm-check
-EAGLE_LLM_BASE_URL=http://localhost:11434/v1 EAGLE_LLM_MODEL=qwen3:4b-instruct npm run eagle -- chat
+ollama pull qwen3:4b-instruct          # once: 2.5 GB, Apache-2.0, a NON-thinking model
+npm run eagle -- llm-check             # confirms the model works
+npm run eagle -- chat
 ```
+
+To use another OpenAI-compatible server (vLLM, LM Studio, a hosted API), set `EAGLE_LLM_BASE_URL` and `EAGLE_LLM_MODEL`;
+explicit settings always win over detection. The API server never auto-detects: a deployment must name its model.
 
 Use non-thinking models; see [ADR-005](docs/adr/ADR-005-language-model-and-ollama.md) for why and for measured results.
 

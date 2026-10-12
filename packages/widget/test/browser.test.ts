@@ -167,6 +167,21 @@ describe("widget in a real browser", () => {
     await context.close();
   }, 60_000);
 
+  it("has no phantom scrollbar on the text box, and dark panels use dark scrollbars", async (ctx) => {
+    if (!browser) return ctx.skip();
+    const page = await openDemo("/?theme=dark");
+    const input = page.locator(".ee-input");
+    // An empty one-line box must not show a scrollbar (a 1px rounding overflow used to make arrows appear).
+    expect(await input.evaluate((el: HTMLTextAreaElement) => el.scrollHeight <= el.clientHeight + 1)).toBe(true);
+    expect(await input.evaluate((el) => getComputedStyle(el).overflowY)).toBe("hidden");
+    // Native scrollbars follow the theme.
+    expect(await page.locator(".ee-root").evaluate((el) => getComputedStyle(el).colorScheme)).toBe("dark");
+    // Long input does get a scrollbar so nothing becomes unreachable.
+    await input.fill(Array.from({ length: 12 }, () => "line").join(String.fromCharCode(10)));
+    expect(await input.evaluate((el) => getComputedStyle(el).overflowY)).toBe("auto");
+    await page.context().close();
+  }, 60_000);
+
   it("supports theming through settings", async (ctx) => {
     if (!browser) return ctx.skip();
     const page = await openDemo("/?theme=dark&position=left&color=%231b6b4a");
@@ -185,6 +200,7 @@ describe("accessibility audit (axe-core, WCAG 2.1 A/AA + best practices)", () =>
       await ask(page, "How much is tuition for computer science?");
       await page.locator(".ee-sources").waitFor({ timeout: 15_000 });
       expect(await axeViolations(page)).toEqual([]);
+      await page.screenshot({ path: join(SHOTS, `05-${name.replace(" ", "-")}-answer.png`) });
       await page.context().close();
     }, 60_000);
   }

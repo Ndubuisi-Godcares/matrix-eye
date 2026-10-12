@@ -25,10 +25,12 @@ export const CSS = `
   --ee-border: #d5dbe3;
   --ee-focus: #0f2238;
   --ee-danger: #a12a2a;
+  color-scheme: light;
   font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color: var(--ee-text);
 }
 .ee-root[data-theme="dark"] {
+  color-scheme: dark; /* native scrollbars and form controls follow the theme (no bright scrollbar on a dark panel) */
   --ee-surface: #121b29;
   --ee-text: #f1f4f8;
   --ee-muted: #a9b4c2;
@@ -76,7 +78,7 @@ export const CSS = `
 .ee-icon-btn:hover { background: rgba(255, 255, 255, .16); opacity: 1; }
 .ee-icon-btn svg { width: 20px; height: 20px; }
 
-.ee-log { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; overscroll-behavior: contain; }
+.ee-log { flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--ee-border) transparent; padding: 14px; display: flex; flex-direction: column; gap: 12px; overscroll-behavior: contain; }
 .ee-msg { max-width: 88%; display: flex; flex-direction: column; gap: 6px; }
 .ee-msg.ee-user { align-self: flex-end; }
 .ee-bubble { padding: 9px 13px; border-radius: 14px; word-wrap: break-word; overflow-wrap: anywhere; }
@@ -121,6 +123,8 @@ export const CSS = `
 .ee-input {
   flex: 1; resize: none; font: inherit; color: var(--ee-text); background: var(--ee-surface);
   border: 1px solid var(--ee-border); border-radius: 12px; padding: 9px 12px; max-height: 110px; min-height: 40px;
+  overflow-y: hidden; /* switched to auto by the script only when the text outgrows the box */
+  scrollbar-width: thin;
 }
 .ee-input::placeholder { color: var(--ee-muted); opacity: 1; }
 .ee-send {

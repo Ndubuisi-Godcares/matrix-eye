@@ -563,6 +563,8 @@ export class ChatWidget {
   private resizeInput(): void {
     this.input.style.height = "auto";
     this.input.style.height = `${Math.min(this.input.scrollHeight, 110)}px`;
+    // Show a scrollbar only once the text is taller than the box; otherwise rounding leaves a phantom one.
+    this.input.style.overflowY = this.input.scrollHeight > 110 ? "auto" : "hidden";
   }
 
   /** Make a screen reader read this text once, politely. */

@@ -4,7 +4,8 @@
  *   npm run demo -- https://www.reed.edu --max-pages 40
  *   npm run demo -- https://aiit.network --render --max-pages 20
  *
- * Add EAGLE_LLM_BASE_URL / EAGLE_LLM_MODEL (see the command guide) for conversational answers.
+ * A language model is used automatically when Ollama is running on this computer (or when EAGLE_LLM_BASE_URL and
+ * EAGLE_LLM_MODEL are set); otherwise answers are quoted from the site. --no-model forces the latter.
  */
 import { existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
@@ -12,17 +13,21 @@ import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { createPlaywrightRenderer, type PageRenderer } from "@eagles-eye/crawler";
 import { SqliteKnowledgeStore } from "@eagles-eye/knowledge";
-import { llmFromEnv } from "@eagles-eye/llm";
+import { resolveLocalModel } from "@eagles-eye/llm";
 import { REPO_ROOT, WIDGET_FILE, startDemo } from "./demo";
 
 const USAGE = `Eagle's Eye demo
 
-Usage: npm run demo -- <website-url> [--max-pages N] [--render] [--port N] [--db file] [--allow-private]
+Usage: npm run demo -- <website-url> [--max-pages N] [--render] [--port N] [--db file] [--allow-private] [--no-model]
 
   --render         run JavaScript for pages that arrive empty (React/Vue sites); needs: npx playwright install chromium
   --port N         where to serve the demo (default 8788)
   --db file        keep the index here (default ./data/demo.sqlite); it is replaced on every run
-  --allow-private  allow a site on localhost or a private network (your own dev server)`;
+  --allow-private  allow a site on localhost or a private network (your own dev server)
+  --no-model       do not use a language model even if one is available (answers are quoted from the site)
+
+A language model is found automatically: Ollama running on this computer is used if present, or the one set by
+EAGLE_LLM_BASE_URL and EAGLE_LLM_MODEL.`;
 
 async function main() {
   const { values, positionals } = parseArgs({
@@ -33,6 +38,7 @@ async function main() {
       port: { type: "string", default: "8788" },
       db: { type: "string", default: "./data/demo.sqlite" },
       "allow-private": { type: "boolean", default: false },
+      "no-model": { type: "boolean", default: false },
       help: { type: "boolean", short: "h", default: false },
     },
   });
@@ -44,7 +50,7 @@ async function main() {
     execFileSync(process.execPath, [join(REPO_ROOT, "packages/widget/scripts/build.mjs")], { stdio: "inherit" });
   }
 
-  const llm = llmFromEnv();
+  const { llm, source } = await resolveLocalModel({ disabled: values["no-model"] });
   let renderer: PageRenderer | undefined;
   if (values.render) renderer = await createPlaywrightRenderer({ allowPrivateNetworks: values["allow-private"] });
 
@@ -61,7 +67,11 @@ async function main() {
   });
   await renderer?.close(); // the browser is only needed while crawling
 
-  console.log(`\nAnswers: ${llm ? llm.name : "quoted from the site (no language model configured)"}`);
+  console.log(
+    llm
+      ? `\nAnswers are written by ${llm.name.replace("openai-compatible:", "")}${source === "ollama" ? " (found Ollama on this computer)" : ""}. The first answer can take about 10 seconds while the model loads.`
+      : "\nAnswers are quoted from the site. For conversational answers, install Ollama (https://ollama.com), run: ollama pull qwen3:4b-instruct, then start this demo again.",
+  );
   console.log(`\nOpen ${demo.url} in your browser. Press Ctrl+C to stop.\n`);
 
   const stop = async () => {

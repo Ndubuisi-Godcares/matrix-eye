@@ -16,7 +16,7 @@ import { isEagleError, type ChatResponse, type ChatTurn } from "@eagles-eye/core
 import { createPlaywrightRenderer, type PageRenderer } from "@eagles-eye/crawler";
 import { ConversationEngine, ingestSite } from "@eagles-eye/engine";
 import { SqliteKnowledgeStore } from "@eagles-eye/knowledge";
-import { llmFromEnv } from "@eagles-eye/llm";
+import { resolveLocalModel } from "@eagles-eye/llm";
 
 const PROJECT = "cli";
 
@@ -28,11 +28,12 @@ Usage:
   eagle chat
   eagle search "<query>" [--limit N]
   eagle pages
-  eagle llm-check          test the configured language model (EAGLE_LLM_BASE_URL / EAGLE_LLM_MODEL)
+  eagle llm-check          test the language model that will be used
 
 Options:
   --render       Run JavaScript for pages that arrive empty (React/Vue sites). Needs a one-time
                  "npx playwright install chromium". Slower: use a small --max-pages first.
+  --no-model     answer by quoting the site even if a language model is available
   --db <file>    SQLite file (default ./data/eagle-cli.sqlite)
   --name <text>  Site name used in answers (default: the site's hostname)`;
 
@@ -59,6 +60,7 @@ async function main() {
       full: { type: "boolean", default: false },
       "allow-private": { type: "boolean", default: false },
       render: { type: "boolean", default: false },
+      "no-model": { type: "boolean", default: false },
       debug: { type: "boolean", default: false },
       json: { type: "boolean", default: false },
       help: { type: "boolean", short: "h", default: false },
@@ -68,6 +70,10 @@ async function main() {
   if (!command || values.help) return console.log(USAGE);
 
   const store = new SqliteKnowledgeStore(values.db as string);
+  // A language model is found automatically: the EAGLE_LLM_* settings if present, else Ollama on this computer.
+  const resolved = await resolveLocalModel({ disabled: values["no-model"] });
+  const llm = resolved.llm;
+  const modelNote = llm ? `(answers by ${llm.name.replace("openai-compatible:", "")}${resolved.source === "ollama" ? ", found Ollama on this computer" : ""})` : null;
   try {
     switch (command) {
       case "crawl": {
@@ -108,16 +114,17 @@ async function main() {
       case "ask": {
         const question = rest.join(" ").trim();
         if (!question) throw new Error('ask needs a question, e.g. eagle ask "What are the fees?"');
-        const engine = new ConversationEngine({ store, llm: llmFromEnv() });
+        const engine = new ConversationEngine({ store, llm });
         printResponse(await engine.ask({ projectId: PROJECT, question, siteName: values.name }), { debug: values.debug, json: values.json });
         break;
       }
 
       case "chat": {
-        const engine = new ConversationEngine({ store, llm: llmFromEnv() });
+        const engine = new ConversationEngine({ store, llm });
         const rl = createInterface({ input: process.stdin, output: process.stdout });
         const history: ChatTurn[] = [];
-        console.log("Chat with the crawled site. Type a question, or 'exit' to quit.\n");
+        console.log("Chat with the crawled site. Type a question, or 'exit' to quit.");
+        console.log(`${modelNote ?? "(answers are quoted from the site; install Ollama for conversational answers)"}\n`);
         for (;;) {
           const question = (await rl.question("You: ")).trim();
           if (!question) continue;
@@ -142,8 +149,7 @@ async function main() {
       }
 
       case "llm-check": {
-        const llm = llmFromEnv();
-        if (!llm) throw new Error("No model configured. Set EAGLE_LLM_BASE_URL and EAGLE_LLM_MODEL (see the command guide).");
+        if (!llm) throw new Error("No language model found. Install Ollama (https://ollama.com) and run: ollama pull qwen3:4b-instruct");
         console.log(`Testing ${llm.name} ...`);
         const started = performance.now();
         const { text, usage } = await llm.complete({ messages: [{ role: "user", content: "Reply with exactly one word: OK" }], maxTokens: 16, temperature: 0 });
