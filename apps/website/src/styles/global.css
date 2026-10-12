@@ -176,12 +176,6 @@ code, kbd, pre { font-family: var(--font-mono); font-size: 0.9em; }
 .nav .nav__actions { justify-self: end; }
 .brand { display: inline-flex; align-items: center; line-height: 0; }
 .brand img { height: 2.5rem; width: auto; }
-.lockup { display: inline-flex; align-items: center; gap: 0.7rem; line-height: 1; }
-.lockup__name { font-family: var(--font-sans); font-weight: 800; letter-spacing: 0.06em; line-height: 1; white-space: nowrap; }
-.lockup__a { color: var(--ink); }
-.lockup__b { color: var(--accent-text); }
-:root[data-theme="dark"] .lockup__b { color: #e3b866; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .lockup__b { color: #e3b866; } }
 .logo-dark { display: none; }
 :root[data-theme="dark"] .logo-light { display: none; }
 :root[data-theme="dark"] .logo-dark { display: block; }
@@ -287,10 +281,10 @@ code, kbd, pre { font-family: var(--font-mono); font-size: 0.9em; }
 @keyframes fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .crawl__status { position: relative; margin: 0.45rem 0 0; height: 1.1rem; font-size: 0.8rem; color: var(--muted); }
 .crawl__status > span { position: absolute; left: 0; top: 0; display: inline-flex; align-items: center; gap: 0.35rem; }
-.crawl__running { display: none; }
+.crawl__status > .crawl__running { display: none; } /* needs the same weight as the rule above, or it would stay visible */
 .crawl__done { color: var(--ink); font-weight: 600; }
 @media (prefers-reduced-motion: no-preference) {
-  .crawl__running { display: inline-flex; animation: fade-out 0.3s ease 3.3s both; }
+  .crawl__status > .crawl__running { display: inline-flex; animation: fade-out 0.3s ease 3.3s both; }
   .crawl__done { animation: reveal 0.4s var(--ease, ease) 3.4s both; }
 }
 @keyframes fade-out { to { opacity: 0; } }

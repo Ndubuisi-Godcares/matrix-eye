@@ -202,6 +202,14 @@ describe("layout and motion", () => {
     await still.context.close();
   });
 
+  it("shows only the finished crawl status (not both messages on top of each other) when motion is reduced", async (ctx) => {
+    if (!browser) return ctx.skip();
+    const { page, context } = await open("/", { width: 1500, height: 900 }); // reduced motion by default in these tests
+    expect(await page.locator(".crawl__running").isVisible()).toBe(false);
+    expect(await page.locator(".crawl__done").isVisible()).toBe(true);
+    await context.close();
+  });
+
   it("marks the section being read in the docs table of contents", async (ctx) => {
     if (!browser) return ctx.skip();
     const { page, context } = await open("/docs/accuracy/", { width: 1400, height: 900 });

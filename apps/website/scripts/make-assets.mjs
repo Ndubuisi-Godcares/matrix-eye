@@ -2,7 +2,7 @@
  * Generates the website's image assets from the original logo (brand/matrix-eye-logo-light.png, drawn on white):
  *
  *   public/brand/logo-light.webp, logo-dark.webp   the full logo (eye + MATRIXEYE lettering), transparent
- *   public/brand/mark-light.webp, mark-dark.webp   the eye alone, for the header and footer (the lettering is live text there)
+ *   public/brand/lockup-light.webp, lockup-dark.webp   the same logo, small, for the header and footer
  *   public/favicon-32.png, apple-touch-icon.png, icon-512.png   the eye on navy
  *
  * The original is a 1.2 MB picture on a white background. A website needs small files with a transparent background
@@ -72,8 +72,9 @@ const webp = (buffer, file, width) =>
   sharp(buffer).resize({ width }).webp({ quality: 90, alphaQuality: 95 }).toFile(join(out, "brand", file));
 await webp(await trimmed(lightFull), "logo-light.webp", 700);
 await webp(await trimmed(darkFull), "logo-dark.webp", 700);
-await webp(markLight, "mark-light.webp", 300);
-await webp(markDark, "mark-dark.webp", 300);
+// The header and footer logo: the complete logo (eye with the lettering underneath), small.
+await webp(await trimmed(lightFull), "lockup-light.webp", 360);
+await webp(await trimmed(darkFull), "lockup-dark.webp", 360);
 
 async function icon(size, file, padding) {
   const inner = Math.round(size * (1 - padding * 2));
