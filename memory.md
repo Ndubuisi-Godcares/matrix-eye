@@ -235,17 +235,21 @@ phrasing; small local models sometimes decline two-part questions; widget/`Origi
 
 ## 12. Outstanding work and prioritized backlog
 
-**P0** (none blocking the engine). Typecheck and one browser test currently fail only because of the unfinished restyle (item P1-1).
+**Phase roadmap:** Phases 1-3 are done. **Phase 4 is next: hosted backend, dashboard, billing.** Nothing of Phase 4 exists and
+it has no written plan yet; start it by agreeing scope with the owner (host for the API, accounts/auth, Postgres vs SQLite,
+billing provider, dashboard screens). Phases after 4 are not defined.
 
-**P1 (current objective)**
-1. Finish/verify the neon restyle (see 11). *Accept:* typecheck, all tests, axe both themes, visual review, CI green.
+**P0:** none. All checks were green at the last full run.
+
+**P1 (current)**
+1. Check CI for the latest commits (`gh run list --limit 3`).
 2. Confirm the Vercel deployment works (import `apps/website`, Root Directory `apps/website` or repo root; env `PUBLIC_SITE_URL`;
-   leave `PUBLIC_API_URL` unset until the API is hosted; forms then say "not connected yet" by design).
-3. Commit and push; verify CI.
+   leave `PUBLIC_API_URL` unset until the API is hosted; forms then say "not connected yet" by design). Owner reports back.
+3. Plan Phase 4 with the owner.
 
 **P2**
 - Host the API somewhere with a persistent disk or move to Postgres (Phase 4); set `PUBLIC_API_URL`, `MATRIX_EYE_SITE_ORIGINS`, re-run `npm run deploy-config` with the API origin.
-- Fill `.env.example` gaps; fix package.json description mojibake; regenerate planning PDFs only if the owner asks.
+- Regenerate planning PDFs only if the owner asks.
 - Choose domain; update `matrixeye.ai` placeholders; legal entity + contact email; lawyer review of `/privacy/`, `/terms/`.
 - Validate pricing with real conversations; decide D5/D6/D7.
 - Real screen-reader test (NVDA/VoiceOver). Consider outside security review before launch.
