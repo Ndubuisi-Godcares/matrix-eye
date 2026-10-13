@@ -101,3 +101,9 @@ export const chatSchema = z.object({
 });
 
 export const idParamSchema = z.object({ id: z.string().uuid() });
+
+/** Hosted accounts (Phase 4, ADR-008): sign up / log in against Supabase Auth. */
+export const accountCredentialsSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(8).max(200),
+});

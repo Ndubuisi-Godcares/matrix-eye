@@ -24,6 +24,22 @@ const schema = z.object({
     .enum(["true", "false"])
     .default("false")
     .transform((v) => v === "true"),
+  /**
+   * Hosted multi-tenant mode (Phase 4, ADR-008). Unset (the default) keeps the API self-host /
+   * single-tenant: one operator key, no accounts. Set all three together to turn on accounts,
+   * per-account API keys and project ownership; the public widget/forms endpoints are unaffected.
+   */
+  MATRIX_EYE_DATABASE_URL: z.string().optional(),
+  MATRIX_EYE_SUPABASE_URL: z.string().optional(),
+  MATRIX_EYE_SUPABASE_ANON_KEY: z.string().optional(),
+}).superRefine((v, ctx) => {
+  const controlPlaneVars = [v.MATRIX_EYE_DATABASE_URL, v.MATRIX_EYE_SUPABASE_URL, v.MATRIX_EYE_SUPABASE_ANON_KEY];
+  if (controlPlaneVars.some(Boolean) && !controlPlaneVars.every(Boolean)) {
+    ctx.addIssue({
+      code: "custom",
+      message: "MATRIX_EYE_DATABASE_URL, MATRIX_EYE_SUPABASE_URL and MATRIX_EYE_SUPABASE_ANON_KEY must all be set together (hosted mode) or all left unset (self-host mode)",
+    });
+  }
 });
 
 export interface AppConfig {
@@ -37,6 +53,8 @@ export interface AppConfig {
   publicRateLimitPerMinute: number;
   formRateLimitPerMinute: number;
   allowPrivateNetworks: boolean;
+  /** Null in self-host mode. Set means hosted multi-tenant mode is on (ADR-008). */
+  controlPlane: { databaseUrl: string; supabaseUrl: string; supabaseAnonKey: string } | null;
 }
 
 export function loadConfig(env: Record<string, string | undefined> = process.env): AppConfig {
@@ -57,5 +75,9 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     publicRateLimitPerMinute: v.MATRIX_EYE_PUBLIC_RATE_LIMIT_PER_MINUTE,
     formRateLimitPerMinute: v.MATRIX_EYE_FORM_RATE_LIMIT_PER_MINUTE,
     allowPrivateNetworks: v.MATRIX_EYE_ALLOW_PRIVATE_NETWORKS,
+    controlPlane:
+      v.MATRIX_EYE_DATABASE_URL && v.MATRIX_EYE_SUPABASE_URL && v.MATRIX_EYE_SUPABASE_ANON_KEY
+        ? { databaseUrl: v.MATRIX_EYE_DATABASE_URL, supabaseUrl: v.MATRIX_EYE_SUPABASE_URL, supabaseAnonKey: v.MATRIX_EYE_SUPABASE_ANON_KEY }
+        : null,
   };
 }

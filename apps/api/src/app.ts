@@ -14,9 +14,10 @@ import type { SqliteKnowledgeStore } from "@matrix-eye/knowledge";
 import type { LlmProvider } from "@matrix-eye/llm";
 import { createAuthHook } from "./auth";
 import type { AppConfig } from "./config";
+import { createAccountAuthHook, type ControlPlane } from "./control-plane";
 import { CrawlRunner } from "./crawl-runner";
 import { Repositories } from "./repositories";
-import { chatSchema, contactSchema, crawlSchema, createProjectSchema, feedbackSchema, idParamSchema, rulesSchema, searchSchema, settingsSchema, waitlistSchema } from "./schemas";
+import { accountCredentialsSchema, chatSchema, contactSchema, crawlSchema, createProjectSchema, feedbackSchema, idParamSchema, rulesSchema, searchSchema, settingsSchema, waitlistSchema } from "./schemas";
 
 export interface AppDependencies {
   config: AppConfig;
@@ -27,6 +28,8 @@ export interface AppDependencies {
   /** Browser used to read JavaScript-only pages. Off by default; enabling it on a public service needs a sandbox (ADR-004). */
   renderer?: PageRenderer;
   logger?: boolean;
+  /** Present only in hosted multi-tenant mode (ADR-008); absent means self-host / single-tenant. */
+  controlPlane?: ControlPlane | null;
 }
 
 /** HTTP status for each error code. Anything unmapped is a server fault. */
@@ -55,7 +58,7 @@ export interface BuiltApp {
 }
 
 export async function buildApp(deps: AppDependencies): Promise<BuiltApp> {
-  const { config, store } = deps;
+  const { config, store, controlPlane } = deps;
   const repos = new Repositories(store.connection);
   const engine = new ConversationEngine({ store, llm: deps.llm ?? null });
   const crawls = new CrawlRunner(repos, store, { allowPrivateNetworks: config.allowPrivateNetworks, delayMs: deps.crawlDelayMs, renderer: deps.renderer });
@@ -107,29 +110,86 @@ export async function buildApp(deps: AppDependencies): Promise<BuiltApp> {
     return project;
   };
 
+  /**
+   * Same as `requireProject`, plus ownership in hosted mode: a project that exists but belongs to
+   * another account 404s exactly like one that does not exist, so one account cannot probe for
+   * another's project ids. No-op (just `requireProject`) in self-host / single-tenant mode.
+   */
+  const requireOwnedProject = async (request: FastifyRequest) => {
+    const project = requireProject(request.params);
+    if (controlPlane && !(await controlPlane.accounts.projectBelongsTo(request.accountId as string, project.id))) {
+      throw new MatrixError("not_found", "Project not found");
+    }
+    return project;
+  };
+
   // Health check is public and exempt from rate limiting (load balancers poll it).
   app.get("/health", { config: { rateLimit: false } }, async () => ({ status: "ok", llm: deps.llm?.name ?? "extractive" }));
 
-  // Everything under /v1 requires the API key.
+  // Hosted accounts (Phase 4, ADR-008): absent entirely in self-host mode. Sign-up/login need no API
+  // key (there isn't one yet); listing your own projects does, via the per-account key they return.
+  if (controlPlane) {
+    const cp = controlPlane;
+    await app.register(
+      async (accounts) => {
+        accounts.post("/signup", async (request, reply) => {
+          const body = accountCredentialsSchema.parse(request.body);
+          const user = await cp.supabaseAuth.signUp(body.email, body.password);
+          const { account, apiKey } = await cp.accounts.createAccount({ email: user.email || body.email, supabaseUserId: user.id });
+          // The raw key is shown exactly once: only its hash is stored (accounts-repository.ts).
+          return reply.code(201).send({ accountId: account.id, email: account.email, apiKey });
+        });
+
+        accounts.post("/login", async (request) => {
+          const body = accountCredentialsSchema.parse(request.body);
+          const user = await cp.supabaseAuth.signIn(body.email, body.password);
+          const account = await cp.accounts.findBySupabaseUserId(user.id);
+          if (!account) throw new MatrixError("not_found", "No account found for this login. Sign up first.");
+          return { accountId: account.id, email: account.email };
+        });
+
+        // The API key is shown once, at signup, and stored only as a hash (accounts-repository.ts), so a
+        // dashboard that has lost it re-proves identity with the password and gets a fresh one. The old
+        // key stops working the moment this succeeds — there is only ever one valid key per account.
+        accounts.post("/rotate-key", async (request) => {
+          const body = accountCredentialsSchema.parse(request.body);
+          const user = await cp.supabaseAuth.signIn(body.email, body.password);
+          const account = await cp.accounts.findBySupabaseUserId(user.id);
+          if (!account) throw new MatrixError("not_found", "No account found for this login. Sign up first.");
+          const apiKey = await cp.accounts.rotateApiKey(account.id);
+          return { accountId: account.id, email: account.email, apiKey };
+        });
+
+        accounts.get("/me/projects", { onRequest: createAccountAuthHook(cp.accounts) }, async (request) => ({
+          projectIds: await cp.accounts.listProjectIds(request.accountId as string),
+        }));
+      },
+      { prefix: "/v1/accounts" },
+    );
+  }
+
+  // Everything under /v1 requires an API key: the operator's single key in self-host mode, or an
+  // account's own key in hosted mode (ADR-008) — same hook shape either way (auth.ts).
   await app.register(
     async (v1) => {
-      v1.addHook("onRequest", createAuthHook(config.apiKey));
+      v1.addHook("onRequest", controlPlane ? createAccountAuthHook(controlPlane.accounts) : createAuthHook(config.apiKey));
 
       v1.post("/projects", async (request, reply) => {
         const body = createProjectSchema.parse(request.body);
         // Reject unsafe site URLs at creation, not only when crawling.
         assertPublicUrl(body.siteUrl, config.allowPrivateNetworks);
         const project = repos.createProject({ name: body.name, siteUrl: body.siteUrl, rules: body.rules, settings: body.settings });
+        if (controlPlane) await controlPlane.accounts.linkProject(request.accountId as string, project.id);
         return reply.code(201).send(project);
       });
 
       v1.get("/projects/:id", async (request) => {
-        const project = requireProject(request.params);
+        const project = await requireOwnedProject(request);
         return { ...project, knowledge: store.stats(project.id), latestCrawl: repos.latestJobFor(project.id) };
       });
 
       v1.delete("/projects/:id", async (request, reply) => {
-        const project = requireProject(request.params);
+        const project = await requireOwnedProject(request);
         if (repos.runningJobFor(project.id)) throw new MatrixError("invalid_request", "Cannot delete a project while a crawl is running");
         store.deleteProject(project.id);
         repos.deleteProject(project.id);
@@ -137,14 +197,14 @@ export async function buildApp(deps: AppDependencies): Promise<BuiltApp> {
       });
 
       v1.put("/projects/:id/rules", async (request) => {
-        const project = requireProject(request.params);
+        const project = await requireOwnedProject(request);
         const rules = rulesSchema.parse(request.body);
         repos.setRules(project.id, rules);
         return { rules };
       });
 
       v1.patch("/projects/:id/settings", async (request) => {
-        const project = requireProject(request.params);
+        const project = await requireOwnedProject(request);
         const changes = settingsSchema.parse(request.body);
         // Only fields that were actually sent are changed.
         const defined = Object.fromEntries(Object.entries(changes).filter(([, v]) => v !== undefined));
@@ -152,33 +212,38 @@ export async function buildApp(deps: AppDependencies): Promise<BuiltApp> {
       });
 
       v1.get("/projects/:id/feedback", async (request) => {
-        const project = requireProject(request.params);
+        const project = await requireOwnedProject(request);
         const { rating } = request.query as { rating?: string };
         return { feedback: repos.listFeedback(project.id, { rating: rating === "up" || rating === "down" ? rating : undefined }) };
       });
 
-      // ---- Website forms: review and privacy requests (admin only) ----
-      v1.get("/waitlist", async (request, reply) => {
-        const entries = repos.listWaitlist();
-        if ((request.query as { format?: string }).format !== "csv") return { count: entries.length, entries };
-        // CSV for spreadsheets. Cells starting with = + - @ are prefixed with ' so they cannot run as formulas.
-        const cell = (v: string | null) => `"${String(v ?? "").replace(/^[=+\-@]/, "'$&").replace(/"/g, '""')}"`;
-        const rows = ["email,name,use_case,source,consent_at,created_at", ...entries.map((e) => [e.email, e.name, e.useCase, e.source, e.consentAt, e.createdAt].map(cell).join(","))];
-        return reply.type("text/csv; charset=utf-8").send(rows.join("\n") + "\n");
-      });
+      // ---- Website forms: review and privacy requests ----
+      // Not project-scoped (they belong to the MatrixEye marketing site itself, not a customer's
+      // site), so they only exist in self-host / operator mode. A hosted account's own key must not
+      // be able to read another customer's would-be access to the operator's own leads.
+      if (!controlPlane) {
+        v1.get("/waitlist", async (request, reply) => {
+          const entries = repos.listWaitlist();
+          if ((request.query as { format?: string }).format !== "csv") return { count: entries.length, entries };
+          // CSV for spreadsheets. Cells starting with = + - @ are prefixed with ' so they cannot run as formulas.
+          const cell = (v: string | null) => `"${String(v ?? "").replace(/^[=+\-@]/, "'$&").replace(/"/g, '""')}"`;
+          const rows = ["email,name,use_case,source,consent_at,created_at", ...entries.map((e) => [e.email, e.name, e.useCase, e.source, e.consentAt, e.createdAt].map(cell).join(","))];
+          return reply.type("text/csv; charset=utf-8").send(rows.join("\n") + "\n");
+        });
 
-      v1.delete("/waitlist", async (request, reply) => {
-        const email = String((request.query as { email?: string }).email ?? "").trim().toLowerCase();
-        if (!email) throw new MatrixError("invalid_request", "Give the address to erase as ?email=");
-        // 404 if absent, so an operator can tell whether the request found anything.
-        if (!repos.deleteWaitlist(email)) throw new MatrixError("not_found", "That address is not on the waitlist");
-        return reply.code(204).send();
-      });
+        v1.delete("/waitlist", async (request, reply) => {
+          const email = String((request.query as { email?: string }).email ?? "").trim().toLowerCase();
+          if (!email) throw new MatrixError("invalid_request", "Give the address to erase as ?email=");
+          // 404 if absent, so an operator can tell whether the request found anything.
+          if (!repos.deleteWaitlist(email)) throw new MatrixError("not_found", "That address is not on the waitlist");
+          return reply.code(204).send();
+        });
 
-      v1.get("/contact-messages", async () => ({ messages: repos.listContactMessages() }));
+        v1.get("/contact-messages", async () => ({ messages: repos.listContactMessages() }));
+      }
 
       v1.post("/projects/:id/crawl", async (request, reply) => {
-        const project = requireProject(request.params);
+        const project = await requireOwnedProject(request);
         const body = crawlSchema.parse(request.body ?? {});
         return reply.code(202).send(crawls.start(project, body));
       });
@@ -186,18 +251,20 @@ export async function buildApp(deps: AppDependencies): Promise<BuiltApp> {
       v1.get("/crawls/:id", async (request) => {
         const { id } = idParamSchema.parse(request.params);
         const job = repos.getJob(id);
-        if (!job) throw new MatrixError("not_found", "Crawl not found");
+        if (!job || (controlPlane && !(await controlPlane.accounts.projectBelongsTo(request.accountId as string, job.projectId)))) {
+          throw new MatrixError("not_found", "Crawl not found");
+        }
         return job;
       });
 
       v1.get("/projects/:id/pages", async (request) => {
-        const project = requireProject(request.params);
+        const project = await requireOwnedProject(request);
         return { pages: store.listPages(project.id) };
       });
 
       // Retrieval only, no answer generation: for debugging what the engine can see.
       v1.post("/projects/:id/search", async (request) => {
-        const project = requireProject(request.params);
+        const project = await requireOwnedProject(request);
         const body = searchSchema.parse(request.body);
         const hits = store.search(project.id, body.query, body.limit);
         return {
@@ -206,7 +273,7 @@ export async function buildApp(deps: AppDependencies): Promise<BuiltApp> {
       });
 
       v1.post("/projects/:id/chat", async (request) => {
-        const project = requireProject(request.params);
+        const project = await requireOwnedProject(request);
         const body = chatSchema.parse(request.body);
         const wantsDebug = (request.query as { debug?: string }).debug === "true";
         const response = await engine.ask({ projectId: project.id, question: body.message, history: body.history, siteName: project.name, rules: project.rules });

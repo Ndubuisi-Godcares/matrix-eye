@@ -5,14 +5,24 @@
  */
 import { SqliteKnowledgeStore } from "@matrix-eye/knowledge";
 import { llmFromEnv } from "@matrix-eye/llm";
+import pg from "pg";
 import { buildApp } from "./app";
 import { loadConfig } from "./config";
+import { createControlPlane, type ControlPlane } from "./control-plane";
 
 async function main() {
   const config = loadConfig();
   const store = new SqliteKnowledgeStore(config.dbPath);
   const llm = llmFromEnv();
-  const { app, crawls } = await buildApp({ config, store, llm, logger: true });
+
+  // Hosted multi-tenant mode only (ADR-008); self-host stays Postgres-free.
+  let controlPlane: ControlPlane | null = null;
+  if (config.controlPlane) {
+    const pool = new pg.Pool({ connectionString: config.controlPlane.databaseUrl });
+    controlPlane = await createControlPlane({ db: pool, supabaseUrl: config.controlPlane.supabaseUrl, supabaseAnonKey: config.controlPlane.supabaseAnonKey });
+  }
+
+  const { app, crawls } = await buildApp({ config, store, llm, logger: true, controlPlane });
 
   // Stop accepting requests, let running crawls finish writing, then close the database.
   const shutdown = async (signal: string) => {
@@ -20,6 +30,7 @@ async function main() {
     await app.close();
     await crawls.drain();
     store.close();
+    await controlPlane?.close();
     process.exit(0);
   };
   process.on("SIGINT", () => void shutdown("SIGINT"));

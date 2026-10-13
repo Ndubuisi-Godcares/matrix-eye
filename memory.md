@@ -2,7 +2,8 @@
 
 > **For a new Claude Code session:** read this whole file before planning or changing code. It is the authoritative
 > handover. Section 11 says exactly where work stopped; section 9 says what was and was not verified.
-> Last audit: **2026-10-13**, against git `main` at `f3c2664` **plus uncommitted changes** (see 11).
+> Last audit: **2026-10-13**, against git `main` at `51728e8` **plus uncommitted changes: ADR-008, `docs/planning/Phase4-Plan.md`,
+> and the Phase 4 M1 control-plane code** (see 11).
 > Legend: **VERIFIED** = checked in code or by running something this audit; **REPORTED** = established earlier in the
 > project's conversation history and not re-checked; **UNVERIFIED/UNKNOWN** = not checked.
 
@@ -23,13 +24,17 @@
 - **Licence:** Apache-2.0 (decision D2). **Language:** English only measured.
 - **Journeys:** (a) owner: crawl a site -> add one `<script>` tag -> visitors chat; (b) developer: use the TypeScript SDK /
   React component / HTTP API; (c) prospect: reads marketing site/docs -> joins waitlist or contacts.
-- **Stage:** Phases 1-3 done (engine; SDK/widget/streaming/API; marketing + docs website). **Phase 4 (hosted backend,
-  dashboard, billing) not started.** Nothing is deployed to a live domain (a Vercel import was attempted; see 9).
+- **Stage:** Phases 1-3 done (engine; SDK/widget/streaming/API; marketing + docs website), deployed to Vercel (owner
+  confirmed working, 2026-10-13). **Phase 4 (hosted backend, dashboard, billing) underway:** plan written (ADR-008,
+  `docs/planning/Phase4-Plan.md`); M1 (accounts/control-plane) implemented in code, 2026-10-13, uncommitted, no real
+  Supabase project yet; M2-M5 not started.
 - **Project-wide constraints (from the owner, REPORTED):** act as a senior developer (clean file organisation, code
   comments); user works in VS Code on Windows; PDFs use the **Yu Mincho** font; be honest about limits (eval numbers are a
   regression baseline, not real-world proof); confirm before pushing to a *new* destination; no secrets in git.
-- **Open owner decisions:** D5 (hosted inference choice), D6 (budget cap), D7 (hours); domain; legal entity + public
-  contact email; lawyer review of privacy/terms; pricing validation; hosting account.
+- **Open owner decisions:** D5-D7 **resolved 2026-10-13** (self-hosted Ollama for hosted inference; budget under
+  $25/month; near full-time hours — see ADR-008 and `docs/planning/Phase4-Plan.md`). Still open: domain; legal entity +
+  public contact email; lawyer review of privacy/terms; pricing validation; hosting account (Supabase + VPS, not yet
+  provisioned).
 
 ## 2. Technology stack
 
@@ -124,7 +129,8 @@ TOC with scroll-spy). Nav: Home, Product, Docs, Pricing, Guides, Security; logo 
 | Marketing/docs website | `apps/website` | built; restyle in progress | see 9/11 |
 | Docs search (Pagefind) | `src/scripts/search.ts` | complete | browser test passes |
 | Evals | `evals/` | complete | regression baseline on one *invented* university site; not proof for real sites |
-| **Hosted service, dashboard, billing, accounts, analytics, email notifications** | none | **planned (Phase 4), nothing exists** | |
+| Hosted accounts (control-plane Postgres, per-account API keys, project ownership) | `apps/api/src/control-plane/` | M1 code done | tests pass (pg-mem + fake GoTrue); no real Supabase project; uncommitted |
+| **Hosted VPS deploy, dashboard, billing, analytics, email notifications** | none | **planned (Phase 4 M2-M5), nothing exists** | |
 
 ## 6. Database and data flow
 
@@ -194,9 +200,9 @@ External services in use: none (no analytics, no third-party scripts/fonts). Git
 - Build: website builds (24 pages); `og.png`, icons and `mark.webp` regenerated with the new dark tile `#04080c`.
 - Visual review: `/`, `/pricing/`, `/docs/api/` screenshotted in light and dark (Playwright): legible, no layout problems seen.
   `/product/` was captured but not individually inspected.
-- CI on GitHub: green for the restyle commit `37c8c7e`; later commits (`559cef9`, `7575473`, `66782dc`) not yet checked. Vercel deployment: **never confirmed successful**
-  (a build failure "No Output Directory named public" was fixed by `vercel.json` in `e302ac4`; the user then imported the
-  project; the result was not reported back).
+- CI on GitHub: green through the latest commit `51728e8` (run `38401746202`, 2026-10-13T13:01:48Z; checked this session with
+  `gh run list --limit 3`, all three latest runs `success`). Vercel deployment: **owner confirmed working** (2026-10-13,
+  REPORTED this session, not independently re-checked against the live URL).
 
 **Known gaps/debt:** no outside security audit; no screen-reader testing; no multi-tenant auth; no DB migrations; no
 retention/erasure UI for waitlist (owner can delete via API); English only; keyword retrieval can wrongly decline unusual
@@ -220,32 +226,65 @@ phrasing; small local models sometimes decline two-part questions; widget/`Origi
 | Palette switch to neon green on near-black to match the logo | owner approved "apply all" 2026-10-13 | **in progress** |
 | Do **not** add: fake demo video, invented photos, unbuilt claims ("knowledge base updated automatically"), brand logos of frameworks | honesty/trademark | confirmed advice, owner agreed to "apply all" *as adapted*; see 11 |
 | Historical planning PDFs/strategy notes keep "Eagle's Eye" | they are history | confirmed |
+| Phase 4: control-plane (accounts/billing/project ownership) on Supabase Postgres; knowledge data stays per-project SQLite on the API VPS disk; hosted inference stays self-hosted Ollama, not a third-party LLM API; budget <$25/mo (ADR-008) | owner decisions D5-D7, 2026-10-13; keeps the "self-hostable, private" story true for the hosted tier; avoids a costly Postgres rewrite of the working FTS5/BM25 ranking | confirmed (architecture only; nothing built yet) |
 
 ## 11. Current development position (READ THIS FIRST)
 
 - **Objective (done):** website restyle to the neon green/teal palette with the reference-style hero, "MatrixEye" (one word)
   everywhere. Committed and pushed on 2026-10-13 (see section 15).
 - **Honesty rules kept:** the hero does not claim "knowledge base updated automatically" (not built); it says "Self-host, private".
-- **Next concrete action:** check CI (`gh run list --limit 1`) for the restyle commit, then confirm with the owner whether the
-  Vercel deploy works (grant the Vercel GitHub app access to the personal repo, root `apps/website`, leave `PUBLIC_API_URL` unset).
-  After that, plan **Phase 4** (hosted backend, dashboard, billing) with the owner; nothing of it is started.
+- **CI and Vercel: both confirmed** this session (2026-10-13) — CI green through `51728e8`; owner confirmed the Vercel
+  deployment works.
+- **Phase 4 M1 implemented in code** (2026-10-13): control-plane module at `apps/api/src/control-plane/` — Postgres
+  migration runner (`migrate.ts`, `schema_migrations` tracking table, `0001_accounts` creates `accounts` +
+  `account_projects`), `AccountRepository` (per-account API key, issued once, stored only as a SHA-256 hash — same idea
+  as the single operator key in `auth.ts` but the hash is also the lookup key), a minimal `SupabaseAuthClient` (plain
+  `fetch` against GoTrue's `/auth/v1/signup` and `/auth/v1/token?grant_type=password`, no SDK dependency), and
+  `createAccountAuthHook` (same Bearer-hook shape as the legacy single-key hook). Wired into `apps/api/src/app.ts`:
+  new `/v1/accounts/signup`, `/v1/accounts/login`, `/v1/accounts/me/projects` routes (only registered when
+  `deps.controlPlane` is present); the `/v1` group's auth hook switches to account-key mode; `requireOwnedProject`
+  enforces that a project 404s (not 403) for any account that doesn't own it, including `/crawls/:id` by the job's
+  project; `/v1/waitlist` and `/v1/contact-messages` (the *operator's own* marketing-site leads) are **not registered at
+  all** in hosted mode, so a customer's account key cannot reach them. `apps/api/src/config.ts` adds optional
+  `MATRIX_EYE_DATABASE_URL` / `MATRIX_EYE_SUPABASE_URL` / `MATRIX_EYE_SUPABASE_ANON_KEY` (all three together or none —
+  `superRefine` enforces this); unset (self-host default) leaves every existing route and test behaviour unchanged.
+  `server.ts` creates a `pg.Pool` and runs migrations at boot only when those three are set. New script
+  `npm run migrate -w @matrix-eye/api` (`src/control-plane/migrate-cli.ts`) applies migrations ahead of a deploy.
+  **Deps added:** `pg` (prod), `@types/pg` + `pg-mem` (dev). Tests use `pg-mem` (in-memory Postgres emulator) and a
+  tiny fake GoTrue HTTP server, not a real Postgres/Supabase — fully offline, no CI changes needed.
+- **Verified this session:** `npm run typecheck`, `npm test` (461/461, up from 448 — 13 new tests in
+  `apps/api/test/control-plane.test.ts` and `apps/api/test/accounts.test.ts`), `npm run build`, `npm run eval -- --gate`
+  (all Phase 1 targets met), `npm audit --omit=dev --audit-level=high` (0 vulnerabilities) all green with these changes.
+  **Uncommitted.**
+- **`/v1/accounts/rotate-key` added (2026-10-13):** login alone only confirms identity (`{accountId, email}`, no key,
+  since the key is shown once at signup); rotate-key re-proves identity with the password and issues a fresh key,
+  invalidating the old one (`AccountRepository.rotateApiKey`). Owner decision: add this now rather than defer to M3.
+- **Not done yet (still M1 work, or M2+):** no real Supabase project exists (code only talks to whatever
+  `MATRIX_EYE_SUPABASE_URL` points at); no CLI/dashboard calls these routes yet; M2 (VPS deploy) not started.
+- **Next concrete action:** start **M2** (provision the VPS, deploy the API, run Ollama on it) per
+  `docs/planning/Phase4-Plan.md`. First owner-side step for M2: actually create the Supabase project and a VPS account
+  (neither exists yet) so the code in `apps/api/src/control-plane/` has something real to talk to.
 - **Owner-side open items:** domain, legal entity and contact email, lawyer review of `/privacy/` and `/terms/`, pricing
   validation, decisions D5-D7, a real screen-reader test.
 - **Blockers:** none technical.
 
 ## 12. Outstanding work and prioritized backlog
 
-**Phase roadmap:** Phases 1-3 are done. **Phase 4 is next: hosted backend, dashboard, billing.** Nothing of Phase 4 exists and
-it has no written plan yet; start it by agreeing scope with the owner (host for the API, accounts/auth, Postgres vs SQLite,
-billing provider, dashboard screens). Phases after 4 are not defined.
+**Phase roadmap:** Phases 1-3 are done. **Phase 4 is next: hosted backend, dashboard, billing.** Architecture decided
+(ADR-008) and a milestone plan written (`docs/planning/Phase4-Plan.md`), 2026-10-13. Milestones in order: **M1 accounts/
+control-plane Postgres (code done this session, uncommitted; no real Supabase project yet)** -> M2 VPS deploy of
+API+Ollama (not started) -> M3 minimal dashboard (not started) -> M4 billing/Stripe (not started) -> M5 hardening
+(not started) before real customers.
 
 **P0:** none. All checks were green at the last full run.
 
 **P1 (current)**
-1. Check CI for the latest commits (`gh run list --limit 3`).
-2. Confirm the Vercel deployment works (import `apps/website`, Root Directory `apps/website` or repo root; env `PUBLIC_SITE_URL`;
-   leave `PUBLIC_API_URL` unset until the API is hosted; forms then say "not connected yet" by design). Owner reports back.
-3. Plan Phase 4 with the owner.
+1. ~~Check CI for the latest commits.~~ Done 2026-10-13: green through `51728e8`.
+2. ~~Confirm the Vercel deployment works.~~ Done 2026-10-13: owner confirmed working.
+3. ~~Plan Phase 4 with the owner.~~ Done 2026-10-13: ADR-008 + `docs/planning/Phase4-Plan.md`.
+4. ~~Implement M1 (accounts/control-plane) in code, including rotate-key.~~ Done 2026-10-13; all checks green (section 11).
+5. Commit the M1 changes (owner approved 2026-10-13).
+6. Start M2: provision a real Supabase project + VPS, deploy the API, run Ollama on it.
 
 **P2**
 - Host the API somewhere with a persistent disk or move to Postgres (Phase 4); set `PUBLIC_API_URL`, `MATRIX_EYE_SITE_ORIGINS`, re-run `npm run deploy-config` with the API origin.
@@ -255,7 +294,8 @@ billing provider, dashboard screens). Phases after 4 are not defined.
 - Real screen-reader test (NVDA/VoiceOver). Consider outside security review before launch.
 
 **P3**
-- Phase 4: dashboard, accounts, billing, hosted crawling/re-crawl scheduling, analytics, email notifications, retrieval upgrade (only if it measurably improves evals), more languages, PDF/login-gated page support, Vue/WordPress/HTML integration guides that are actually tested.
+- Phase 4 milestones M1-M5: see `docs/planning/Phase4-Plan.md` (accounts/control-plane Postgres, VPS deploy, dashboard, billing, hardening).
+- Phase 4-plus (after M1-M5): hosted crawling/re-crawl scheduling, analytics, email notifications, retrieval upgrade (only if it measurably improves evals), more languages, PDF/login-gated page support, Vue/WordPress/HTML integration guides that are actually tested.
 
 ## 13. Known issues and troubleshooting
 
@@ -294,7 +334,18 @@ billing provider, dashboard screens). Phases after 4 are not defined.
 - **2026-10-12 (Phase 3):** website (Astro), forms API, docs/guides, tests (static + browser + axe), ADR-007; layout widening, motion, header layout, animated hero, Home link; Vercel config fix. Commits `7cfa0ad`..`e302ac4`.
 - **2026-10-12 (rename + logo):** renamed to MatrixEye everywhere, repos renamed, two remotes, new logos (several iterations: lettered, badge, glow), final: neon emblem only, small. Commits `c929b0e`..`f3c2664`. Verified: full tests, typecheck, build, eval gate green at `f3c2664`.
 - **2026-10-13:** owner shared a reference hero and approved "apply all" + "MatrixEye one word". Started the green restyle (uncommitted; unverified). Then created this `memory.md` and `CLAUDE.md` (audit: build ok, tests 447/448, typecheck 1 error from the unfinished restyle). 
-- **2026-10-13 (restyle finished; home "works with" row has 9 logos (React, Next.js, Vue, WordPress, Angular, Svelte, Shopify, Wix, HTML) from Simple Icons CC0 in `src/data/stack.ts`; hero tile icons centred (selector `.tile div > span`), third tile now "Data stays yours"):** removed duplicate icon, fixed theme test, updated `theme-color`, OG image script and icon tile to `#04080c`, regenerated assets, added missing `.env.example` settings, fixed `package.json` description. Typecheck, 448 tests and eval gate green. **Next action: section 11.**
+- **2026-10-13 (restyle finished; home "works with" row has 9 logos (React, Next.js, Vue, WordPress, Angular, Svelte, Shopify, Wix, HTML) from Simple Icons CC0 in `src/data/stack.ts`; hero tile icons centred (selector `.tile div > span`), third tile now "Data stays yours"):** removed duplicate icon, fixed theme test, updated `theme-color`, OG image script and icon tile to `#04080c`, regenerated assets, added missing `.env.example` settings, fixed `package.json` description. Typecheck, 448 tests and eval gate green.
+- **2026-10-13 (CI/Vercel confirmed; Phase 4 planned):** checked CI (`gh run list --limit 3`, green through `51728e8`);
+  owner confirmed the Vercel deployment works. Resolved D5-D7 with the owner (self-hosted Ollama for hosted inference,
+  budget under $25/month, near full-time hours) and wrote `docs/adr/ADR-008-phase4-hosted-architecture.md` (Supabase
+  Postgres control plane + per-project SQLite on a VPS + self-hosted Ollama) and `docs/planning/Phase4-Plan.md`
+  (milestones M1-M5).
+- **2026-10-13 (Phase 4 M1 implemented):** built the control-plane module (`apps/api/src/control-plane/`): Postgres
+  migration runner, `AccountRepository`, `SupabaseAuthClient`, account Bearer-auth hook; wired into `app.ts`/`config.ts`/
+  `server.ts` so hosted mode is opt-in via three env vars and self-host mode is untouched; added `pg`/`@types/pg`/
+  `pg-mem`; added `apps/api/test/control-plane.test.ts` and `apps/api/test/accounts.test.ts` (pg-mem + fake GoTrue
+  server, fully offline). Verified green: typecheck, `npm test` (461/461), build, eval gate, `npm audit`.
+  **Uncommitted; no real Supabase project provisioned yet.** Next action: section 11.
 
 ---
 ## Memory maintenance policy
