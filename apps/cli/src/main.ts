@@ -1,5 +1,5 @@
 /**
- * `matrix` — try Matrix Eye on any website from the terminal, no server needed.
+ * `matrix` — try MatrixEye on any website from the terminal, no server needed.
  *
  *   npm run matrix -- crawl https://university.edu --max-pages 100
  *   npm run matrix -- ask "How much is tuition for computer science?"
@@ -20,7 +20,7 @@ import { resolveLocalModel } from "@matrix-eye/llm";
 
 const PROJECT = "cli";
 
-const USAGE = `Matrix Eye CLI
+const USAGE = `MatrixEye CLI
 
 Usage:
   matrix crawl <url> [--max-pages N] [--full] [--allow-private] [--render]

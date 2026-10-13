@@ -16,7 +16,7 @@ import { SqliteKnowledgeStore } from "@matrix-eye/knowledge";
 import { resolveLocalModel } from "@matrix-eye/llm";
 import { REPO_ROOT, WIDGET_FILE, startDemo } from "./demo";
 
-const USAGE = `Matrix Eye demo
+const USAGE = `MatrixEye demo
 
 Usage: npm run demo -- <website-url> [--max-pages N] [--render] [--port N] [--db file] [--allow-private] [--no-model]
 

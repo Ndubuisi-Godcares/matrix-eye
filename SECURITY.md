@@ -8,7 +8,7 @@ the impact. We aim to acknowledge reports within 3 working days.
 
 ## Threat model (summary)
 
-Matrix Eye fetches user-supplied URLs and feeds third-party text to a language model, so the main risks are:
+MatrixEye fetches user-supplied URLs and feeds third-party text to a language model, so the main risks are:
 
 | Risk | Mitigation | Where |
 |---|---|---|

@@ -2,7 +2,7 @@
   "name": "@matrix-eye/api",
   "version": "0.1.0",
   "private": true,
-  "description": "Matrix Eye HTTP API (Fastify): projects, crawling, search and chat.",
+  "description": "MatrixEye HTTP API (Fastify): projects, crawling, search and chat.",
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {

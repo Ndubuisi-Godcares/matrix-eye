@@ -2,7 +2,7 @@
   "name": "@matrix-eye/widget-react",
   "version": "0.1.0",
   "private": true,
-  "description": "React component that adds the Matrix Eye chat widget to a page (Next.js safe).",
+  "description": "React component that adds the MatrixEye chat widget to a page (Next.js safe).",
   "license": "Apache-2.0",
   "type": "module",
   "exports": {

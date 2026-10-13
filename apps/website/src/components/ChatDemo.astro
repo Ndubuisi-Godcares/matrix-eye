@@ -15,16 +15,20 @@ import Icon from "./Icon.astro";
     <p class="bubble bubble--user reveal reveal--1">When is the application deadline for September?</p>
     <div class="turn">
       <p class="bubble bubble--typing typing typing--1" aria-hidden="true"><i></i><i></i><i></i></p>
-      <p class="bubble bubble--bot reveal reveal--2">
-        The application deadline for the September intake is <strong>30 June 2026</strong>.<sup><a href="#chat-demo-note" aria-label="Source 1, see the note below the conversation">1</a></sup>
-      </p>
+      <div class="reply reveal reveal--2">
+        <p class="bubble bubble--bot">
+          The application deadline for the September intake is <strong>30 June 2026</strong>.<sup><a href="#chat-demo-note" aria-label="Source 1, see the note below the conversation">1</a></sup>
+        </p>
+        <span class="source-btn" aria-hidden="true">Source <Icon name="external" /></span>
+      </div>
     </div>
-    <p class="chat-sources reveal reveal--3"><span class="chip"><Icon name="link" /> Admissions · riverside.example/admissions</span></p>
+    <p class="chat-sources reveal reveal--3"><span class="chip chip--page"><Icon name="file" /> Admissions · riverside.example/admissions <span class="chip__end"><Icon name="external" /></span></span></p>
     <p class="bubble bubble--user reveal reveal--4">Do you have a swimming pool?</p>
     <div class="turn">
       <p class="bubble bubble--typing typing typing--2" aria-hidden="true"><i></i><i></i><i></i></p>
       <p class="bubble bubble--bot reveal reveal--5">I couldn't find that on this website. You can email admissions@riverside.example.</p>
     </div>
   </div>
+  <div class="chat-input" aria-hidden="true"><span>Ask a question about this website…</span><span class="chat-input__send"><Icon name="arrow" /></span></div>
   <figcaption class="chat-demo__label reveal reveal--6" id="chat-demo-note">Illustration with an invented university. On your site, every answer links to your own pages.</figcaption>
 </figure>

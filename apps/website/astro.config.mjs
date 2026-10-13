@@ -1,4 +1,4 @@
-// Astro configuration for the Matrix Eye website (a static site: no server is needed to host it).
+// Astro configuration for the MatrixEye website (a static site: no server is needed to host it).
 import sitemap from "@astrojs/sitemap";
 import { satteri } from "@astrojs/markdown-satteri";
 import { defineConfig } from "astro/config";

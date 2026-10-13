@@ -29,9 +29,9 @@ export interface WidgetOptions {
   position?: "right" | "left";
   /** Header title. Defaults to the project's name. */
   title?: string;
-  /** Brand colour for the header, launcher and your messages (#rgb or #rrggbb). Default: Matrix Eye navy. */
+  /** Brand colour for the header, launcher and your messages (#rgb or #rrggbb). Default: MatrixEye navy. */
   color?: string;
-  /** Accent colour for borders and highlights. Default: Matrix Eye gold. */
+  /** Accent colour for borders and highlights. Default: MatrixEye gold. */
   accent?: string;
   theme?: "light" | "dark" | "auto";
   /** Opening message. Defaults to the project's greeting, then a generic one. */
@@ -39,7 +39,7 @@ export interface WidgetOptions {
   placeholder?: string;
   /** Open the window immediately. */
   startOpen?: boolean;
-  /** Show the "Powered by Matrix Eye" line. */
+  /** Show the "Powered by MatrixEye" line. */
   branding?: boolean;
   /** Keep the conversation for the browser tab (sessionStorage) so a page reload does not lose it. */
   persist?: boolean;
@@ -329,7 +329,7 @@ export class ChatWidget {
     this.panel.append(head, this.log, this.suggestions, form, this.announcer);
     if (options.branding !== false) {
       const brand = this.el("div", "ee-brand", `${labels.poweredBy} `);
-      const link = this.el("a", undefined, "Matrix Eye");
+      const link = this.el("a", undefined, "MatrixEye");
       link.href = "https://matrixeye.ai";
       link.target = "_blank";
       link.rel = "noopener noreferrer";
@@ -386,7 +386,7 @@ export class ChatWidget {
         this.input.disabled = true;
         this.sendButton.disabled = true;
         this.notice(this.labels.errorForbidden);
-        console.warn("[Matrix Eye] This website's origin is not in the project's allowed origins. Add it in the project settings.");
+        console.warn("[MatrixEye] This website's origin is not in the project's allowed origins. Add it in the project settings.");
       }
       // Any other failure (offline, server down) is not fatal: the widget still opens and reports errors per question.
     }

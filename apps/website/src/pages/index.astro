@@ -45,14 +45,23 @@ const tabs: Array<{ id: string; label: string; lang: CodeLanguage; code: string 
   <section class="hero">
     <div class="container hero__grid">
       <div class="hero__copy">
-        <span class="eyebrow">Early access</span>
-        <h1>An assistant for your website that <span class="accent-underline">shows its sources</span></h1>
-        <p class="lead">Matrix Eye reads your pages and answers visitors in a chat window. Every answer links to the page it came from. When your site doesn't say, it says so instead of guessing.</p>
+        <p class="pill"><span class="pill__tag"><i></i> Early access</span><span class="pill__text">Turn your website into a smart assistant</span></p>
+        <h1>An assistant for your website that <span class="grad-text">shows its sources</span></h1>
+        <p class="lead">MatrixEye reads your pages and answers visitors in a chat window. Every answer links to the page it came from. When your site doesn't say, it says so instead of guessing.</p>
+        <ul class="tiles" aria-label="Highlights">
+          <li class="tile"><span class="tile__icon"><Icon name="file" /></span><div><strong>Accurate answers</strong><span>With source links</span></div></li>
+          <li class="tile"><span class="tile__icon"><Icon name="bolt" /></span><div><strong>Easy to integrate</strong><span>API &amp; widget</span></div></li>
+          <li class="tile"><span class="tile__icon"><Icon name="lock" /></span><div><strong>Your data stays yours</strong><span>Self-host, private</span></div></li>
+        </ul>
         <div class="hero__cta">
           <a class="btn btn--primary" href="/waitlist/">Join the waitlist <Icon name="arrow" /></a>
-          <a class="btn btn--secondary" href="/docs/quickstart/">Read the quickstart</a>
+          <a class="btn btn--secondary" href="/product/">See how it works</a>
         </div>
         <p class="hero__note">Free during early access. No credit card. Self-host it or wait for the hosted service.</p>
+        <div class="stack">
+          <p class="stack__label">Works with any website stack</p>
+          <ul class="stack__list"><li>React</li><li>Next.js</li><li>Vue</li><li>WordPress</li><li>Plain HTML</li></ul>
+        </div>
       </div>
       <div class="hero__visual"><HeroScene /></div>
     </div>
@@ -63,7 +72,7 @@ const tabs: Array<{ id: string; label: string; lang: CodeLanguage; code: string 
       <div class="section__head">
         <span class="eyebrow">Why it is different</span>
         <h2 id="why">Answers you can trust, because you can check them</h2>
-        <p class="lead">Most chatbots sound confident whether or not they know. Matrix Eye is built around the opposite habit.</p>
+        <p class="lead">Most chatbots sound confident whether or not they know. MatrixEye is built around the opposite habit.</p>
       </div>
       <div class="grid grid--3">
         <article class="card">

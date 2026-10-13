@@ -1,5 +1,5 @@
 /**
- * The Matrix Eye client.
+ * The MatrixEye client.
  *
  * Two audiences, two classes:
  *  - `PublicClient`: what a website visitor's browser may do (chat, stream, feedback, display settings).
@@ -83,7 +83,7 @@ class Transport {
       });
     } catch (err) {
       if (extra.signal?.aborted) throw err; // the caller cancelled; let the abort propagate unchanged
-      throw new MatrixEyeError(`Could not reach the Matrix Eye server: ${(err as Error).message}`, 0, "network_error");
+      throw new MatrixEyeError(`Could not reach the MatrixEye server: ${(err as Error).message}`, 0, "network_error");
     }
     if (!response.ok) throw await toError(response);
     return response;

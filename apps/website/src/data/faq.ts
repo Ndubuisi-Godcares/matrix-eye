@@ -10,7 +10,7 @@ export interface FaqItem {
 
 export const FAQ: FaqItem[] = [
   {
-    q: "What does Matrix Eye do?",
+    q: "What does MatrixEye do?",
     a: "<p>It reads your website, builds a searchable index of your pages, and runs a chat window that answers visitors' questions from that content. Every answer links to the pages it came from.</p>",
   },
   {

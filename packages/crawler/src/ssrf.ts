@@ -1,7 +1,7 @@
 /**
  * Server-side request forgery (SSRF) protection.
  *
- * Matrix Eye fetches URLs supplied by users. Without a guard, someone could point the
+ * MatrixEye fetches URLs supplied by users. Without a guard, someone could point the
  * crawler at http://169.254.169.254/ (cloud metadata), http://localhost:5432/ or an
  * internal admin panel and read the response back through the chatbot.
  *

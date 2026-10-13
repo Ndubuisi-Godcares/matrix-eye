@@ -25,7 +25,7 @@ export const PLANS: Plan[] = [
   {
     id: "community",
     name: "Community",
-    audience: "For trying Matrix Eye and for people who run everything themselves.",
+    audience: "For trying MatrixEye and for people who run everything themselves.",
     price: "Free",
     features: [
       "Self-host the engine, API and chat widget",

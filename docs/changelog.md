@@ -1,8 +1,12 @@
 # Changelog
 
-Matrix Eye is in early access and has not had a numbered release yet. This is the history so far, newest first.
+MatrixEye is in early access and has not had a numbered release yet. This is the history so far, newest first.
 
 ## October 2026: early access preparation
+
+**Look and feel**
+- New green and teal colour scheme in light and dark, with a hero that shows the chat, the sources it cites and what it reads.
+- The name is written MatrixEye (one word) everywhere; the logo is the emblem alone.
 
 **Website, forms and documentation**
 - Marketing website and documentation with search, light and dark themes, no third-party scripts or fonts.

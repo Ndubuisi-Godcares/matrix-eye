@@ -6,7 +6,7 @@
 
 ## Context
 
-Matrix Eye is a set of cooperating packages (crawler, knowledge store, LLM adapter, engine) plus apps
+MatrixEye is a set of cooperating packages (crawler, knowledge store, LLM adapter, engine) plus apps
 (API, CLI) and, later, an SDK, widget, dashboard and website. They share types and change together, so
 one repository with one install and one CI pipeline is the simplest correct structure.
 

@@ -20,7 +20,7 @@ const guides = defineCollection({
     title: z.string().max(70),
     description: z.string().max(170),
     date: z.coerce.date(),
-    author: z.string().default("The Matrix Eye team"),
+    author: z.string().default("The MatrixEye team"),
     tags: z.array(z.string()).default([]),
   }),
 });

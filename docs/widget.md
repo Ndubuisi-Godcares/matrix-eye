@@ -62,7 +62,7 @@ Try it locally on any site: `npm run demo -- https://example.edu` (see the [quic
 | `greeting` | opening message (else the project's greeting, else a default) | |
 | `placeholder` | input hint | `Ask a question…` |
 | `open` | start with the window open | closed |
-| `branding` | `false` hides "Powered by Matrix Eye" | shown |
+| `branding` | `false` hides "Powered by MatrixEye" | shown |
 | `persist` | `false` stops saving the conversation for the browser tab | saved |
 | `labels` (init only) | override any text, e.g. to translate | English |
 

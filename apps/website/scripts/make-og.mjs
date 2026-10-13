@@ -20,7 +20,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
 @font-face { font-family: "F"; src: url(${font}) format("woff2"); font-weight: 100 900; }
 @font-face { font-family: "I"; src: url(${sans}) format("woff2"); font-weight: 100 900; }
 html, body { margin: 0; width: 1200px; height: 630px; }
-body { background: #0a1320; position: relative; overflow: hidden; font-family: "I", sans-serif; color: #f1f4f8; }
+body { background: #04080c; position: relative; overflow: hidden; font-family: "I", sans-serif; color: #f1f4f8; }
 .glow { position: absolute; right: -200px; top: -250px; width: 900px; height: 900px; border-radius: 50%; background: radial-gradient(closest-side, rgba(40,255,170,.20), rgba(40,255,170,0)); }
 .bar { position: absolute; left: 0; top: 0; bottom: 0; width: 14px; background: linear-gradient(#b2fc07, #19f2c4); }
 .wrap { position: absolute; left: 90px; top: 70px; right: 90px; bottom: 70px; display: flex; flex-direction: column; justify-content: space-between; }

@@ -1,7 +1,7 @@
 # Quickstart
 
-Matrix Eye is in early access, so today you run it from its repository. This page takes you from nothing to a chat
-window answering from your own website, in about ten minutes. Nothing here changes your website: Matrix Eye only
+MatrixEye is in early access, so today you run it from its repository. This page takes you from nothing to a chat
+window answering from your own website, in about ten minutes. Nothing here changes your website: MatrixEye only
 reads it, the way a visitor would.
 
 ## What you need

@@ -1,7 +1,7 @@
 /**
  * The demo server: the real API plus a tiny web page that embeds the real widget.
  *
- * Purpose: see Matrix Eye on any website in one command, exactly as a customer's visitors would. It is also the
+ * Purpose: see MatrixEye on any website in one command, exactly as a customer's visitors would. It is also the
  * page the browser tests drive, so what you see here is what is tested. It is a development tool, not the
  * product's hosting: it serves one project, keeps data in a local file, and allows only its own origin.
  */
@@ -55,7 +55,7 @@ function demoPage(projectId: string, siteName: string, siteUrl: string, query: R
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Matrix Eye demo: ${escapeHtml(siteName)}</title>
+<title>MatrixEye demo: ${escapeHtml(siteName)}</title>
 <style>
   body { font: 16px/1.6 system-ui, sans-serif; margin: 0; color: #14202e; background: #f6f1e7; }
   main { max-width: 760px; margin: 0 auto; padding: 48px 20px 120px; }
@@ -68,7 +68,7 @@ function demoPage(projectId: string, siteName: string, siteUrl: string, query: R
 </head>
 <body>
 <main>
-  <img src="/logo.png" alt="Matrix Eye">
+  <img src="/logo.png" alt="MatrixEye">
   <h1>Chat assistant demo for ${escapeHtml(siteName)}</h1>
   <p>This assistant answers from the content of <a href="${escapeHtml(siteUrl)}" rel="noopener noreferrer" target="_blank">${escapeHtml(siteUrl)}</a>
   and cites the pages it used. Open the chat button at the bottom corner and ask a question.</p>

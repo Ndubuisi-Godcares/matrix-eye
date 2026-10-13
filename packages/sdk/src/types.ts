@@ -1,5 +1,5 @@
 /**
- * Public types of the Matrix Eye API.
+ * Public types of the MatrixEye API.
  *
  * Deliberately self-contained: the SDK is published on its own, so it does not import the server's internal
  * packages. A type-level test (test/compat.test-d.ts) checks these stay compatible with the server's types.

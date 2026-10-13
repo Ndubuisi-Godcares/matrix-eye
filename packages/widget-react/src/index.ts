@@ -1,5 +1,5 @@
 /**
- * React wrapper for the Matrix Eye chat widget.
+ * React wrapper for the MatrixEye chat widget.
  *
  *   import { MatrixEyeChat } from "@matrix-eye/widget-react";
  *   <MatrixEyeChat project="PROJECT_ID" api="https://api.example.com" color="#0f2238" />

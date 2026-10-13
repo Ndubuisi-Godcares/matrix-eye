@@ -5,7 +5,7 @@ date: 2026-10-12
 tags: ["accessibility", "engineering"]
 ---
 
-A chat window looks simple and is surprisingly hard to make accessible. Here is what we built into the Matrix Eye
+A chat window looks simple and is surprisingly hard to make accessible. Here is what we built into the MatrixEye
 widget, why, and, just as important, what we have not proven.
 
 ## The problem unique to streaming chat

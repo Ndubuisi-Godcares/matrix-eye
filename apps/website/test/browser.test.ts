@@ -279,7 +279,7 @@ describe("keyboard and interaction", () => {
     expect(await page.evaluate(() => document.documentElement.getAttribute("data-theme"))).toBeNull();
     await page.locator("[data-theme-toggle]").first().click();
     expect(await page.evaluate(() => document.documentElement.getAttribute("data-theme"))).toBe("dark");
-    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(10, 19, 32)");
+    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(4, 8, 12)");
     await page.reload({ waitUntil: "networkidle" });
     expect(await page.evaluate(() => document.documentElement.getAttribute("data-theme"))).toBe("dark"); // remembered, with no flash
     await context.close();

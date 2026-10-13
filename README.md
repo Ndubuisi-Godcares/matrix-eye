@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="brand/matrix-eye-logo.png" alt="Matrix Eye" width="360">
+  <img src="brand/matrix-eye-logo.png" alt="MatrixEye" width="360">
 </p>
 
 <p align="center"><strong>Turn any website into a source-grounded, conversational assistant.</strong><br>

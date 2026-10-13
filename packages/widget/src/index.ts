@@ -59,7 +59,7 @@ function optionsFromAttributes(get: (name: string) => string | null): EmbedOptio
   const project = get("project")?.trim();
   const api = get("api")?.trim();
   if (!project || !api) {
-    console.error("[Matrix Eye] The widget needs both a project id and an api address (data-project and data-api).");
+    console.error("[MatrixEye] The widget needs both a project id and an api address (data-project and data-api).");
     return null;
   }
   return {

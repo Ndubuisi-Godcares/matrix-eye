@@ -5,7 +5,7 @@
 
 ## Context
 
-Matrix Eye fetches URLs supplied by users. That is a server-side request forgery (SSRF) risk, and
+MatrixEye fetches URLs supplied by users. That is a server-side request forgery (SSRF) risk, and
 crawling other people's sites carries ethical and legal expectations.
 
 ## Decision

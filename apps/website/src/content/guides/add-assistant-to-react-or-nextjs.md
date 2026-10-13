@@ -6,7 +6,7 @@ tags: ["react", "nextjs", "tutorial"]
 ---
 
 This walkthrough adds a chat assistant that answers from your own website to a React or Next.js app. It assumes
-Matrix Eye is running (see the [quickstart](/docs/quickstart/)) and that you have the address of your API and your
+MatrixEye is running (see the [quickstart](/docs/quickstart/)) and that you have the address of your API and your
 admin key.
 
 ## 1. Create a project and read your site

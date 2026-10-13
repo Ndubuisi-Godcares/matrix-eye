@@ -28,7 +28,7 @@ mkdirSync(join(out, "brand"), { recursive: true });
 // Earlier logos produced files with other names; they are no longer used.
 for (const old of ["lockup.webp", "logo-light.webp", "logo-dark.webp", "lockup-light.webp", "lockup-dark.webp", "mark-light.webp", "mark-dark.webp"]) rmSync(join(out, "brand", old), { force: true });
 
-const TILE = { r: 10, g: 19, b: 32, alpha: 1 }; // the site's dark background, for the small icons
+const TILE = { r: 4, g: 8, b: 12, alpha: 1 }; // the site's dark background, for the small icons
 
 /** The logo with its black background turned into transparency, colours at full strength. */
 async function transparent() {

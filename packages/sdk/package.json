@@ -2,7 +2,7 @@
   "name": "@matrix-eye/sdk",
   "version": "0.1.0",
   "private": true,
-  "description": "TypeScript client for the Matrix Eye API: admin operations, chat, streaming answers and feedback.",
+  "description": "TypeScript client for the MatrixEye API: admin operations, chat, streaming answers and feedback.",
   "license": "Apache-2.0",
   "type": "module",
   "exports": {

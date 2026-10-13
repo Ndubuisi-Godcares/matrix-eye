@@ -187,26 +187,20 @@ External services in use: none (no analytics, no third-party scripts/fonts). Git
 
 ## 9. Implementation and verification status
 
-**Checks actually run during this audit (2026-10-13) on the working tree (committed + uncommitted changes):**
-- `npm run build` (sdk, widget, widget-react): **passes** (widget 10.3 KB gz).
-- `npm test`: **447 passed, 1 failed** (448). Failure: `apps/website/test/browser.test.ts > switches and remembers the
-  colour theme`: it asserts the dark body background `rgb(10, 19, 32)`, but the new palette is `#04080c`. Cause confirmed
-  (test not updated after the palette change). Earlier today the full suite was 448/448 on `f3c2664`.
-- `npm run typecheck`: **fails, 1 error**: `apps/website/src/components/Icon.astro` has a **duplicate `lock` key** (existing
-  `lock` plus one added during the restyle); `bolt` duplicates the existing `zap` icon. The 3 root `tsc` runs pass; the
-  failure is in `astro check`.
-- Eval gate (`npm run eval -- --gate`): passed earlier today at `f3c2664`; **not re-run** on the working tree (engine untouched).
-- CI on GitHub: **not checked** for commits after the rename. Vercel deployment: **never confirmed successful**
+**Checks run on 2026-10-13 after the restyle (working tree at commit time):**
+- `npm run typecheck`: passes (0 errors; the duplicate `lock` icon was removed).
+- `npm test`: **448/448 passed** (35 files), including axe in both themes and mobile overflow; the theme test now expects `rgb(4, 8, 12)`.
+- `npm run eval -- --gate`: passed (0 unsupported figures, injection resistance 100%).
+- Build: website builds (24 pages); `og.png`, icons and `mark.webp` regenerated with the new dark tile `#04080c`.
+- Visual review: `/`, `/pricing/`, `/docs/api/` screenshotted in light and dark (Playwright): legible, no layout problems seen.
+  `/product/` was captured but not individually inspected.
+- CI on GitHub: **not checked** for commits after the restyle commit. Vercel deployment: **never confirmed successful**
   (a build failure "No Output Directory named public" was fixed by `vercel.json` in `e302ac4`; the user then imported the
   project; the result was not reported back).
-- Visual review: pages were screenshot-reviewed during design iterations; the **new green restyle has not been visually reviewed**.
-- axe accessibility test passed on all pages in light/dark at `f3c2664`; **not re-run** on the restyle.
 
 **Known gaps/debt:** no outside security audit; no screen-reader testing; no multi-tenant auth; no DB migrations; no
 retention/erasure UI for waitlist (owner can delete via API); English only; keyword retrieval can wrongly decline unusual
 phrasing; small local models sometimes decline two-part questions; widget/`Origin` limit; privacy/terms are drafts.
-**Minor defect:** root `package.json` `description` contains mojibake (`â€”` where an em dash was intended; present in git since
-before the rename).
 
 ## 10. Decisions and development constraints
 
@@ -229,36 +223,15 @@ before the rename).
 
 ## 11. Current development position (READ THIS FIRST)
 
-- **Objective:** finish the **website restyle to the neon green/teal palette and the reference-style hero**, plus use
-  "MatrixEye" (one word) everywhere, then commit/push.
-- **Done toward it (all UNCOMMITTED in the working tree, 55 files changed vs `f3c2664`):**
-  1. "Matrix Eye" -> "MatrixEye" text replacement across ~53 tracked text files (not PDFs, not `docs/planning`, not lockfile).
-  2. `global.css`: new light/dark tokens, gradient primary button, gradient headline class `.grad-text`, pill, feature
-     tiles, stack chips, richer chat card styles (`.reply`, `.source-btn`, `.chip--page`, `.chat-input`), bolder rings; old
-     gold underline removed.
-  3. `index.astro` hero rewritten (pill, gradient words, tiles, CTA "Join the waitlist" + "See how it works" -> `/product/`,
-     "Works with any website stack" as plain text chips: React, Next.js, Vue, WordPress, Plain HTML).
-  4. `ChatDemo.astro`: Source button, cited-page chip, input bar. `Icon.astro`: added `file`, `bolt`, `lock`, `external`.
-- **Stopped at:** the CSS/markup were written but **never built, viewed or tested**. Known breakages listed in 9
-  (duplicate `lock` icon key -> `astro check` fails; theme test expects old dark background).
-- **Next concrete actions (in order):**
-  1. `apps/website/src/components/Icon.astro`: delete the duplicate `lock` entry (keep one; both are lock icons) and either
-     use existing `zap` instead of `bolt` in `index.astro` or keep `bolt`.
-  2. Update `apps/website/test/browser.test.ts` (~line 282) dark background expectation to `rgb(4, 8, 12)`.
-  3. `npm run build -w @matrix-eye/website`, then screenshot `/`, `/pricing/`, `/docs/api/`, `/product/` in light and dark
-     (Playwright is installed; a Chrome extension tool was also used). Fix contrast/legibility problems (neon on light bg is the
-     risk: `--grad-text` light values and `.logo-badge`), and check the other hard-coded colours in `global.css`
-     (`#4ade80`, `#16a34a`, `#15803d`, cta-band, `.hero::before` glow uses `--accent`) and `Base.astro` `theme-color` meta
-     (`#fbf9f4` / `#0a1320` are still the OLD palette -> update to `#f5faf7` / `#04080c`), plus `make-og.mjs` and
-     `make-assets.mjs` tile colour (currently `#0a1320`) -> regenerate `og.png` and icons.
-  4. Reword claims copied from the reference: it said "Live: knowledge base updated automatically" (not built: do not add);
-     the hero uses "Self-host, private" instead of "Secure and private". Keep it that way.
-  5. Run `npm run typecheck`, `npm test` (incl. axe in both themes, mobile overflow), `npm run eval -- --gate`; then commit and
-     `git push` (pushes to both repos) and check CI (`gh run list --limit 1`).
-  6. Update this file, the README (hero wording), `docs/changelog.md`, and add ADR note if the palette becomes permanent.
-- **Files to inspect before continuing:** `apps/website/src/styles/global.css`, `src/pages/index.astro`,
-  `src/components/{ChatDemo,HeroScene,Icon,Logo}.astro`, `test/browser.test.ts`, `scripts/make-assets.mjs`, `scripts/make-og.mjs`.
-- **Blockers:** none technical. Waiting on the owner for: Vercel result, domain, legal entity/contact email, pricing validation.
+- **Objective (done):** website restyle to the neon green/teal palette with the reference-style hero, "MatrixEye" (one word)
+  everywhere. Committed and pushed on 2026-10-13 (see section 15).
+- **Honesty rules kept:** the hero does not claim "knowledge base updated automatically" (not built); it says "Self-host, private".
+- **Next concrete action:** check CI (`gh run list --limit 1`) for the restyle commit, then confirm with the owner whether the
+  Vercel deploy works (grant the Vercel GitHub app access to the personal repo, root `apps/website`, leave `PUBLIC_API_URL` unset).
+  After that, plan **Phase 4** (hosted backend, dashboard, billing) with the owner; nothing of it is started.
+- **Owner-side open items:** domain, legal entity and contact email, lawyer review of `/privacy/` and `/terms/`, pricing
+  validation, decisions D5-D7, a real screen-reader test.
+- **Blockers:** none technical.
 
 ## 12. Outstanding work and prioritized backlog
 
@@ -316,7 +289,8 @@ before the rename).
 - **2026-10 (Phases 1-2):** built engine, crawler, store, LLM + Ollama, API, SDK, widget, React wrapper, demo; eval gate; ADR-001..006; pushed to GitHub with CI.
 - **2026-10-12 (Phase 3):** website (Astro), forms API, docs/guides, tests (static + browser + axe), ADR-007; layout widening, motion, header layout, animated hero, Home link; Vercel config fix. Commits `7cfa0ad`..`e302ac4`.
 - **2026-10-12 (rename + logo):** renamed to MatrixEye everywhere, repos renamed, two remotes, new logos (several iterations: lettered, badge, glow), final: neon emblem only, small. Commits `c929b0e`..`f3c2664`. Verified: full tests, typecheck, build, eval gate green at `f3c2664`.
-- **2026-10-13:** owner shared a reference hero and approved "apply all" + "MatrixEye one word". Started the green restyle (uncommitted; unverified). Then created this `memory.md` and `CLAUDE.md` (audit: build ok, tests 447/448, typecheck 1 error from the unfinished restyle). **Next action: section 11, step 1.**
+- **2026-10-13:** owner shared a reference hero and approved "apply all" + "MatrixEye one word". Started the green restyle (uncommitted; unverified). Then created this `memory.md` and `CLAUDE.md` (audit: build ok, tests 447/448, typecheck 1 error from the unfinished restyle). 
+- **2026-10-13 (restyle finished):** removed duplicate icon, fixed theme test, updated `theme-color`, OG image script and icon tile to `#04080c`, regenerated assets, added missing `.env.example` settings, fixed `package.json` description. Typecheck, 448 tests and eval gate green. **Next action: section 11.**
 
 ---
 ## Memory maintenance policy

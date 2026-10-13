@@ -5,7 +5,7 @@
 
 ## Context
 
-Phase 2 puts Matrix Eye in front of website visitors. A web page cannot keep a secret, so the admin API key can never
+Phase 2 puts MatrixEye in front of website visitors. A web page cannot keep a secret, so the admin API key can never
 be used there. The widget runs inside someone else's page, so it must be small, isolated, accessible and safe against
 hostile content. Answers take seconds with a local model, so waiting for the whole answer feels broken.
 

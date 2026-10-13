@@ -1,6 +1,6 @@
 # Accuracy and evaluation
 
-An assistant that is usually right and sometimes confidently wrong is worse than useless, so Matrix Eye measures
+An assistant that is usually right and sometimes confidently wrong is worse than useless, so MatrixEye measures
 itself, in public, including where it falls short.
 
 ## What is measured

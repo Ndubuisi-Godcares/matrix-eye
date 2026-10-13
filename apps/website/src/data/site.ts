@@ -5,11 +5,11 @@
  * obvious in the source so they are not forgotten before launch; `docs/website.md` lists them.
  */
 export const SITE = {
-  name: "Matrix Eye",
+  name: "MatrixEye",
   /** Short line used in titles and link previews. */
   tagline: "Turn any website into an assistant that cites its sources",
   /** Under about 160 characters so search results show it whole. */
-  description: "Matrix Eye reads your website and answers visitors in a chat window, citing the page behind every answer. Self-host it, or use the hosted service when it launches.",
+  description: "MatrixEye reads your website and answers visitors in a chat window, citing the page behind every answer. Self-host it, or use the hosted service when it launches.",
   /** PLACEHOLDER: replace when the domain is chosen (set PUBLIC_SITE_URL at build time). */
   url: import.meta.env.PUBLIC_SITE_URL ?? "https://matrixeye.ai",
   /** PLACEHOLDER: the legal entity that operates the service. Shown on the legal pages. */

@@ -8,7 +8,7 @@ const stripHtml = (html: string) => html.replace(/<[^>]+>/g, "").replace(/\s+/g,
 const jsonLd = [{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: FAQ.map((item) => ({ "@type": "Question", name: item.q, acceptedAnswer: { "@type": "Answer", text: stripHtml(item.a) } })) }];
 ---
 
-<Base title="Pricing" description="Matrix Eye is free to self-host. Hosted plans are planned; the prices shown are estimates and no payment is taken during early access." {jsonLd}>
+<Base title="Pricing" description="MatrixEye is free to self-host. Hosted plans are planned; the prices shown are estimates and no payment is taken during early access." {jsonLd}>
   <section class="section">
     <div class="container">
       <div class="section__head">
@@ -18,7 +18,7 @@ const jsonLd = [{ "@context": "https://schema.org", "@type": "FAQPage", mainEnti
       </div>
 
       <div class="callout" role="note">
-        <p><strong>These are estimates, not an offer.</strong> Matrix Eye is in early access. The monthly prices below are our current plan and may change before launch; no plan is sold yet and we take no payment. Join the waitlist and tell us what would be a fair price.</p>
+        <p><strong>These are estimates, not an offer.</strong> MatrixEye is in early access. The monthly prices below are our current plan and may change before launch; no plan is sold yet and we take no payment. Join the waitlist and tell us what would be a fair price.</p>
       </div>
 
       <h2 class="sr-only">Plans</h2>

@@ -1,6 +1,6 @@
 # How it works
 
-A question goes through the same path every time. Understanding it explains both what Matrix Eye does well and why
+A question goes through the same path every time. Understanding it explains both what MatrixEye does well and why
 it sometimes says "I couldn't find that".
 
 ```
@@ -65,7 +65,7 @@ When streaming, the text appears as it is written; the verified version replaces
 
 ## Safety
 
-Matrix Eye faces unusual risks because it reads other people's pages and shows results to other people's visitors:
+MatrixEye faces unusual risks because it reads other people's pages and shows results to other people's visitors:
 
 - **Page text is untrusted.** Instruction-like paragraphs ("ignore all previous instructions…") are removed at reading time,
   the rest is fenced off from the model's instructions, and the answer is checked afterwards.
