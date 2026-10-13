@@ -561,7 +561,8 @@ pre { margin: 0; padding: 1.1rem 1.25rem; overflow-x: auto; background: var(--co
 .stack { margin-top: 2rem; }
 .stack__label { margin: 0 0 0.6rem; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
 .stack__list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.stack__list li { padding: 0.35rem 0.8rem; border: 1px solid var(--border); border-radius: 999px; font-size: 0.88rem; color: var(--text); background: color-mix(in srgb, var(--surface) 60%, transparent); }
+.stack__list li svg { width: 1.05rem; height: 1.05rem; flex: none; }
+.stack__list li { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.8rem; border: 1px solid var(--border); border-radius: 999px; font-size: 0.88rem; color: var(--text); background: color-mix(in srgb, var(--surface) 60%, transparent); }
 
 /* ---------- chat card details: source button, cited page, input ---------- */
 .reply { display: flex; align-items: center; gap: 0.6rem; }

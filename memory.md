@@ -194,7 +194,7 @@ External services in use: none (no analytics, no third-party scripts/fonts). Git
 - Build: website builds (24 pages); `og.png`, icons and `mark.webp` regenerated with the new dark tile `#04080c`.
 - Visual review: `/`, `/pricing/`, `/docs/api/` screenshotted in light and dark (Playwright): legible, no layout problems seen.
   `/product/` was captured but not individually inspected.
-- CI on GitHub: **not checked** for commits after the restyle commit. Vercel deployment: **never confirmed successful**
+- CI on GitHub: green for the restyle commit `37c8c7e`; logo row commit not yet checked. Vercel deployment: **never confirmed successful**
   (a build failure "No Output Directory named public" was fixed by `vercel.json` in `e302ac4`; the user then imported the
   project; the result was not reported back).
 
@@ -290,7 +290,7 @@ phrasing; small local models sometimes decline two-part questions; widget/`Origi
 - **2026-10-12 (Phase 3):** website (Astro), forms API, docs/guides, tests (static + browser + axe), ADR-007; layout widening, motion, header layout, animated hero, Home link; Vercel config fix. Commits `7cfa0ad`..`e302ac4`.
 - **2026-10-12 (rename + logo):** renamed to MatrixEye everywhere, repos renamed, two remotes, new logos (several iterations: lettered, badge, glow), final: neon emblem only, small. Commits `c929b0e`..`f3c2664`. Verified: full tests, typecheck, build, eval gate green at `f3c2664`.
 - **2026-10-13:** owner shared a reference hero and approved "apply all" + "MatrixEye one word". Started the green restyle (uncommitted; unverified). Then created this `memory.md` and `CLAUDE.md` (audit: build ok, tests 447/448, typecheck 1 error from the unfinished restyle). 
-- **2026-10-13 (restyle finished):** removed duplicate icon, fixed theme test, updated `theme-color`, OG image script and icon tile to `#04080c`, regenerated assets, added missing `.env.example` settings, fixed `package.json` description. Typecheck, 448 tests and eval gate green. **Next action: section 11.**
+- **2026-10-13 (restyle finished; framework logos added to the home "works with" row from Simple Icons, CC0, in `src/data/stack.ts`):** removed duplicate icon, fixed theme test, updated `theme-color`, OG image script and icon tile to `#04080c`, regenerated assets, added missing `.env.example` settings, fixed `package.json` description. Typecheck, 448 tests and eval gate green. **Next action: section 11.**
 
 ---
 ## Memory maintenance policy

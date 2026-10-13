@@ -7,6 +7,7 @@ import Icon from "../components/Icon.astro";
 import WaitlistForm from "../components/WaitlistForm.astro";
 import { FAQ } from "../data/faq";
 import { SITE } from "../data/site";
+import { stackLogos } from "../data/stack";
 import Base from "../layouts/Base.astro";
 
 const stripHtml = (html: string) => html.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
@@ -60,7 +61,7 @@ const tabs: Array<{ id: string; label: string; lang: CodeLanguage; code: string 
         <p class="hero__note">Free during early access. No credit card. Self-host it or wait for the hosted service.</p>
         <div class="stack">
           <p class="stack__label">Works with any website stack</p>
-          <ul class="stack__list"><li>React</li><li>Next.js</li><li>Vue</li><li>WordPress</li><li>Plain HTML</li></ul>
+          <ul class="stack__list">{stackLogos.map((l) => <li><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d={l.path} fill="currentColor" /></svg>{l.name}</li>)}</ul>
         </div>
       </div>
       <div class="hero__visual"><HeroScene /></div>
