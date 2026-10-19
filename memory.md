@@ -1,9 +1,14 @@
 # MatrixEye: project memory (handover document)
 
 > **For a new Claude Code session:** read this whole file before planning or changing code. It is the authoritative
-> handover. Section 11 says exactly where work stopped; section 9 says what was and was not verified.
-> Last audit: **2026-10-13**, against git `main` at `51728e8` **plus uncommitted changes: ADR-008, `docs/planning/Phase4-Plan.md`,
-> and the Phase 4 M1 control-plane code** (see 11).
+> handover, written to be **self-contained**: a fresh session (including one started after a conversation reset, or on a
+> different Claude account/machine with this same repo) should be able to pick up exactly where the last one left off using
+> only this file, `CLAUDE.md`, and the source tree — nothing else is needed and nothing important lives only in chat history.
+> Section 11 says exactly where work stopped; section 9 says what was and was not verified; section 3 is the full project
+> topology (directory map + architecture) if you need to re-orient.
+> Last audit: **2026-10-19**, against git `main` at `c975761` (HEAD, pushed, matches `origin/main`). **No code changes since
+> the 2026-10-13 session** — this audit re-ran every check to confirm nothing drifted and hardened this file for continuity
+> (owner plans to reset the conversation and possibly switch accounts; see 11 and 15 for what that means in practice).
 > Legend: **VERIFIED** = checked in code or by running something this audit; **REPORTED** = established earlier in the
 > project's conversation history and not re-checked; **UNVERIFIED/UNKNOWN** = not checked.
 
@@ -193,6 +198,18 @@ External services in use: none (no analytics, no third-party scripts/fonts). Git
 
 ## 9. Implementation and verification status
 
+**Checks re-run on 2026-10-19 (continuity audit; no code changed since 2026-10-13, this just confirms nothing drifted):**
+- `git status`: clean except an unstaged, trivial 2-line `memory.md` edit (two backlog-line tweaks recording the M1 commit
+  hash, already folded into this file). Branch `main` up to date with `origin/main` at `c975761`.
+- `npm run typecheck`: passes, 0 errors (root `tsc` x3 projects + `astro check` on the website, 53 files, 0 errors/warnings/hints).
+- `npm test`: **464/464 passed (37 files)** — up from the 461/461 (then unspecified file count) reported 2026-10-13; the
+  difference is most likely a content-driven `it.each`/`describe.each` test (e.g. one per website page or per logo in the
+  "works with" row, both of which the test suite iterates) and is not a regression signal; re-run and confirm the count if
+  it matters for a specific task, don't assume 464 is the permanent baseline.
+- `gh run list --limit 3`: all green, latest run `38414208313` (3m15s) on commit `c975761`, matching the HEAD above.
+- Did **not** re-run `npm run build`, `npm run eval -- --gate`, or `npm audit` this session (no code changed since they last
+  passed on 2026-10-13 — see below); re-run them before trusting a status claim if you're about to ship something.
+
 **Checks run on 2026-10-13 after the restyle (working tree at commit time):**
 - `npm run typecheck`: passes (0 errors; the duplicate `lock` icon was removed).
 - `npm test`: **448/448 passed** (35 files), including axe in both themes and mobile overflow; the theme test now expects `rgb(4, 8, 12)`.
@@ -230,6 +247,13 @@ phrasing; small local models sometimes decline two-part questions; widget/`Origi
 
 ## 11. Current development position (READ THIS FIRST)
 
+- **As of 2026-10-19: nothing has changed since the 2026-10-13 session below.** This session did no implementation work —
+  it only re-verified the existing state (typecheck/test/CI, section 9) and expanded this file and `CLAUDE.md` for
+  continuity, because the owner is about to reset the conversation and may switch to a different account/machine. **If
+  you are reading this after that reset: everything below is still accurate and still the real next step.** There is no
+  hidden context from the reset conversation that matters — this file, `CLAUDE.md`, `docs/adr/ADR-008-phase4-hosted-architecture.md`,
+  and `docs/planning/Phase4-Plan.md` are the complete record. The repo, both GitHub remotes, and the Vercel project are
+  unchanged and reachable the same way as described in sections 3/8.
 - **Objective (done):** website restyle to the neon green/teal palette with the reference-style hero, "MatrixEye" (one word)
   everywhere. Committed and pushed on 2026-10-13 (see section 15).
 - **Honesty rules kept:** the hero does not claim "knowledge base updated automatically" (not built); it says "Self-host, private".
@@ -261,6 +285,7 @@ phrasing; small local models sometimes decline two-part questions; widget/`Origi
   invalidating the old one (`AccountRepository.rotateApiKey`). Owner decision: add this now rather than defer to M3.
 - **Not done yet (still M1 work, or M2+):** no real Supabase project exists (code only talks to whatever
   `MATRIX_EYE_SUPABASE_URL` points at); no CLI/dashboard calls these routes yet; M2 (VPS deploy) not started.
+- **Committed and pushed 2026-10-13** at `c975761` (both repos); CI green (run `38414208313`, 3m15s).
 - **Next concrete action:** start **M2** (provision the VPS, deploy the API, run Ollama on it) per
   `docs/planning/Phase4-Plan.md`. First owner-side step for M2: actually create the Supabase project and a VPS account
   (neither exists yet) so the code in `apps/api/src/control-plane/` has something real to talk to.
@@ -283,7 +308,7 @@ API+Ollama (not started) -> M3 minimal dashboard (not started) -> M4 billing/Str
 2. ~~Confirm the Vercel deployment works.~~ Done 2026-10-13: owner confirmed working.
 3. ~~Plan Phase 4 with the owner.~~ Done 2026-10-13: ADR-008 + `docs/planning/Phase4-Plan.md`.
 4. ~~Implement M1 (accounts/control-plane) in code, including rotate-key.~~ Done 2026-10-13; all checks green (section 11).
-5. Commit the M1 changes (owner approved 2026-10-13).
+5. ~~Commit the M1 changes.~~ Done 2026-10-13 (`c975761`, pushed both repos, CI green).
 6. Start M2: provision a real Supabase project + VPS, deploy the API, run Ollama on it.
 
 **P2**
@@ -346,6 +371,16 @@ API+Ollama (not started) -> M3 minimal dashboard (not started) -> M4 billing/Str
   `pg-mem`; added `apps/api/test/control-plane.test.ts` and `apps/api/test/accounts.test.ts` (pg-mem + fake GoTrue
   server, fully offline). Verified green: typecheck, `npm test` (461/461), build, eval gate, `npm audit`.
   **Uncommitted; no real Supabase project provisioned yet.** Next action: section 11.
+- **2026-10-19 (continuity audit; no feature work):** owner is about to reset this conversation and possibly switch Claude
+  accounts/machines, and asked that no progress be lost. Confirmed `git status`/`git log` unchanged since the last session
+  (`main` still at `c975761`, matches `origin/main`, only an unstaged trivial `memory.md` tweak pending); re-ran
+  `npm run typecheck` (0 errors) and `npm test` (464/464, 37 files — see section 9 for the small count discrepancy vs the
+  461 previously reported, not investigated further, likely a content-driven test); checked CI (`gh run list --limit 3`,
+  green through `c975761`). Did not re-run `build`/`eval --gate`/`audit` (nothing changed that would affect them).
+  Made this file and `CLAUDE.md` more explicit that memory.md is meant to be fully self-contained — a fresh session
+  (new conversation, new account, new machine) should be able to resume correctly from `CLAUDE.md` + this file + the repo
+  alone, with no information lost from the reset conversation. **No new technical next action**: it is still M2 (section 11),
+  unchanged.
 
 ---
 ## Memory maintenance policy
