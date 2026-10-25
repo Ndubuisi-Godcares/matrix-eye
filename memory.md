@@ -6,10 +6,11 @@
 > only this file, `CLAUDE.md`, and the source tree — nothing else is needed and nothing important lives only in chat history.
 > Section 11 says exactly where work stopped; section 9 says what was and was not verified; section 3 is the full project
 > topology (directory map + architecture) if you need to re-orient.
-> Last audit: **2026-10-26** (session begun 2026-10-25, ran past midnight). About to be pushed: a third pass deepening
-> the site's copy into the dense, technical "indexes… context-aware… grounded… source references… abstains" register
-> the owner approved by example (see section 15 for the full story of all three 2026-10-25/26 passes: `fa04b80` Home
-> hero/header restyle, `8875aff` site-wide copywriting review, `f9fba02` Home lead-paragraph swap, and this one).
+> Last audit: **2026-10-26** (session begun 2026-10-25, ran past midnight). Last pushed commit: `fd1860a` — a pass
+> deepening the site's copy into the dense, technical "indexes… context-aware… grounded… source references… abstains"
+> register the owner approved by example (see section 15 for the full story of all four 2026-10-25/26 commits:
+> `fa04b80` Home hero/header restyle, `8875aff` site-wide copywriting review, `f9fba02` Home lead-paragraph swap,
+> `fd1860a` this deeper register pass). Working tree is clean as of this audit.
 > Legend: **VERIFIED** = checked in code or by running something this audit; **REPORTED** = established earlier in the
 > project's conversation history and not re-checked; **UNVERIFIED/UNKNOWN** = not checked.
 
