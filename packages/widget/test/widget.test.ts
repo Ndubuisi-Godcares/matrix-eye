@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ChatResponse, PublicConfig, StreamEvent } from "@matrix-eye/sdk";
 import { ChatWidget, type ChatClient, type WidgetOptions } from "../src/widget";
 
-const CONFIG: PublicConfig = { name: "Riverside University", greeting: null, suggestedQuestions: ["How much is tuition?", "How do I apply?"] };
+const CONFIG: PublicConfig = { name: "Riverside University", greeting: null, suggestedQuestions: ["How much is tuition?", "How do I apply?"], appearance: { template: null, launcherIcon: null, color: null, accent: null } };
 const FINAL: ChatResponse = {
   answer: "Computer Science costs **$4,500** per year [1].",
   abstained: false,
@@ -503,6 +503,41 @@ describe("theming and teardown", () => {
     expect(q(".ee-root").dataset.position).toBe("left");
     expect(q(".ee-root").dataset.theme).toBe("dark");
     expect(q(".ee-brand")).toBeNull();
+  });
+
+  it("defaults to the minimal template and the chat launcher icon", async () => {
+    mount(fakeClient());
+    await tick();
+    expect(q(".ee-root").dataset.template).toBe("minimal");
+  });
+
+  it("applies an explicit template and launcher icon immediately, before the config even loads", () => {
+    mount(fakeClient(), { template: "developer", launcherIcon: "sparkle" });
+    expect(q(".ee-root").dataset.template).toBe("developer");
+    expect(q(".ee-launcher svg")?.innerHTML).toContain("m12 3-1.912"); // the sparkle path's distinctive start
+  });
+
+  it("falls back to the project's saved appearance once config loads, when no explicit option was given", async () => {
+    mount(fakeClient({ config: async () => ({ ...CONFIG, appearance: { template: "saas", launcherIcon: "headset", color: "#123456", accent: "#654321" } }) }));
+    expect(q(".ee-root").dataset.template).toBe("minimal"); // not yet loaded
+    await tick();
+    expect(q(".ee-root").dataset.template).toBe("saas");
+    expect(q(".ee-launcher svg")?.innerHTML).toContain("M3 18v-6a9"); // the headset path's distinctive start
+    const rootEl = q<HTMLElement>(".ee-root");
+    expect(rootEl.style.getPropertyValue("--ee-primary")).toBe("#123456");
+    expect(rootEl.style.getPropertyValue("--ee-accent")).toBe("#654321");
+  });
+
+  it("lets an explicit option win over the project's saved appearance", async () => {
+    mount(fakeClient({ config: async () => ({ ...CONFIG, appearance: { template: "saas", launcherIcon: "headset", color: "#123456", accent: "#654321" } }) }), {
+      template: "minimal",
+      launcherIcon: "book",
+      color: "#e63946",
+    });
+    await tick();
+    expect(q(".ee-root").dataset.template).toBe("minimal");
+    expect(q(".ee-launcher svg")?.innerHTML).toContain("M4 19.5A2.5"); // the book path's distinctive start, not headset
+    expect(q<HTMLElement>(".ee-root").style.getPropertyValue("--ee-primary")).toBe("#e63946");
   });
 
   it("shows a safe 'Powered by' link by default", async () => {

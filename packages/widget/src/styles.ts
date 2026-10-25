@@ -145,7 +145,38 @@ export const CSS = `
 @keyframes ee-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes ee-bounce { 0%, 80%, 100% { transform: scale(.6); opacity: .5; } 40% { transform: scale(1); opacity: 1; } }
 
-/* Phones: the panel becomes a full-screen sheet so the keyboard and thumbs have room. */
+/* ---------- templates (data-template on .ee-root) ----------
+   "minimal" is the styling above, unmodified, and needs no selector of its own. The other templates change
+   spacing, radius and type treatment, not just colour, per the Template Studio's template library.
+   This block must come BEFORE the "phones: full-screen sheet" rule below: several of these selectors
+   (e.g. ".ee-root[data-template=\"developer\"] .ee-panel") have the same specificity as the phone media query's
+   ".ee-root[data-position] .ee-panel", so whichever is LATER in the file wins at matching widths — the phone
+   full-screen behaviour must always win over a template's border-radius, not the other way around. */
+
+/* "saas": a more structured header and slightly softer, larger geometry, for product/developer-tool sites. */
+.ee-root[data-template="saas"] .ee-panel { border-radius: 20px; box-shadow: 0 20px 56px rgba(15, 34, 56, .32); }
+.ee-root[data-template="saas"] .ee-head { padding: 16px 18px; border-bottom-width: 2px; }
+.ee-root[data-template="saas"] .ee-head h2 { font-size: 17px; font-weight: 700; letter-spacing: -.01em; }
+.ee-root[data-template="saas"] .ee-launcher { width: 60px; height: 60px; border-radius: 18px; }
+.ee-root[data-template="saas"] .ee-bubble { border-radius: 16px; }
+.ee-root[data-template="saas"] .ee-chip { border-radius: 10px; font-weight: 550; }
+.ee-root[data-template="saas"] .ee-input { border-radius: 14px; }
+
+/* "developer": compact and technical. Monospace for code and citation markers; smaller radius; denser spacing. */
+.ee-root[data-template="developer"] { font-size: 14px; }
+.ee-root[data-template="developer"] .ee-panel { border-radius: 10px; }
+.ee-root[data-template="developer"] .ee-launcher { border-radius: 10px; width: 52px; height: 52px; }
+.ee-root[data-template="developer"] .ee-head { padding: 10px 12px; }
+.ee-root[data-template="developer"] .ee-head h2 { font-size: 14px; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+.ee-root[data-template="developer"] .ee-log { padding: 10px; gap: 9px; }
+.ee-root[data-template="developer"] .ee-bubble { border-radius: 8px; padding: 8px 11px; }
+.ee-root[data-template="developer"] .ee-bubble code { font-size: .92em; }
+.ee-root[data-template="developer"] .ee-cite a { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+.ee-root[data-template="developer"] .ee-chip { border-radius: 6px; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; font-size: 12px; }
+.ee-root[data-template="developer"] .ee-input { border-radius: 8px; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; font-size: 13.5px; }
+
+/* Phones: the panel becomes a full-screen sheet so the keyboard and thumbs have room. Deliberately after the
+   template rules above (see the comment there) so this always wins on a small screen, whatever the template. */
 @media (max-width: 480px) {
   .ee-panel, .ee-root[data-position] .ee-panel {
     inset: 0; width: 100%; max-width: none; height: 100dvh; max-height: none; border-radius: 0; border: 0;

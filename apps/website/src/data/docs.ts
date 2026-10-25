@@ -15,6 +15,7 @@ export const DOC_PAGES: DocPage[] = [
   { slug: "how-it-works", title: "How it works", description: "How MatrixEye reads a site, finds evidence, answers, and decides when to say it does not know.", group: "Getting started" },
   { slug: "widget", title: "Chat widget", description: "Add the chat window to a website: settings, accessibility, security.", group: "Guides" },
   { slug: "sdk", title: "TypeScript SDK", description: "Create projects, crawl, chat and stream answers from Node or the browser.", group: "Guides" },
+  { slug: "dashboard", title: "Template Studio", description: "A local admin tool: design a project's widget with templates, launcher icons and a live preview.", group: "Guides" },
   { slug: "accuracy", title: "Accuracy and evaluation", description: "How answer quality is measured, what the numbers mean, and where the limits are.", group: "Guides" },
   { slug: "api", title: "API reference", description: "Every endpoint: projects, crawling, chat, streaming events, settings and feedback.", group: "Reference" },
   { slug: "self-hosting", title: "Self-hosting and models", description: "Run MatrixEye on your own machine or server with a local language model.", group: "Operations" },

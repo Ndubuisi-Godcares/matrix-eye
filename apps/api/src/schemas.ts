@@ -37,10 +37,24 @@ const originSchema = z
   .toLowerCase()
   .refine((v) => v === "*" || /^https?:\/\/[^\s/?#]+$/.test(v), 'must be an origin like "https://school.edu" (no path) or "*"');
 
+const hexColorSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .refine((v) => /^#([0-9a-f]{3}|[0-9a-f]{6})$/.test(v), "must be a hex colour like #0f2238 or #fff");
+
+export const appearanceSchema = z.object({
+  template: z.enum(["minimal", "saas", "developer"]).nullable().optional(),
+  launcherIcon: z.enum(["chat", "sparkle", "headset", "help", "book", "dot"]).nullable().optional(),
+  color: hexColorSchema.nullable().optional(),
+  accent: hexColorSchema.nullable().optional(),
+});
+
 export const settingsSchema = z.object({
   allowedOrigins: z.array(originSchema).max(20).optional(),
   greeting: z.string().trim().max(300).nullable().optional(),
   suggestedQuestions: z.array(z.string().trim().min(1).max(120)).max(4).optional(),
+  appearance: appearanceSchema.optional(),
 });
 
 export const createProjectSchema = z.object({

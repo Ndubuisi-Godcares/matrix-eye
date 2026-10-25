@@ -1,0 +1,25 @@
+{
+  "name": "@matrix-eye/dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local admin tool: a Template Studio for customizing and previewing a project's chat widget appearance, with a real live preview.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit -p tsconfig.json && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@matrix-eye/sdk": "0.1.0",
+    "@matrix-eye/widget": "0.1.0",
+    "@matrix-eye/widget-react": "0.1.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^6.0.7"
+  }
+}

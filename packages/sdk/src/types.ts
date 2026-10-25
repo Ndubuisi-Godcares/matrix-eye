@@ -43,11 +43,33 @@ export interface ChatOptions {
  */
 export type StreamEvent = { type: "token"; text: string } | { type: "final"; response: ChatResponse };
 
+/** A visual template for the chat widget: spacing, radius and type treatment. See packages/widget/src/styles.ts. */
+export type WidgetTemplate = "minimal" | "saas" | "developer";
+
+/** An icon id for the widget's floating launcher button. See packages/widget/src/widget.ts's ICONS. */
+export type LauncherIcon = "chat" | "sparkle" | "headset" | "help" | "book" | "dot";
+
+/**
+ * Saved appearance for a project's widget, set from the dashboard's Template Studio (apps/dashboard) and served to
+ * every visitor via the public config endpoint. A site's own explicit widget init options always override these
+ * (see WidgetOptions in packages/widget) - this is the shared default, not a forced setting.
+ */
+export interface WidgetAppearance {
+  template: WidgetTemplate | null;
+  launcherIcon: LauncherIcon | null;
+  /** Brand colour, "#rrggbb". */
+  color: string | null;
+  accent: string | null;
+}
+
+export const DEFAULT_APPEARANCE: WidgetAppearance = { template: null, launcherIcon: null, color: null, accent: null };
+
 /** What a website visitor's browser may read about a project. */
 export interface PublicConfig {
   name: string;
   greeting: string | null;
   suggestedQuestions: string[];
+  appearance: WidgetAppearance;
 }
 
 export interface ProjectSettings {
@@ -55,6 +77,7 @@ export interface ProjectSettings {
   allowedOrigins: string[];
   greeting: string | null;
   suggestedQuestions: string[];
+  appearance: WidgetAppearance;
 }
 
 export interface Rule {

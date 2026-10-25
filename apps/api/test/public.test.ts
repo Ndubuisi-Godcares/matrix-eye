@@ -95,7 +95,12 @@ describe("what the public API exposes", () => {
   it("returns display settings only", async () => {
     await app.inject({ method: "PATCH", url: `/v1/projects/${projectId}/settings`, headers: admin, payload: { greeting: "Welcome!", suggestedQuestions: ["How much is tuition?"] } });
     const res = await app.inject({ url: pub("/config"), headers: { origin: SCHOOL } });
-    expect(res.json()).toEqual({ name: "Riverside University", greeting: "Welcome!", suggestedQuestions: ["How much is tuition?"] });
+    expect(res.json()).toEqual({
+      name: "Riverside University",
+      greeting: "Welcome!",
+      suggestedQuestions: ["How much is tuition?"],
+      appearance: { template: null, launcherIcon: null, color: null, accent: null },
+    });
   });
 
   it("does not expose admin operations or other projects", async () => {
@@ -114,6 +119,28 @@ describe("what the public API exposes", () => {
   it("validates input", async () => {
     expect((await chat({}, "   ")).statusCode).toBe(400);
     expect((await app.inject({ method: "POST", url: pub("/chat"), payload: { message: "hi", history: [{ role: "system", content: "x" }] } })).statusCode).toBe(400);
+  });
+});
+
+describe("saved widget appearance (the dashboard's Template Studio)", () => {
+  it("round-trips through the admin settings PATCH and the public config endpoint", async () => {
+    const patch = await app.inject({ method: "PATCH", url: `/v1/projects/${projectId}/settings`, headers: admin, payload: { appearance: { template: "saas", launcherIcon: "sparkle", color: "#0f2238", accent: "#c19a5b" } } });
+    expect(patch.json().settings.appearance).toEqual({ template: "saas", launcherIcon: "sparkle", color: "#0f2238", accent: "#c19a5b" });
+    const res = await app.inject({ url: pub("/config"), headers: { origin: SCHOOL } });
+    expect(res.json().appearance).toEqual({ template: "saas", launcherIcon: "sparkle", color: "#0f2238", accent: "#c19a5b" });
+  });
+
+  it("merges a partial appearance update instead of wiping the rest", async () => {
+    await app.inject({ method: "PATCH", url: `/v1/projects/${projectId}/settings`, headers: admin, payload: { appearance: { template: "developer", launcherIcon: "book", color: "#111111", accent: "#222222" } } });
+    const patch = await app.inject({ method: "PATCH", url: `/v1/projects/${projectId}/settings`, headers: admin, payload: { appearance: { color: "#333333" } } });
+    expect(patch.json().settings.appearance).toEqual({ template: "developer", launcherIcon: "book", color: "#333333", accent: "#222222" });
+  });
+
+  it("rejects an unknown template, launcher icon or malformed colour", async () => {
+    for (const appearance of [{ template: "neon-vaporwave" }, { launcherIcon: "emoji" }, { color: "not-a-colour" }, { accent: "red" }]) {
+      const res = await app.inject({ method: "PATCH", url: `/v1/projects/${projectId}/settings`, headers: admin, payload: { appearance } });
+      expect(res.statusCode, JSON.stringify(appearance)).toBe(400);
+    }
   });
 });
 

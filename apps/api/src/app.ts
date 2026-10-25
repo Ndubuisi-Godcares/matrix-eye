@@ -77,7 +77,12 @@ export async function buildApp(deps: AppDependencies): Promise<BuiltApp> {
       return callback(null, { origin: config.siteOrigins.length ? config.siteOrigins : false, methods: ["POST", "OPTIONS"], allowedHeaders: ["content-type"], maxAge: 600 });
     }
     const match = PUBLIC_PATH.exec(request.url ?? "");
-    if (!match) return callback(null, { origin: config.corsOrigins.length ? config.corsOrigins : false });
+    if (!match) {
+      // Admin routes use PUT/PATCH/DELETE too (rules, settings, project deletion); @fastify/cors defaults to
+      // GET/HEAD/POST when `methods` is omitted, which silently CORS-blocks every one of those cross-origin -
+      // the exact routes a browser-based admin tool like apps/dashboard needs.
+      return callback(null, { origin: config.corsOrigins.length ? config.corsOrigins : false, methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], allowedHeaders: ["authorization", "content-type"], maxAge: 600 });
+    }
     const origins = repos.getProject(match[1] ?? "")?.settings.allowedOrigins ?? [];
     callback(null, { origin: origins.includes("*") ? true : origins, methods: ["GET", "POST", "OPTIONS"], allowedHeaders: ["content-type"], maxAge: 600 });
   });
@@ -186,6 +191,16 @@ export async function buildApp(deps: AppDependencies): Promise<BuiltApp> {
       v1.get("/projects/:id", async (request) => {
         const project = await requireOwnedProject(request);
         return { ...project, knowledge: store.stats(project.id), latestCrawl: repos.latestJobFor(project.id) };
+      });
+
+      // Lists every project the caller may use: all of them in self-host mode (one operator, one key), or just
+      // this account's own in hosted mode. Used by the CLI and apps/dashboard to let someone pick a project
+      // without already knowing its id.
+      v1.get("/projects", async (request) => {
+        const all = repos.listProjects();
+        if (!controlPlane) return { projects: all };
+        const owned = new Set(await controlPlane.accounts.listProjectIds(request.accountId as string));
+        return { projects: all.filter((p) => owned.has(p.id)) };
       });
 
       v1.delete("/projects/:id", async (request, reply) => {
@@ -336,7 +351,7 @@ export async function buildApp(deps: AppDependencies): Promise<BuiltApp> {
 
       pub.get("/projects/:id/config", async (request) => {
         const project = publicProject(request);
-        return { name: project.name, greeting: project.settings.greeting, suggestedQuestions: project.settings.suggestedQuestions };
+        return { name: project.name, greeting: project.settings.greeting, suggestedQuestions: project.settings.suggestedQuestions, appearance: project.settings.appearance };
       });
 
       pub.post("/projects/:id/chat", { config: limit }, async (request) => {

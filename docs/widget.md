@@ -58,6 +58,8 @@ Try it locally on any site: `npm run demo -- https://example.edu` (see the [quic
 | `title` | header text | the project's name |
 | `color` | `#rrggbb` header, launcher and your messages. Text colour is chosen automatically for contrast | `#0f2238` |
 | `accent` | `#rrggbb` borders and highlights | `#c19a5b` |
+| `template` | `minimal`, `saas`, `developer` — changes spacing, radius and type treatment, not just colour | `minimal` |
+| `launcher-icon` / `launcherIcon` (`data-launcher-icon` on the script/element) | `chat`, `sparkle`, `headset`, `help`, `book`, `dot` | `chat` |
 | `theme` | `light`, `dark`, `auto` (follows the visitor's system) | `auto` |
 | `greeting` | opening message (else the project's greeting, else a default) | |
 | `placeholder` | input hint | `Ask a question…` |
@@ -68,6 +70,19 @@ Try it locally on any site: `npm run demo -- https://example.edu` (see the [quic
 
 Starter questions and the greeting can be set per project (not per page):
 `PATCH /v1/projects/:id/settings` with `greeting` and `suggestedQuestions` (up to four).
+
+### Saved appearance (the dashboard's Template Studio)
+
+`template`, `launcherIcon`, `color` and `accent` can also be saved per project with
+`PATCH /v1/projects/:id/settings` and an `appearance` object, e.g.
+`{"appearance": {"template": "saas", "launcherIcon": "sparkle", "color": "#0f2238", "accent": "#c19a5b"}}`. Every
+visitor's widget picks this up automatically from `GET /v1/public/projects/:id/config`, with no change needed to
+the script tag on your site. **An explicit value on the script tag or `init()` call always wins** over the saved
+one, field by field — so you can save a site-wide default from the dashboard and still override it per page if
+you need to. See `apps/dashboard` (`npm run dev -w @matrix-eye/dashboard`) for a visual editor that calls this
+same endpoint and shows a live preview; it needs an admin API key and `MATRIX_EYE_CORS_ORIGINS` to include the
+dashboard's own origin (it is a local admin tool for the person who already holds that key, the same trust model
+as the CLI — not a public multi-tenant login).
 
 ## 4. What visitors get
 

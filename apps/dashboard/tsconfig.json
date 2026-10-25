@@ -1,0 +1,7 @@
+{
+  // Runs in a browser, like the widget, plus JSX for its own UI (the widget itself stays createElement-only;
+  // this app is a genuinely interactive multi-panel editor, which is the demonstrated need for a JSX build step).
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "lib": ["ES2023", "DOM", "DOM.Iterable"], "jsx": "react-jsx", "types": ["node"] },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}

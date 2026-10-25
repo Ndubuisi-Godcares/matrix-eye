@@ -27,6 +27,16 @@ MatrixEye is in early access and has not had a numbered release yet. This is the
 - Fixed: every model call was being cancelled by mistake when streaming.
 - Fixed: host-page styles could leak into the widget.
 - `npm run demo` shows the widget on any website with one command.
+- Three visual templates (`minimal`, `saas`, `developer`) and six launcher icons, selectable per widget
+  (`template`, `launcherIcon`) or saved per project and picked up by every visitor automatically.
+- **Template Studio** (`npm run dev -w @matrix-eye/dashboard`): a local admin tool to design a project's widget
+  with a live preview that runs the real widget, not a mockup. See the [Template Studio guide](dashboard.md).
+- The assistant's decline ("I don't have that information") now speaks in the first person, with varied,
+  professional wording, and names the closest page found, instead of one repeated generic sentence.
+- Site-wide search: Ctrl/Cmd+K on the website opens a command palette that searches every page, with optional
+  voice input.
+- Fixed: the admin API's CORS configuration silently defaulted to GET/HEAD/POST only, blocking PATCH/PUT/DELETE
+  admin requests (settings, rules, project deletion) from a browser-based tool like the dashboard.
 
 **Reading websites**
 - Read websites built with JavaScript (`--render`).

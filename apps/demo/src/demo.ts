@@ -46,7 +46,7 @@ export interface RunningDemo {
 const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string);
 
 /** Only these widget settings may be tried through the demo page's query string. */
-const THEME_PARAMS = ["color", "accent", "theme", "position", "title", "greeting"] as const;
+const THEME_PARAMS = ["color", "accent", "theme", "position", "title", "greeting", "template", "launcher-icon"] as const;
 
 function demoPage(projectId: string, siteName: string, siteUrl: string, query: Record<string, string | undefined>): string {
   const attributes = THEME_PARAMS.filter((key) => query[key]).map((key) => ` data-${key}="${escapeHtml(String(query[key]).slice(0, 200))}"`).join("");
@@ -76,7 +76,9 @@ function demoPage(projectId: string, siteName: string, siteUrl: string, query: R
   <pre>&lt;script src="https://YOUR-HOST/matrix-eye-widget.js" defer
         data-project="${escapeHtml(projectId)}"
         data-api="https://YOUR-API-HOST"&gt;&lt;/script&gt;</pre>
-  <p>Try the look: <a href="/?theme=dark">dark</a> · <a href="/?position=left">left side</a> · <a href="/?color=%231b6b4a">green</a> · <a href="/">default</a></p>
+  <p>Try the look: <a href="/?theme=dark">dark</a> · <a href="/?position=left">left side</a> · <a href="/?color=%231b6b4a">green</a> ·
+  <a href="/?template=saas">SaaS template</a> · <a href="/?template=developer">developer template</a> ·
+  <a href="/?launcher-icon=sparkle">sparkle launcher</a> · <a href="/">default</a></p>
 </main>
 <script src="/widget.js" defer data-project="${escapeHtml(projectId)}" data-api="/" data-open="true"${attributes}></script>
 </body>

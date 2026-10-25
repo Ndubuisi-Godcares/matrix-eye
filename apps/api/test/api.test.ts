@@ -88,6 +88,15 @@ describe("projects", () => {
     expect((await app.inject({ url: "/v1/projects/00000000-0000-4000-8000-000000000000", headers: auth })).statusCode).toBe(404);
     expect((await app.inject({ url: "/v1/projects/not-a-uuid", headers: auth })).statusCode).toBe(400);
   });
+
+  it("lists every project for this key, newest first, needed by the CLI and the dashboard to pick a project", async () => {
+    const second = await post("/v1/projects", { name: "Second School", siteUrl: fixture.baseUrl });
+    const res = await app.inject({ url: "/v1/projects", headers: auth });
+    expect(res.statusCode).toBe(200);
+    const ids = res.json().projects.map((p: { id: string }) => p.id);
+    expect(ids[0]).toBe(second.json().id); // newest first
+    expect(ids).toContain(projectId);
+  });
 });
 
 describe("crawl, search and chat", () => {
@@ -195,6 +204,15 @@ describe("cors, config and deletion", () => {
     expect(allowed.headers["access-control-allow-origin"]).toBe("https://client.example");
     const denied = await app.inject({ url: "/health", headers: { origin: "https://evil.example" } });
     expect(denied.headers["access-control-allow-origin"]).toBeUndefined();
+  });
+
+  it("allows PATCH/PUT/DELETE in the admin CORS preflight, not just GET/POST", async () => {
+    // Regression: @fastify/cors defaults to GET/HEAD/POST when `methods` is left unset, which silently CORS-blocked
+    // every admin PATCH/PUT/DELETE route from a browser (e.g. apps/dashboard saving a project's settings) even
+    // though the request itself would have succeeded — the browser never sent it, failing with no server-side trace.
+    const res = await app.inject({ method: "OPTIONS", url: `/v1/projects/${projectId}/settings`, headers: { origin: "https://client.example", "access-control-request-method": "PATCH", "access-control-request-headers": "authorization,content-type" } });
+    expect(res.headers["access-control-allow-methods"]).toContain("PATCH");
+    expect(res.headers["access-control-allow-headers"]).toContain("authorization");
   });
 
   it("refuses to start with a weak or missing API key", () => {

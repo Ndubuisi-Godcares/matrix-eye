@@ -190,6 +190,36 @@ describe("widget in a real browser", () => {
     await page.screenshot({ path: join(SHOTS, "04-dark-left-green.png") });
     await page.context().close();
   }, 60_000);
+
+  it("applies a template's own look (distinctive radius/type, not just colour)", async (ctx) => {
+    if (!browser) return ctx.skip();
+    const page = await openDemo("/?template=developer");
+    expect(await page.locator(".ee-root").getAttribute("data-template")).toBe("developer");
+    const font = await page.locator(".ee-head h2").evaluate((el) => getComputedStyle(el).fontFamily);
+    expect(font.toLowerCase()).toContain("mono");
+    await page.context().close();
+  }, 60_000);
+
+  it("shows a chosen launcher icon", async (ctx) => {
+    if (!browser) return ctx.skip();
+    const page = await openDemo("/?launcher-icon=sparkle");
+    const d = await page.locator(".ee-launcher svg path").first().getAttribute("d");
+    expect(d).toContain("m12 3-1.912"); // the sparkle path's distinctive start, not the default chat bubble
+    await page.context().close();
+  }, 60_000);
+
+  it("regression: a template's panel radius never overrides the phone full-screen sheet", async (ctx) => {
+    // Earlier, .ee-root[data-template="developer"] .ee-panel and the phone media query's
+    // .ee-root[data-position] .ee-panel had identical specificity; being later in the stylesheet, the template
+    // rule silently won even on a phone-width screen, leaving a rounded, non-full-width panel on a real phone.
+    if (!browser) return ctx.skip();
+    const page = await openDemo("/?template=developer", { width: 375, height: 667 });
+    const radius = await page.locator(".ee-panel").evaluate((el) => getComputedStyle(el).borderRadius);
+    expect(radius).toBe("0px");
+    const box = (await page.locator(".ee-panel").boundingBox())!;
+    expect(Math.round(box.width)).toBe(375);
+    await page.context().close();
+  }, 60_000);
 });
 
 describe("accessibility audit (axe-core, WCAG 2.1 A/AA + best practices)", () => {

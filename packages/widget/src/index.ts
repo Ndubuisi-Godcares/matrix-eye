@@ -15,14 +15,17 @@
  *        handle.open();  handle.destroy();
  *
  * Settings are the same everywhere (as data-* attributes on the script, plain attributes on the element, or
- * properties for init()): project, api, position, title, color, accent, theme, greeting, placeholder, open,
- * branding, persist. See docs/widget.md.
+ * properties for init()): project, api, position, title, color, accent, template, launcherIcon, theme, greeting,
+ * placeholder, open, branding, persist. See docs/widget.md.
  */
 import { PublicClient } from "@matrix-eye/sdk";
 import { ChatWidget, type WidgetOptions } from "./widget";
 
-export { ChatWidget, DEFAULT_LABELS, type ChatClient, type Labels, type WidgetOptions } from "./widget";
+export { ChatWidget, DEFAULT_LABELS, ICONS, type ChatClient, type Labels, type WidgetOptions } from "./widget";
 export { renderAnswer, renderSources, safeUrl } from "./render";
+
+const TEMPLATES = ["minimal", "saas", "developer"] as const;
+const LAUNCHER_ICONS = ["chat", "sparkle", "headset", "help", "book", "dot"] as const;
 
 /** Everything a visitor-facing widget needs to know, in the shape used by attributes and init(). */
 export interface EmbedOptions {
@@ -32,6 +35,8 @@ export interface EmbedOptions {
   title?: string;
   color?: string;
   accent?: string;
+  template?: WidgetOptions["template"];
+  launcherIcon?: WidgetOptions["launcherIcon"];
   theme?: "light" | "dark" | "auto";
   greeting?: string;
   placeholder?: string;
@@ -69,6 +74,8 @@ function optionsFromAttributes(get: (name: string) => string | null): EmbedOptio
     title: get("title") ?? undefined,
     color: get("color") ?? undefined,
     accent: get("accent") ?? undefined,
+    template: oneOf(get("template"), TEMPLATES),
+    launcherIcon: oneOf(get("launcher-icon"), LAUNCHER_ICONS),
     theme: oneOf(get("theme"), ["light", "dark", "auto"] as const),
     greeting: get("greeting") ?? undefined,
     placeholder: get("placeholder") ?? undefined,
@@ -82,7 +89,7 @@ function start(root: ShadowRoot, embed: EmbedOptions): ChatWidget {
   const { project, api, ...rest } = embed;
   // api="/" means the API is on the same origin as the page, so requests use relative paths.
   const client = new PublicClient({ baseUrl: api === "/" ? "" : api }, project);
-  return new ChatWidget(root, { projectId: project, position: rest.position, title: rest.title, color: rest.color, accent: rest.accent, theme: rest.theme, greeting: rest.greeting, placeholder: rest.placeholder, startOpen: rest.open, branding: rest.branding, persist: rest.persist, labels: rest.labels }, client);
+  return new ChatWidget(root, { projectId: project, position: rest.position, title: rest.title, color: rest.color, accent: rest.accent, template: rest.template, launcherIcon: rest.launcherIcon, theme: rest.theme, greeting: rest.greeting, placeholder: rest.placeholder, startOpen: rest.open, branding: rest.branding, persist: rest.persist, labels: rest.labels }, client);
 }
 
 /** `<matrix-eye-chat>`: a self-contained chat window. Styles are isolated in a Shadow DOM. */

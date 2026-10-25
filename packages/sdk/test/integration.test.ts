@@ -70,7 +70,7 @@ describe("admin client", () => {
 describe("visitor client", () => {
   it("reads display config, chats, and handles follow-ups", async () => {
     const visitor = admin.project(projectId);
-    expect(await visitor.config()).toEqual({ name: "Riverside University", greeting: "Welcome to Riverside!", suggestedQuestions: ["How much is tuition?"] });
+    expect(await visitor.config()).toEqual({ name: "Riverside University", greeting: "Welcome to Riverside!", suggestedQuestions: ["How much is tuition?"], appearance: { template: null, launcherIcon: null, color: null, accent: null } });
     const answer = await visitor.chat("How much is tuition for computer science?");
     expect(answer.answer).toContain("$4,500");
     expect(answer.citations[0]?.url).toContain("/tuition");

@@ -192,6 +192,10 @@ export class MatrixEyeClient {
   createProject(input: CreateProjectInput): Promise<Project> {
     return this.http.json<Project>("POST", "/v1/projects", input);
   }
+  /** Every project the key can use: all of them self-hosted, or just this account's own, hosted. */
+  async listProjects(): Promise<Project[]> {
+    return (await this.http.json<{ projects: Project[] }>("GET", "/v1/projects")).projects;
+  }
   getProject(id: string): Promise<ProjectDetails> {
     return this.http.json<ProjectDetails>("GET", `/v1/projects/${id}`);
   }

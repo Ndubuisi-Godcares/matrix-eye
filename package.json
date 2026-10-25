@@ -14,13 +14,13 @@
     "evals"
   ],
   "scripts": {
-    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p packages/widget/tsconfig.json && tsc --noEmit -p packages/widget-react/tsconfig.json && npm run check -w @matrix-eye/website",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p packages/widget/tsconfig.json && tsc --noEmit -p packages/widget-react/tsconfig.json && npm run typecheck -w @matrix-eye/dashboard && npm run check -w @matrix-eye/website",
     "test": "vitest run",
     "test:watch": "vitest",
     "eval": "npm run run --workspace @matrix-eye/evals",
     "dev:api": "npm run dev --workspace @matrix-eye/api",
     "matrix": "tsx apps/cli/src/main.ts",
-    "build": "npm run build --workspace @matrix-eye/sdk --workspace @matrix-eye/widget --workspace @matrix-eye/widget-react",
+    "build": "npm run build --workspace @matrix-eye/sdk --workspace @matrix-eye/widget --workspace @matrix-eye/widget-react --workspace @matrix-eye/dashboard",
     "demo": "tsx apps/demo/src/main.ts"
   },
   "devDependencies": {

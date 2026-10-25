@@ -7,6 +7,7 @@ Errors always have the shape `{ "error": { "code": "...", "message": "...", "det
 |---|---|---|
 | GET | `/health` | Liveness and answer mode. Public, not rate-limited. |
 | POST | `/v1/projects` | Create a project `{ name, siteUrl, rules? }` -> 201 |
+| GET | `/v1/projects` | List every project this key can use (all of them self-hosted; just this account's own, hosted) |
 | GET | `/v1/projects/:id` | Project, knowledge stats, latest crawl |
 | DELETE | `/v1/projects/:id` | Delete project and all its knowledge -> 204 |
 | PUT | `/v1/projects/:id/rules` | Replace deterministic rules (array) |
@@ -14,7 +15,7 @@ Errors always have the shape `{ "error": { "code": "...", "message": "...", "det
 | GET | `/v1/crawls/:id` | Crawl job status and counts |
 | GET | `/v1/projects/:id/pages` | Indexed pages |
 | POST | `/v1/projects/:id/search` | Retrieval only `{ query, limit? }` (debugging) |
-| PATCH | `/v1/projects/:id/settings` | Change `allowedOrigins`, `greeting`, `suggestedQuestions` (only fields you send) |
+| PATCH | `/v1/projects/:id/settings` | Change `allowedOrigins`, `greeting`, `suggestedQuestions`, `appearance` (only fields you send; see [widget guide](widget.md#saved-appearance-the-dashboards-template-studio)) |
 | GET | `/v1/projects/:id/feedback` | Visitors' thumbs up/down; `?rating=down` for the unhelpful ones |
 | POST | `/v1/projects/:id/chat` | Ask a question `{ message, history? }`; add `?debug=true` for diagnostics |
 

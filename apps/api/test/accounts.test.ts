@@ -138,6 +138,17 @@ describe("hosted accounts (ADR-008)", () => {
     expect(deleteAsB.statusCode).toBe(404);
   });
 
+  it("GET /v1/projects lists only this account's own projects, not another account's", async () => {
+    const a = await signUp("lister-a@example.com");
+    const b = await signUp("lister-b@example.com");
+    const ownA = await app.inject({ method: "POST", url: "/v1/projects", payload: { name: "A's site", siteUrl: "http://127.0.0.1:1/" }, headers: { authorization: `Bearer ${a.apiKey}` } });
+    await app.inject({ method: "POST", url: "/v1/projects", payload: { name: "B's site", siteUrl: "http://127.0.0.1:1/" }, headers: { authorization: `Bearer ${b.apiKey}` } });
+
+    const listedAsA = await app.inject({ url: "/v1/projects", headers: { authorization: `Bearer ${a.apiKey}` } });
+    const ids = listedAsA.json().projects.map((p: { id: string }) => p.id);
+    expect(ids).toEqual([ownA.json().id]);
+  });
+
   it("rotates the API key: the old key stops working, the new one does, identity is unchanged", async () => {
     const signedUp = await signUp("rotate@example.com", "the-right-password");
     const original = { authorization: `Bearer ${signedUp.apiKey}` };

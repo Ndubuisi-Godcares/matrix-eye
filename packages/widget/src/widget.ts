@@ -12,7 +12,7 @@
  *  - Colours meet WCAG AA, focus rings are always visible, animations stop under prefers-reduced-motion, and on
  *    narrow screens the panel becomes a full-screen sheet.
  */
-import type { ChatTurn, Citation, PublicConfig, StreamEvent } from "@matrix-eye/sdk";
+import type { ChatTurn, Citation, LauncherIcon, PublicConfig, StreamEvent, WidgetTemplate } from "@matrix-eye/sdk";
 import { luminance, normalizeHex, readableTextOn } from "./colors";
 import { renderAnswer, renderSources } from "./render";
 import { CSS } from "./styles";
@@ -34,6 +34,13 @@ export interface WidgetOptions {
   /** Accent colour for borders and highlights. Default: MatrixEye gold. */
   accent?: string;
   theme?: "light" | "dark" | "auto";
+  /**
+   * Visual template: changes spacing, radius and type treatment, not just colour. Default: "minimal". Falls back
+   * to the project's saved appearance (set from the dashboard's Template Studio) when not given explicitly.
+   */
+  template?: WidgetTemplate;
+  /** Icon on the floating launcher button. Default: "chat". Falls back to the saved appearance, as above. */
+  launcherIcon?: LauncherIcon;
   /** Opening message. Defaults to the project's greeting, then a generic one. */
   greeting?: string;
   placeholder?: string;
@@ -76,7 +83,9 @@ const HISTORY_TURNS = 6;
 const MAX_STORED = 20;
 const SVG_NS = "http://www.w3.org/2000/svg";
 
-const ICONS = {
+/** Exported so other first-party UIs (apps/dashboard's icon gallery) can render the exact same icon paths,
+ *  rather than hand-copying SVG data that could drift from what the real widget renders. */
+export const ICONS = {
   chat: ["M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"],
   close: ["M18 6 6 18", "M6 6l12 12"],
   restart: ["M1 4v6h6", "M3.51 15a9 9 0 1 0 2.13-9.36L1 10"],
@@ -84,6 +93,13 @@ const ICONS = {
   stop: ["M6 6h12v12H6z"],
   up: ["M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"],
   down: ["M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"],
+  // Launcher icon library (LauncherIcon in @matrix-eye/sdk): a curated set, not every icon imaginable. "chat" above
+  // doubles as the "conversation" family's default, so it is not repeated here.
+  sparkle: ["m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"],
+  headset: ["M3 18v-6a9 9 0 0 1 18 0v6", "M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"],
+  help: ["M2 12a10 10 0 1 0 20 0 10 10 0 1 0-20 0z", "M9.1 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3", "M12 17h.01"],
+  book: ["M4 19.5A2.5 2.5 0 0 1 6.5 17H20", "M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"],
+  dot: ["M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"],
 } as const;
 
 interface Message {
@@ -118,6 +134,7 @@ export class ChatWidget {
   private readonly messages: Message[] = [];
   private readonly cleanup: Array<() => void> = [];
 
+  private rootEl!: HTMLElement;
   private launcher!: HTMLButtonElement;
   private panel!: HTMLElement;
   private title!: HTMLElement;
@@ -275,8 +292,10 @@ export class ChatWidget {
     const dark = options.theme === "dark" || (options.theme !== "light" && typeof matchMedia === "function" && matchMedia("(prefers-color-scheme: dark)").matches);
 
     const rootEl = this.el("div", "ee-root");
+    this.rootEl = rootEl;
     rootEl.dataset.position = options.position === "left" ? "left" : "right";
     rootEl.dataset.theme = dark ? "dark" : "light";
+    rootEl.dataset.template = options.template ?? "minimal";
     // Colours were validated by normalizeHex, so they are safe to place into style properties.
     rootEl.style.setProperty("--ee-primary", primary);
     rootEl.style.setProperty("--ee-on-primary", readableTextOn(primary));
@@ -284,7 +303,7 @@ export class ChatWidget {
     // A very light brand colour is unreadable as a header background in dark mode; the dark theme keeps its own surface.
     if (dark && luminance(primary) > 0.6) rootEl.style.setProperty("--ee-primary", "#1d2a3d");
 
-    this.launcher = this.button("ee-launcher", labels.open, "chat");
+    this.launcher = this.button("ee-launcher", labels.open, options.launcherIcon ?? "chat");
     this.launcher.setAttribute("aria-expanded", "false");
     this.launcher.setAttribute("aria-controls", "ee-panel");
 
@@ -394,7 +413,30 @@ export class ChatWidget {
       this.title.textContent = this.config.name;
       this.panel.setAttribute("aria-label", this.config.name);
     }
+    this.applySavedAppearance();
     this.showGreeting();
+  }
+
+  /**
+   * Applies the project's saved appearance (set from the dashboard's Template Studio) for whichever fields the
+   * site owner did not already pin with an explicit WidgetOptions value. Runs after loadConfig() resolves, since
+   * the widget has already been built synchronously with options-only values by then; an explicit option always
+   * wins, matching how title/greeting already behave above.
+   */
+  private applySavedAppearance(): void {
+    const appearance = this.config?.appearance;
+    if (!appearance) return;
+    if (!this.options.template && appearance.template) this.rootEl.dataset.template = appearance.template;
+    if (!this.options.launcherIcon && appearance.launcherIcon) {
+      this.launcher.replaceChildren(this.icon(appearance.launcherIcon));
+    }
+    const primary = !this.options.color && appearance.color ? normalizeHex(appearance.color) : null;
+    if (primary) {
+      this.rootEl.style.setProperty("--ee-primary", primary);
+      this.rootEl.style.setProperty("--ee-on-primary", readableTextOn(primary));
+    }
+    const accent = !this.options.accent && appearance.accent ? normalizeHex(appearance.accent) : null;
+    if (accent) this.rootEl.style.setProperty("--ee-accent", accent);
   }
 
   private showGreeting(): void {

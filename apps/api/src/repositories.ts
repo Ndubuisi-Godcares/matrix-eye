@@ -9,6 +9,21 @@ import { randomUUID } from "node:crypto";
 import type { DatabaseSync } from "node:sqlite";
 import type { Rule } from "@matrix-eye/core";
 
+/**
+ * A project's saved widget appearance (set from the dashboard's Template Studio, apps/dashboard). Mirrors
+ * @matrix-eye/sdk's WidgetAppearance; the SDK is published standalone and does not import server-internal
+ * packages (see its types.ts), so this is kept in sync by hand rather than shared, the same as ProjectSettings
+ * below already is.
+ */
+export interface ProjectAppearance {
+  template: "minimal" | "saas" | "developer" | null;
+  launcherIcon: "chat" | "sparkle" | "headset" | "help" | "book" | "dot" | null;
+  color: string | null;
+  accent: string | null;
+}
+
+export const DEFAULT_APPEARANCE: ProjectAppearance = { template: null, launcherIcon: null, color: null, accent: null };
+
 /** Settings that shape how a project appears on a website. Stored as one JSON document. */
 export interface ProjectSettings {
   /**
@@ -20,9 +35,15 @@ export interface ProjectSettings {
   greeting: string | null;
   /** Up to four starter questions shown as buttons. */
   suggestedQuestions: string[];
+  /** Saved default appearance, served to every visitor unless the site's own widget init overrides it. */
+  appearance: ProjectAppearance;
 }
 
-export const DEFAULT_SETTINGS: ProjectSettings = { allowedOrigins: [], greeting: null, suggestedQuestions: [] };
+export const DEFAULT_SETTINGS: ProjectSettings = { allowedOrigins: [], greeting: null, suggestedQuestions: [], appearance: DEFAULT_APPEARANCE };
+
+/** Input shape for creating/patching settings: every top-level field optional, and appearance itself partial too
+ *  (so a caller can send just one appearance field without needing to know the others). */
+export type SettingsInput = Partial<Omit<ProjectSettings, "appearance">> & { appearance?: Partial<ProjectAppearance> };
 
 export interface Project {
   id: string;
@@ -173,8 +194,13 @@ const toProject = (r: ProjectRow): Project => ({
   name: r.name,
   siteUrl: r.site_url,
   rules: JSON.parse(r.rules_json) as Rule[],
-  // Merge over defaults so projects saved before a setting existed still have every field.
-  settings: { ...DEFAULT_SETTINGS, ...(JSON.parse(r.settings_json) as Partial<ProjectSettings>) },
+  // Merge over defaults so projects saved before a setting existed still have every field (appearance one level
+  // deep, so a project saved before, say, launcherIcon existed still gets that one default without losing the
+  // rest of its saved appearance).
+  settings: (() => {
+    const stored = JSON.parse(r.settings_json) as Partial<ProjectSettings>;
+    return { ...DEFAULT_SETTINGS, ...stored, appearance: { ...DEFAULT_APPEARANCE, ...stored.appearance } };
+  })(),
   createdAt: r.created_at,
 });
 const toJob = (r: JobRow): CrawlJob => ({
@@ -208,13 +234,13 @@ export class Repositories {
     if (!columns.some((c) => c.name === column)) this.db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
   }
 
-  createProject(input: { name: string; siteUrl: string; rules?: Rule[]; settings?: Partial<ProjectSettings> }): Project {
+  createProject(input: { name: string; siteUrl: string; rules?: Rule[]; settings?: SettingsInput }): Project {
     const project: Project = {
       id: randomUUID(),
       name: input.name,
       siteUrl: input.siteUrl,
       rules: input.rules ?? [],
-      settings: { ...DEFAULT_SETTINGS, ...input.settings },
+      settings: { ...DEFAULT_SETTINGS, ...input.settings, appearance: { ...DEFAULT_APPEARANCE, ...input.settings?.appearance } },
       createdAt: new Date().toISOString(),
     };
     this.db
@@ -228,14 +254,21 @@ export class Repositories {
     return row ? toProject(row) : null;
   }
 
+  /** Every project, newest first. Callers scope this to the caller's own projects in hosted mode (see app.ts). */
+  listProjects(): Project[] {
+    const rows = this.db.prepare("SELECT * FROM projects ORDER BY created_at DESC").all() as unknown as ProjectRow[];
+    return rows.map(toProject);
+  }
+
   setRules(id: string, rules: Rule[]): void {
     this.db.prepare("UPDATE projects SET rules_json = ? WHERE id = ?").run(JSON.stringify(rules), id);
   }
 
   /** Change only the settings that were provided. Returns the full settings afterwards. */
-  updateSettings(id: string, changes: Partial<ProjectSettings>): ProjectSettings {
+  updateSettings(id: string, changes: SettingsInput): ProjectSettings {
     const current = this.getProject(id)?.settings ?? DEFAULT_SETTINGS;
-    const next: ProjectSettings = { ...current, ...changes };
+    // appearance is merged one level deep so changing just one field (e.g. the colour) does not wipe the rest.
+    const next: ProjectSettings = { ...current, ...changes, appearance: { ...current.appearance, ...changes.appearance } };
     this.db.prepare("UPDATE projects SET settings_json = ? WHERE id = ?").run(JSON.stringify(next), id);
     return next;
   }

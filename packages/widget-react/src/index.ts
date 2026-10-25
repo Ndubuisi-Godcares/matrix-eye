@@ -18,7 +18,7 @@ export function MatrixEyeChat(props: MatrixEyeChatProps): ReactElement {
   const container = useRef<HTMLDivElement | null>(null);
   // Primitive options are listed individually so the widget is only rebuilt when one actually changes,
   // not on every render (object props such as `labels` are compared by value through JSON).
-  const { project, api, position, title, color, accent, theme, greeting, placeholder, open, branding, persist, labels } = props;
+  const { project, api, position, title, color, accent, template, launcherIcon, theme, greeting, placeholder, open, branding, persist, labels } = props;
   const labelsKey = JSON.stringify(labels ?? null);
 
   useEffect(() => {
@@ -29,14 +29,14 @@ export function MatrixEyeChat(props: MatrixEyeChatProps): ReactElement {
     // Imported here, not at the top: the widget touches browser-only APIs when it loads.
     void import("@matrix-eye/widget").then((module) => {
       if (cancelled) return; // unmounted (or re-rendered with new options) before the code arrived
-      handle = module.init({ project, api, position, title, color, accent, theme, greeting, placeholder, open, branding, persist, labels }, parent);
+      handle = module.init({ project, api, position, title, color, accent, template, launcherIcon, theme, greeting, placeholder, open, branding, persist, labels }, parent);
     });
     return () => {
       cancelled = true;
       handle?.destroy();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `labels` is tracked through labelsKey
-  }, [project, api, position, title, color, accent, theme, greeting, placeholder, open, branding, persist, labelsKey]);
+  }, [project, api, position, title, color, accent, template, launcherIcon, theme, greeting, placeholder, open, branding, persist, labelsKey]);
 
   // An empty, invisible host. The widget positions itself with `position: fixed`.
   return createElement("div", { ref: container, "data-matrix-eye-host": "" });

@@ -6,14 +6,16 @@
 > only this file, `CLAUDE.md`, and the source tree — nothing else is needed and nothing important lives only in chat history.
 > Section 11 says exactly where work stopped; section 9 says what was and was not verified; section 3 is the full project
 > topology (directory map + architecture) if you need to re-orient.
-> Last audit: **2026-10-26** (session begun 2026-10-25, ran past midnight, still going). Last pushed commit: `ab95e5b` —
-> a new site-wide search feature: a Ctrl/Cmd+K command palette with optional voice input, reusing the existing
-> Pagefind index (`apps/website/src/components/CommandPalette.astro`, `src/scripts/command-palette.ts`). Just before
-> it, `3b3fae2` made the engine's decline reply speak in the first person, never naming "the website"/"the site"
-> (`packages/engine/src/abstain.ts`, `prompt.ts`). Section 15 has the full story of every 2026-10-25/26 commit (there
-> have been many — `fa04b80` through to whatever is at the tip when you read this); section 11 is the fastest way to
-> get the current
-> headline state without reading all of them.
+> Last audit: **2026-10-26** (session begun 2026-10-25, ran past midnight, still going). About to be pushed: a new
+> **workspace app, `apps/dashboard`** — a "Template Studio" where a project's chat widget can be designed (3 visual
+> templates, 6 launcher icons, brand colours) with a live preview that mounts the real, unmodified widget against
+> the real API. This is a genuinely new npm workspace, new widget capabilities (`template`/`launcherIcon` options,
+> `packages/widget/src/styles.ts`), new API surface (`GET /v1/projects`, `appearance` in project settings), and a
+> real bug fix (admin CORS silently never allowed PATCH/PUT/DELETE cross-origin — see section 13). Section 11's top
+> entry has the full story; section 15 has the session-by-session narrative of everything before it, going back to
+> `fa04b80`. **If you're picking this up mid-session: section 9's newest block lists every verification check run,
+> including two false alarms (CSS cascade bug, then a local-machine resource-exhaustion scare) that were each
+> properly root-caused rather than papered over — read it before re-running anything from scratch.**
 > Legend: **VERIFIED** = checked in code or by running something this audit; **REPORTED** = established earlier in the
 > project's conversation history and not re-checked; **UNVERIFIED/UNKNOWN** = not checked.
 
@@ -35,9 +37,13 @@
 - **Journeys:** (a) owner: crawl a site -> add one `<script>` tag -> visitors chat; (b) developer: use the TypeScript SDK /
   React component / HTTP API; (c) prospect: reads marketing site/docs -> joins waitlist or contacts.
 - **Stage:** Phases 1-3 done (engine; SDK/widget/streaming/API; marketing + docs website), deployed to Vercel (owner
-  confirmed working, 2026-10-13). **Phase 4 (hosted backend, dashboard, billing) underway:** plan written (ADR-008,
-  `docs/planning/Phase4-Plan.md`); M1 (accounts/control-plane) implemented and committed (`c975761`, 2026-10-13), no real
-  Supabase project yet; M2-M5 not started. **Home page and site-wide copy refreshed 2026-10-25** (section 7/15).
+  confirmed working, 2026-10-13). **Phase 4 (hosted backend, M3's hosted multi-tenant dashboard, billing) underway:**
+  plan written (ADR-008, `docs/planning/Phase4-Plan.md`); M1 (accounts/control-plane) implemented and committed
+  (`c975761`, 2026-10-13), no real Supabase project yet; M2 (VPS deploy), M3 (hosted dashboard), M4, M5 **still not
+  started** — **do not confuse this with `apps/dashboard`, added 2026-10-26** (section 5/7/11), which is a separate,
+  unrelated thing: a small local admin tool (the Template Studio, for designing a widget's appearance) with no
+  accounts, no hosting, and no connection to the Phase 4 M3 roadmap item of the same generic name. Home page and
+  site-wide copy refreshed 2026-10-25 (section 7/15).
 - **Project-wide constraints (from the owner, REPORTED):** act as a senior developer (clean file organisation, code
   comments); user works in VS Code on Windows; PDFs use the **Yu Mincho** font; be honest about limits (eval numbers are a
   regression baseline, not real-world proof); confirm before pushing to a *new* destination; no secrets in git.
@@ -57,9 +63,10 @@
 | Storage | `node:sqlite` (built-in): FTS5 with BM25 and Porter tokenizer. SQLite file; no external DB. |
 | Crawler | undici, cheerio, robots-parser; optional Playwright render mode (`--render`). |
 | LLM | Provider-agnostic OpenAI-compatible client; **Ollama** auto-detected locally (`qwen3:4b-instruct` recommended; thinking/embedding models skipped). Extractive mode (no model) is the default fallback. |
-| Widget | Plain TS web component, esbuild bundle (~10.3 KB gzipped, CI budget 30 KB), SSE streaming. React wrapper `@matrix-eye/widget-react`. |
+| Widget | Plain TS web component, esbuild bundle (~11.5 KB gzipped as of 2026-10-26, CI budget 30 KB), SSE streaming. React wrapper `@matrix-eye/widget-react`. 3 visual templates + 6 launcher icons added 2026-10-26 (section 5/7). |
 | Website | Astro 7.3.8 (static), Sätteri Markdown processor, Shiki, Pagefind search, sharp (image assets), self-hosted variable fonts (Inter, JetBrains Mono; Fraunces removed 2026-10-25, see 7/11). |
-| Hosting | **None live.** Vercel project import attempted (Hobby plan, from the personal GitHub repo). Intended: static site on Vercel; API needs a long-running host (Phase 4). |
+| **Dashboard** (new 2026-10-26) | `apps/dashboard`: Vite 6 + React 19 + TypeScript, plain hand-written CSS (no Tailwind/UI kit). The **first client-framework app in this repo** — justified by a genuinely interactive multi-panel editor; the widget itself stays framework-free `createElement`-only by design, unaffected. |
+| Hosting | **None live.** Vercel project import attempted (Hobby plan, from the personal GitHub repo). Intended: static site on Vercel; API needs a long-running host (Phase 4). `apps/dashboard` is not deployed anywhere and must not be (section 7). |
 | CI | `.github/workflows/ci.yml` (ubuntu-24.04): `npm ci`, install Chromium, typecheck, build, test, eval gate `--gate`, upload eval report, `npm audit --omit=dev --audit-level=high`. CI was confirmed green at `1423d2d` (Phase 3 push) earlier in the project; **not checked for any later commit** (`gh run list --limit 1` to check). |
 | Auth | Admin API: single Bearer key (`MATRIX_EYE_API_KEY`). Public widget/forms endpoints: no key, protected by per-project origin allow-list, rate limits. **No user accounts, roles, sessions, payments, email or analytics exist.** |
 
@@ -88,6 +95,8 @@ matrix-eye/
   apps/cli/                    `npm run matrix -- <crawl|ask|chat|search|pages|llm-check>` (own DB ./data/matrix-eye-cli.sqlite)
   apps/demo/                   `npm run demo -- <url>`: crawl a site + serve a page with the real widget on :8788
   apps/website/                the marketing/docs site (section 4/7)
+  apps/dashboard/               Template Studio (new 2026-10-26): `npm run dev -w @matrix-eye/dashboard` on :5183;
+                                local admin tool, NOT the Phase 4 M3 hosted dashboard (section 1/7)
 ```
 
 Critical entry points: `apps/api/src/server.ts` (boots API), `apps/api/src/app.ts` (`buildApp`), `packages/engine/src/engine.ts`,
@@ -130,11 +139,12 @@ TOC with scroll-spy). Nav: Home, Product, Docs, Pricing, Guides, Security; logo 
 | Knowledge store (FTS5/BM25) | `packages/knowledge` | complete | tests pass |
 | Conversation engine + abstention | `packages/engine` | complete; decline wording made adaptive/professional 2026-10-26 (`abstain.ts`) | tests + eval gate pass (this audit: `npm run eval -- --gate`: "All Phase 1 targets met") |
 | LLM provider + Ollama auto-detect | `packages/llm` | complete | unit tests; real-model run REPORTED (97.4% correctness on 48 Qs with Qwen3 4B Instruct) |
-| Admin REST API | `apps/api/src/app.ts` | complete for local use | tests pass; Bearer key; no multi-tenant accounts |
-| Public widget API + streaming | same | complete | origin allow-list (closed by default), CORS delegator, per-visitor rate limit; honest limit: `Origin` can be forged outside browsers |
+| Admin REST API | `apps/api/src/app.ts` | complete for local use | tests pass; Bearer key; no multi-tenant accounts; `GET /v1/projects` (list) added 2026-10-26 |
+| Public widget API + streaming | same | complete | origin allow-list (closed by default), CORS delegator, per-visitor rate limit; honest limit: `Origin` can be forged outside browsers; `GET .../config` now also returns `appearance` (2026-10-26) |
 | Website forms API (waitlist, contact) + owner export | same, `repositories.ts` | complete | honeypot, consent literal, `MATRIX_EYE_SITE_ORIGINS`, form rate limit; E2E browser test passes |
-| TypeScript SDK | `packages/sdk` | complete | integration test passes |
-| Chat widget + React wrapper | `packages/widget*` | complete | jsdom + real-browser tests pass; a11y reviewed (screen-reader testing still owed) |
+| TypeScript SDK | `packages/sdk` | complete | integration test passes; `listProjects()`, `WidgetAppearance`/`WidgetTemplate`/`LauncherIcon` types added 2026-10-26 |
+| Chat widget + React wrapper | `packages/widget*` | complete | jsdom + real-browser tests pass; a11y reviewed (screen-reader testing still owed); **3 visual templates + 6 launcher icons added 2026-10-26** — section 7 |
+| **Template Studio** (design a project's widget: templates, launcher icons, colours, live preview against the real API) | `apps/dashboard` | first slice done, 2026-10-26 | manually verified end-to-end in Chrome (connect, list, customize, live preview, save, confirmed persisted via the real API); see 9/11. **Not the Phase 4 M3 hosted dashboard** — section 1 |
 | CLI / demo | `apps/cli`, `apps/demo` | complete | CLI run by the owner (REPORTED); demo logo path uses `brand/matrix-eye-logo.png` |
 | Marketing/docs website | `apps/website` | built; copy/restyle refreshed 2026-10-25 | see 9/11 |
 | Docs search (Pagefind, inline box in the docs sidebar) | `src/scripts/search.ts`, `components/DocsSearch.astro` | complete | browser test passes |
@@ -153,7 +163,11 @@ Two SQLite schemas (VERIFIED in source), same file in the API (`MATRIX_EYE_DB_PA
   `crawl_jobs(...)`, `feedback(...)`, `waitlist(email PK,name,use_case,source,consent_at,created_at)`,
   `contact_messages(id,name,email,message,created_at)`. Schema is created with `CREATE TABLE IF NOT EXISTS`; **no migration
   system** (a Phase 4 concern, esp. if moving to Postgres; earlier plan for Phase 4: NestJS/Postgres on Supabase was decided
-  for the *AIIT* rebuild, not necessarily this product: do not assume).
+  for the *AIIT* rebuild, not necessarily this product: do not assume). `settings_json` gained an `appearance` object
+  2026-10-26 (`{ template, launcherIcon, color, accent }`, all nullable) — no new column or migration needed since it's
+  one more field inside the existing JSON blob; old rows read back with `appearance` defaulted via a one-level-deep
+  merge (`DEFAULT_APPEARANCE`), not just a shallow spread, so an old row missing only `launcherIcon` doesn't lose its
+  other saved appearance fields.
 - Access control: admin routes need Bearer key; public routes are project-scoped by UUID and origin allow-list.
   Validation: zod (`schemas.ts`). Personal data stored: waitlist emails/names, contact messages (with consent timestamp).
 
@@ -245,6 +259,49 @@ owner shared (committed, `fa04b80`; see 11/15).
   site's plain uppercase `.eyebrow` label style for small tags; **not** a fake "Watch demo" video button, invented building
   photo, or unbuilt claims (see 10).
 
+### Widget templates, launcher icons, and the Template Studio dashboard (added 2026-10-26)
+
+This is a **separate design system from the website above** — the widget must inherit the *customer's* brand, not
+MatrixEye's, and the dashboard is MatrixEye's own internal tool, styled independently of both.
+
+- **3 widget templates** (`WidgetOptions.template` / `WidgetTemplate` in `@matrix-eye/sdk`), implemented as real CSS
+  in `packages/widget/src/styles.ts` under `[data-template="..."]` selectors, not just a colour swap:
+  - `minimal` (default; the pre-existing styling, unmodified, needs no selector of its own) — compact, restrained.
+  - `saas` — larger geometry, medium radius (20px panel, 18px launcher), bolder header.
+  - `developer` — monospace header/citations/input, smaller radius (10px), denser spacing, smaller base font.
+- **6 launcher icons** (`WidgetOptions.launcherIcon` / `LauncherIcon`): `chat` (default), `sparkle`, `headset`,
+  `help`, `book`, `dot`. SVG path data lives once, in `packages/widget/src/widget.ts`'s `ICONS` (now exported) —
+  the dashboard's icon gallery imports and renders these exact paths rather than hand-copying them, so the two can't drift.
+- **Precedence, same pattern as `title`/`greeting` already used:** an explicit `WidgetOptions.template`/`launcherIcon`/
+  `color`/`accent` always wins; otherwise the widget applies the project's saved `appearance` (from `GET .../config`)
+  once it loads, reactively updating `data-template`, the launcher's icon, and the CSS colour custom properties.
+- **A real CSS cascade bug was found and fixed during manual testing** (not caught by any test until one was added
+  for it): `.ee-root[data-template="developer"] .ee-panel` and the phone-width media query's
+  `.ee-root[data-position] .ee-panel` have identical specificity, so whichever rule is later in the stylesheet wins
+  at matching widths — the template rules were appended after the phone media query, so a template's border-radius
+  silently beat the phone full-screen behaviour. Fixed by moving the template block to appear *before* that media
+  query in `styles.ts` (comment there explains why); regression-tested in a real browser
+  (`packages/widget/test/browser.test.ts`, checks `getComputedStyle(...).borderRadius === "0px"` on a 375px
+  viewport with the developer template active). **If you add a 4th template, re-check this ordering concern** —
+  anything touching `.ee-panel`'s size/radius/position needs to stay before the phone media query, or repeat its
+  override inside it.
+- **Template Studio (`apps/dashboard`)** is MatrixEye's own dark, neon-green-accented UI (loosely matching the
+  website's tokens, hand-written CSS, no shared stylesheet with the website or the widget) — this is deliberate:
+  the dashboard's chrome should look like MatrixEye, but nothing it renders for the *widget itself* may leak that
+  branding into a customer's preview. The live preview achieves this by running inside a sandboxed `<iframe>`
+  (its own browsing context, so the widget's `position: fixed` elements are contained to the device-frame size
+  rather than escaping to the real page) and mounting `new ChatWidget(...)` directly (bypassing the public
+  `init()`/custom-element entry point, which would create DOM nodes in the *outer* document, not the iframe's) —
+  see `docs/dashboard.md` for the full explanation, it is genuinely useful context for extending this app.
+- **A real, pre-existing API bug was found and fixed** while wiring the dashboard's Save button: the admin CORS
+  registration (`apps/api/src/app.ts`) never set `methods` on the non-public branch, so `@fastify/cors` silently
+  defaulted to `GET,HEAD,POST` — every admin `PATCH`/`PUT`/`DELETE` route (settings, rules, project deletion) was
+  CORS-blocked from a browser, with no server-side error to find (the browser never sends the real request after a
+  failed preflight). Fixed by setting `methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"]` explicitly on that
+  branch; regression test in `apps/api/test/api.test.ts` asserts the preflight's `access-control-allow-methods`
+  contains `PATCH`. This was invisible before because nothing in this repo had previously tried to call an admin
+  PUT/PATCH/DELETE route from a browser — the CLI and curl examples in the docs aren't subject to CORS at all.
+
 ## 8. Integrations and configuration
 
 Variable names only. Local `.env` exists and holds `MATRIX_EYE_API_KEY` and `MATRIX_EYE_SITE_ORIGINS` (values not recorded).
@@ -254,7 +311,7 @@ Variable names only. Local `.env` exists and holds `MATRIX_EYE_API_KEY` and `MAT
 | `MATRIX_EYE_API_KEY` (>=16 chars, required) | API | admin Bearer key |
 | `PORT` (8787), host `127.0.0.1` | API | listen address |
 | `MATRIX_EYE_DB_PATH` | API | SQLite file |
-| `MATRIX_EYE_CORS_ORIGINS` | API | extra browser origins for admin CORS |
+| `MATRIX_EYE_CORS_ORIGINS` | API | extra browser origins for admin CORS — **must include `http://localhost:5183` to use `apps/dashboard`** against a local API (2026-10-26) |
 | `MATRIX_EYE_SITE_ORIGINS` | API | origins of the marketing site allowed to submit forms |
 | `MATRIX_EYE_FORM_RATE_LIMIT_PER_MINUTE` (5), `MATRIX_EYE_PUBLIC_RATE_LIMIT_PER_MINUTE` (20), `MATRIX_EYE_RATE_LIMIT_PER_MINUTE` (120) | API | rate limits |
 | `MATRIX_EYE_ALLOW_PRIVATE_NETWORKS` | API/CLI | permit crawling localhost/private IPs (dev only) |
@@ -269,6 +326,54 @@ External services in use: none (no analytics, no third-party scripts/fonts). Git
 `apps/website/dist`) and `apps/website/vercel.json`, generated by `npm run deploy-config -w @matrix-eye/website` (CSP names the API origin).
 
 ## 9. Implementation and verification status
+
+**Checks run on 2026-10-26 (Template Studio: `apps/dashboard`, widget templates/launcher icons, `GET /v1/projects`,
+the CORS fix — see 5/7/11 for what changed):**
+- `npm run typecheck` (whole monorepo, now including `npm run typecheck -w @matrix-eye/dashboard` added to the
+  chain): passes, 0 errors.
+- `npm run build` (now including `--workspace @matrix-eye/dashboard`): passes; widget bundle 11.5 KB gzipped
+  (was 10.3 KB — still well under the 30 KB CI budget); dashboard's Vite build ~85 KB gzipped JS (not budget-checked
+  anywhere, since it's a local dev tool, not shipped to end visitors).
+- `npm test`: **488/488 passed** on the final clean run (several runs in a row, see below for why that mattered).
+  Fixed two pre-existing strict-equality test assertions broken by the new `appearance` field appearing in
+  `PublicConfig`/`ProjectSettings` responses (`apps/api/test/public.test.ts`, `packages/sdk/test/integration.test.ts`)
+  — a straightforward, expected update, not a design problem.
+- `npm run eval -- --gate`: 100% on every target, run twice across the session. Confirms the engine/abstention
+  changes from earlier in this session are unaffected by the dashboard work (which doesn't touch the engine at all).
+- `npm audit --omit=dev --audit-level=high`: now **4 vulnerabilities** (1 low, 1 moderate, 2 high) — `zod` and
+  `undici` as before (section 12 P0), plus a **new** `fastify` advisory (header validation bypass,
+  GHSA-389g-gv7q-r4x8) disclosed since the last check. Confirmed by diff that none of this session's new
+  dependencies (`vite`, `@vitejs/plugin-react`, `react`, `react-dom`, all in `apps/dashboard`) introduced it — same
+  "advisories get published over time, independent of this project's lockfile changes" pattern as before. Not
+  fixed; folded into the existing P0.
+- **Manually verified the entire feature end-to-end in Chrome**, not just via automated tests, because this is a
+  new, real integration (browser -> admin API -> SQLite -> back to the browser and a live iframe-mounted widget)
+  that's easy to get subtly wrong in ways unit tests miss: started a real local API (fresh SQLite DB) and the
+  dashboard's dev server, created a real test project, connected, selected the Developer Console template and the
+  sparkle icon, set a brand colour, confirmed the live preview (a real `ChatWidget` instance inside a sandboxed
+  iframe, talking to the real public API) updated instantly for each change, clicked Save, and confirmed via a
+  separate `curl` call that the change was genuinely persisted — then confirmed the public config endpoint serves
+  it back out, closing the loop a real visitor would experience. This manual pass is what caught both real bugs
+  below (neither was caught by `npm test`, because nothing in the existing suite exercised a browser calling an
+  admin PATCH route, or a template active at a phone-width viewport at the same time).
+  1. **The admin CORS bug** (section 7): Save silently failed with "Failed to fetch" until this was found and fixed.
+  2. **The CSS cascade bug** (section 7): found by checking `getComputedStyle` inside the preview iframe at the
+     mobile viewport width, not by looking at it — the visual difference (a few pixels of corner radius) would be
+     easy to miss by eye but is a real, meaningful regression (the panel wasn't actually full-width on a phone).
+- Added 3 browser tests for the widget (`packages/widget/test/browser.test.ts`: a template's distinctive look
+  applies, a chosen launcher icon renders, and a regression test for the cascade bug specifically), 1 for the CORS
+  fix (`apps/api/test/api.test.ts`), and extended `apps/api`'s project-listing coverage (self-host: lists
+  everything; hosted/control-plane: scoped to the caller's own account, tested in `accounts.test.ts`).
+- **Hit, diagnosed, and resolved a severe but environmental (not code) problem while re-verifying:** running
+  `apps/website/test/browser.test.ts` repeatedly, in isolation, back-to-back, produced wildly inconsistent results
+  (2/30 passed, then 28/30, then 1/30) — far beyond the mild flakiness pattern already known from earlier in this
+  session (section 13). `Get-Process` found **15 lingering `chrome`/`chromium`/`node` processes** that repeated
+  Playwright launches hadn't cleaned up, and free memory had dropped to ~1.8 GB. Killing them and re-running the
+  **full** `npm test` (not the one heavy file in isolation, repeatedly) gave a clean 488/488 immediately. **Lesson
+  for future sessions on this machine: if a heavy Playwright-based test file gets re-run many times in a row by
+  itself, check `Get-Process chrome,chromium,node` and clean up stragglers before concluding the code is broken —
+  this has now happened twice in one session (see section 13) and is a property of this machine/sandbox, not of
+  the code being tested.**
 
 **Checks run on 2026-10-26 (site-wide search + voice search, and the first-person decline-wording follow-up — see 5/7/11):**
 - `npm run typecheck`: passes, 0 errors — hit one real issue along the way: `search.ts` and the new `command-palette.ts`
@@ -445,10 +550,47 @@ phrasing; small local models sometimes decline two-part questions; widget/`Origi
 | Do **not** add: fake demo video, invented photos, unbuilt claims ("knowledge base updated automatically"), brand logos of frameworks | honesty/trademark | confirmed advice, owner agreed to "apply all" *as adapted*; see 11 |
 | Historical planning PDFs/strategy notes keep "Eagle's Eye" | they are history | confirmed |
 | Phase 4: control-plane (accounts/billing/project ownership) on Supabase Postgres; knowledge data stays per-project SQLite on the API VPS disk; hosted inference stays self-hosted Ollama, not a third-party LLM API; budget <$25/mo (ADR-008) | owner decisions D5-D7, 2026-10-13; keeps the "self-hostable, private" story true for the hosted tier; avoids a costly Postgres rewrite of the working FTS5/BM25 ranking | confirmed (architecture only; nothing built yet) |
+| Build a brand-new Template Studio feature as a **minimal local admin tool first** (new `apps/dashboard`, no accounts), not the full spec the owner pasted (12 templates, automatic logo/colour discovery, full preview-state matrix, draft/publish lifecycle) and not deferred until the real Phase 4 M3 hosted dashboard exists | asked the owner to scope a very large spec explicitly before writing code, rather than either refusing or building a half-faked version of all of it; owner chose "minimal dashboard first" + "2-3 templates + launcher icons" as the first slice | confirmed by the owner, 2026-10-26; see 11 for exactly what was and was not built |
+| React/Vite introduced, but **only** for `apps/dashboard` — the widget itself stays framework-free (`createElement`, no JSX) by design | the dashboard is the first UI in this repo complex enough to need real component state (live multi-panel editor); the widget's zero-framework approach is a deliberate, unrelated constraint (bundle size, "works everywhere") that this doesn't touch | confirmed, see 2/7 |
 
 ## 11. Current development position (READ THIS FIRST)
 
-- **2026-10-26 session, latest work (commit hash at the top of this file): site-wide search, and the decline wording
+- **2026-10-26 session, latest work (commit hash at the top of this file): Template Studio, first slice.** The
+  owner pasted a very large, detailed spec ("Build a Professional Chatbot Template Studio, Branding Engine &
+  Launcher Icon Library") — 12 template families, automatic logo/colour discovery from a crawled site, a full
+  preview-state matrix, a composable config schema, draft/publish lifecycle, and more, framed as "a dedicated
+  section within the existing MatrixEye developer dashboard." **Before writing any code**, checked the premise
+  against the actual repo and found it didn't hold: there is no dashboard at all (Phase 4 M3, not started — section
+  1), the widget supports exactly one brand colour and nothing else (no templates, no icon library), and the admin
+  API has no config-persistence schema for anything like this. Rather than either refusing outright or building a
+  disconnected mockup (which the spec's own text explicitly warns against — "do not claim a capability is complete
+  if it is only represented by a mockup"), asked the owner two scoping questions: how to handle the missing
+  dashboard, and what the first real slice should be. Answers: **build a minimal new local dashboard app**, and
+  **start with 2-3 templates + the launcher icon library**, proving the real, end-to-end system before expanding.
+  What was actually built, all real and wired to genuine persistence (not simulated):
+  - **`packages/widget`**: `template` (`minimal`/`saas`/`developer`) and `launcherIcon` (6 icons) options, real CSS
+    (`styles.ts`) and icon SVGs (`widget.ts`'s now-exported `ICONS`), applied either explicitly at init or from the
+    project's saved appearance (server config), same override precedence as `title`/`greeting`.
+  - **`apps/api`**: `appearance` added to project settings (schema, storage, the public config endpoint); a new
+    `GET /v1/projects` (there was no way to list projects at all before — a real, independently useful gap-fill);
+    a real CORS bug fixed (section 7/13) that would have silently blocked *any* browser-based admin tool from ever
+    saving settings, not just this one.
+  - **`packages/sdk`**: `listProjects()`, `WidgetAppearance`/`WidgetTemplate`/`LauncherIcon`/`DEFAULT_APPEARANCE`.
+  - **`apps/dashboard`** (new workspace): connect with an admin key (local-only, `localStorage`, never sent
+    elsewhere — explicitly not a hosted login, see section 7) → pick a project → Template Studio: template gallery,
+    launcher icon gallery, colour fields, and a **live preview that mounts the real widget inside a sandboxed
+    iframe** against the real public API (not scripted demo data) → Save, which genuinely `PATCH`es the project.
+  - Manually verified the entire loop in Chrome (section 9) — this is what found both real bugs above, neither of
+    which any existing automated test would have caught.
+  - **Deliberately not built, and said so rather than faking it:** the other 9 template families, most of the 6
+    icon families (dot/sparkle/headset/help/book/chat only), automatic brand/logo discovery from a crawl, the
+    welcome/typing/error/unanswered preview-state matrix (only the live, open, real-answer state exists), and any
+    draft/publish/undo/redo lifecycle beyond Save + Reset. `docs/dashboard.md` states this explicitly so nobody
+    mistakes the first slice for the whole spec.
+  - **Verified:** section 9 (typecheck, build, 488/488 tests, eval gate, manual end-to-end browser verification,
+    two real bugs found and fixed with regression tests). **Commit status:** check the hash at the top of this
+    file and `git log` — written up before the final commit landed; section 15 has the play-by-play.
+- **2026-10-26 session, earlier work: site-wide search, and the decline wording
   made first-person.** Two follow-ups from the owner, handled in order:
   1. **"It shouldn't make reference to not having the answer from the website... it should act like a human, where he
      answers as if the website is his."** The owner was reacting to the decline wording from the previous commit,
@@ -637,11 +779,13 @@ control-plane Postgres (code committed `c975761`; no real Supabase project yet)*
 API+Ollama (not started) -> M3 minimal dashboard (not started) -> M4 billing/Stripe (not started) -> M5 hardening
 (not started) before real customers.
 
-**P0:** **`npm audit --omit=dev --audit-level=high` now fails** (`zod` high, `undici` high — section 9). Not caused by this
-session's changes, but will break CI (`.github/workflows/ci.yml` runs this exact command) on the next push from any branch,
-including the already-pending Home-restyle commit. Fix before or alongside the next push: `npm audit fix` handles `undici`
-non-breaking; `zod` needs `npm audit fix --force` (upgrades to zod@4.6.7, a breaking change per npm's own warning) —
-check `apps/api` schema validation still passes typecheck/tests after.
+**P0:** **`npm audit --omit=dev --audit-level=high` now fails with 4 findings** (`zod` high, `undici` high, and as of
+2026-10-26 also `fastify` high — section 9). Not caused by any of this session's changes (confirmed each time by
+diffing `package-lock.json`), but will break CI's audit step on every push until fixed. `npm audit fix` handles
+`undici`/`fastify` non-breaking; `zod` needs `npm audit fix --force` (upgrades to zod@4.6.7, a breaking change per
+npm's own warning) — check `apps/api` schema validation still passes typecheck/tests after. This has been deferred
+across several pushes now with the owner's explicit sign-off each time ("commit now, handle audit separately") —
+it should not keep being deferred indefinitely; raise it proactively next session rather than waiting to be asked.
 
 **P1 (current)**
 1. ~~Check CI for the latest commits.~~ Done 2026-10-13: green through `51728e8`.
@@ -669,6 +813,13 @@ check `apps/api` schema validation still passes typecheck/tests after.
 16. Consider revisiting the dropped "browser without speech recognition" test case (section 9) if it matters enough
     to debug properly — the feature itself is correct (read `command-palette.ts`), just that one negative-path test
     wasn't landed.
+17. ~~Build a first slice of the owner's Chatbot Template Studio spec: a local dashboard, 2-3 widget templates, the
+    launcher icon library, a live preview, real persistence.~~ Done 2026-10-26 (`apps/dashboard`); all checks green,
+    manually verified end-to-end, two real bugs found and fixed along the way (section 7/9/11).
+18. Decide what to do with the rest of the Template Studio spec the owner pasted (section 11 has the "deliberately
+    not built" list in full): more templates, more launcher icons, automatic logo/brand-colour discovery from the
+    crawl, a fuller preview-state matrix, draft/publish lifecycle. Each is a real, separable piece of work — don't
+    assume the owner wants all of it; ask which (if any) matters next.
 
 **P2**
 - Host the API somewhere with a persistent disk or move to Postgres (Phase 4); set `PUBLIC_API_URL`, `MATRIX_EYE_SITE_ORIGINS`, re-run `npm run deploy-config` with the API origin.
@@ -696,6 +847,8 @@ check `apps/api` schema validation still passes typecheck/tests after.
 | `npm audit --omit=dev --audit-level=high` reports 2 high-severity vulnerabilities as of 2026-10-25 (`zod`, `undici`); was 0 on 2026-10-13 | new GitHub advisories published against already-installed versions, not a lockfile change made in this project | not yet fixed; `npm audit fix` for `undici`, `npm audit fix --force` (breaking) for `zod` — see section 12 P0 |
 | **CI's `npm test` step failed 4 times in a row (2026-10-25, commits `fa04b80` through `d8ce0ad`)** on `apps/website/test/browser.test.ts`'s docs-TOC scroll-spy test (`expect.poll` never reaching 1 matching link), while the *identical* suite passed 464/464 every time locally | **Genuinely caused by this session's font change, confirmed, not flakiness** — removing Fraunces and setting the global `h1, h2 { font-weight: 800 }` rule (section 7) changed the rendered height of `.prose h2` headings (the rule applies globally, including inside docs pages, since `.prose h2` only overrides `font-size`). The test scrolled by a **fixed 200px** after `scrollIntoViewIfNeeded()`, which depended on the old heading height to land inside the scroll-spy's ~190px active band; the new heading height pushed it just outside that band. It passed locally on Windows but failed on CI's Linux runner — plausibly sub-pixel font-rendering differences between OSes sitting on opposite sides of an already-marginal boundary, though the root fragility (a fixed pixel offset) was the same on both. **Do not mistake a repeated CI failure for flakiness without checking whether a recent change could plausibly be the cause** — three earlier failures in this same session *were* genuine flakiness (network timeouts, afterAll teardown), which made it easy to misdiagnose this fourth one the same way at first. | Fixed in `apps/website/test/browser.test.ts`: the test now computes the heading's actual position and scrolls to place it at a fixed distance from the viewport top, instead of nudging by a fixed amount after an imprecise `scrollIntoViewIfNeeded()`. Verified: passes alone and in the full suite, locally, 464/464, **and confirmed green on CI** (commit `9458b20`, run `40225059946`: `npm test` step passed). |
 | This machine's test runs got noticeably flakier after several hours of a continuous session (2026-10-26): one `npm test` run had 9 failed files/19 failed tests across unrelated packages, cleared up on immediate re-runs with no code change | `Get-CimInstance Win32_OperatingSystem` showed ~2.2 GB free of 16.5 GB total at the time — genuine low-memory pressure on the host, not a code issue. Likely compounded by a leftover `npm run serve` process from earlier in the session that was never stopped. | If a *wide* spread of unrelated test files fail at once (not the same one or two files repeatedly), suspect host resource pressure before suspecting code: check free memory, stop any leftover `npm run serve`/dev-server background processes from earlier in the session, and re-run. Reserve the "did my change cause this" investigation (section 13's CI-regression entry above) for failures that are narrow and repeat on clean re-runs. |
+| **Update to the row above (same session, later):** re-running `apps/website/test/browser.test.ts` repeatedly, by itself, produced wildly inconsistent pass counts run to run (2/30, 28/30, 1/30) — far worse than running the *full* `npm test` suite, which was consistently near-clean | `Get-Process chrome,chromium,node` found **15 lingering processes**; each `npx vitest run <file>` invocation that launches real Chromium (via Playwright) apparently doesn't always clean up every child process, and repeating it many times back-to-back accumulates zombies that starve later runs — a property of running the *same heavy file* in a tight loop, not of the full suite (which runs each file once) | Don't repeatedly re-run one heavy Playwright-based test file in isolation to "confirm" a result — one clean run of the *full* `npm test` is a more reliable signal than five repeats of one file. If a result still looks wrong, run `Get-Process chrome,chromium,node \| Measure-Object` (or Task Manager) and kill stragglers before concluding the code is broken. |
+| Admin `PATCH`/`PUT`/`DELETE` routes were unreachable from a browser (CORS), discovered 2026-10-26 while building `apps/dashboard` | `@fastify/cors`'s registration for non-public routes (`apps/api/src/app.ts`) never set `methods`, so it defaulted to `GET,HEAD,POST` only, silently CORS-blocking every admin write except `POST`. Invisible before because nothing had tried calling an admin PATCH/PUT/DELETE route from a browser — curl and the CLI aren't subject to CORS. | **Fixed**: `methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"]` now set explicitly on that branch; regression test in `apps/api/test/api.test.ts` checks the preflight's `access-control-allow-methods`. |
 | Website tests collide on `dist` | both suites build | `test/helpers.ts` uses a lock file + 30 s reuse; do not remove |
 | Shell quirks on this machine | Git Bash heredocs with quotes break; MSYS rewrites args starting with `/`; Python default encoding cp1252; `"\\u2060"` literal | write scripts with the Write tool; use `MSYS_NO_PATHCONV=1`; open files with `encoding="utf-8"`, preserve CRLF (`newline=""`) |
 | Git "CRLF will be replaced by LF" warnings | `.gitattributes`/Windows | harmless |
@@ -709,6 +862,15 @@ check `apps/api` schema validation still passes typecheck/tests after.
 - API: `/v1` admin (Bearer), `/v1/public` visitor/forms; errors always `{ error: { code, message, details? } }`; zod validation.
 - Security: never expose admin key to browsers; no inline scripts (strict CSP shared by `scripts/headers.mjs`, tests and `vercel.json`);
   no third-party requests; every new public endpoint needs origin + rate-limit protection and a test.
+  (**Nuance added 2026-10-26:** this rule is about the *production, public-facing widget* never embedding the
+  secret key on a customer's website, where any visitor's browser could read it. `apps/dashboard` is a different
+  context — a local admin tool where the person running it deliberately supplies their own key, the same trust
+  model as using `curl` or the CLI with that key; it is not a case of the rule being broken, but it must never be
+  deployed publicly, where that distinction would stop holding — see section 7.)
+- New client-framework UI (first precedent: `apps/dashboard`, 2026-10-26): Vite + React + TypeScript, `.tsx` with
+  real JSX (not `createElement`), hand-written CSS per app (no Tailwind/UI kit, no cross-app shared stylesheet).
+  The embeddable widget itself stays framework-free by design (bundle size, "works on any site") — a new app
+  needing a framework doesn't change that; justify the need each time rather than defaulting to React everywhere.
 - Testing: every bug fix gets a regression test that fails on the old code; website changes need the static + browser suites;
   motion-dependent tests run with reduced motion (`open()` helper default) unless `motion: true`.
 - Content: honest claims only; mark estimates/drafts; do not name competitors.
@@ -877,6 +1039,57 @@ check `apps/api` schema validation still passes typecheck/tests after.
   console free of errors/CSP violations, and the 3-icon mobile header layout. Final verification: typecheck, full
   build, full test suite (475/475, one unrelated flake in `widget-react` confirmed pre-existing by re-running alone),
   30/30 browser tests including 3 new ones for this feature. **Committed and pushed as `ab95e5b`.**
+- **2026-10-26, largest single addition this session: "Thank you for your work and all that you've done. can you
+  add..." followed by a ~17-section pasted spec, "MatrixEye — Build a Professional Chatbot Template Studio,
+  Branding Engine & Launcher Icon Library."** The spec described 12 visual templates, a 6-family/30+-icon launcher
+  library, automatic brand/logo/colour discovery from the crawler, a full preview-state matrix, a draft/publish/
+  undo-redo lifecycle, a developer API, and said to build it "as a dedicated section within the existing MatrixEye
+  developer dashboard" — explicitly not a mockup. Investigated before writing any code, per this project's standing
+  rule, and found the premise false: there is **no dashboard app at all** (Phase 4 M3, not started, per this file's
+  own backlog), the widget supports exactly one brand colour with no template/icon concept, and there is no settings
+  field or API route for any of this. Given the scale of the mismatch, used AskUserQuestion twice rather than
+  guessing: (1) how to handle the missing dashboard → owner chose **"Build a minimal new dashboard app first."**
+  (2) what the first real slice should be, given 12 templates/30+ icons/branding-discovery/preview-matrix/lifecycle
+  were all in the spec → owner chose **"2–3 templates + the launcher icon library."** Built, end to end, for real
+  (no mockup, no stub data):
+  - **Widget** (`packages/widget`): `template`/`launcherIcon` options; 3 templates (`minimal`/`saas`/`developer`,
+    real CSS geometry differences incl. monospace fonts for `developer`); extended `ICONS` (now exported) to 6
+    icons; `applySavedAppearance()` applies server-saved appearance reactively, same explicit-option-wins precedence
+    as `title`/`greeting`.
+  - **SDK** (`packages/sdk`): `WidgetTemplate`, `LauncherIcon`, `WidgetAppearance`, `DEFAULT_APPEARANCE`; `appearance`
+    added to `PublicConfig`/`ProjectSettings`; `listProjects()`.
+  - **API** (`apps/api`): `appearance` in settings schema/repositories with one-level deep-merge (so a partial
+    appearance PATCH can't wipe sibling fields — caught proactively, not from a bug report); public `/config` now
+    serves `appearance`; new `GET /v1/projects` (scoped per-account in hosted mode).
+  - **New `apps/dashboard` workspace** (Vite + React, port 5183): a genuinely new app — `ConnectForm` →
+    `ProjectPicker` → `Studio`, template gallery, icon gallery, colour fields, and a **live preview that mounts the
+    real, unmodified `ChatWidget` class inside a sandboxed iframe** (not a styled mockup) so `position: fixed`
+    resolves against the device-frame viewport — switching to the mobile preview genuinely exercises the widget's
+    own phone-width CSS. Admin key stored only in `localStorage`, same trust model as the CLI — explicitly never to
+    be deployed publicly with a key baked in (stated in both the code and `docs/dashboard.md`).
+  - Docs: new `docs/dashboard.md`, updates to `docs/widget.md`, `docs/api.md`, `docs/changelog.md`,
+    `apps/website/src/data/docs.ts`.
+  - Found and fixed **two real bugs via manual Chrome testing that no existing automated test caught**: (1) the
+    admin CORS branch in `apps/api/src/app.ts` never set `methods`, so `@fastify/cors` defaulted to GET/HEAD/POST
+    only, silently blocking every admin PATCH/PUT/DELETE (settings, rules, deletion) from any browser-based client,
+    not just this dashboard — diagnosed via a manual `curl -X OPTIONS` preflight check against the running server;
+    (2) a CSS specificity tie between the new template block and the existing phone-width media query, decided by
+    source order, meant the `developer` template's border-radius silently beat the phone full-screen override on
+    narrow viewports — diagnosed via `getComputedStyle` in the live iframe preview, fixed by reordering `styles.ts`,
+    and locked in with a permanent regression test. Also self-caught (before it shipped, not from review) a mutation
+    bug in `Studio.tsx` where the save handler wrote directly onto a `saved` object that could alias the shared
+    `DEFAULT_APPEARANCE` module constant; converted to proper `useState` fed from the server's own response.
+  - Verified end-to-end in a real browser, not just automated tests: started a real API against a fresh SQLite DB,
+    created a real project via curl, ran the dashboard dev server, connected, switched templates/icons, set a brand
+    colour, saved, and confirmed via a separate `curl GET` that the change persisted to the database and is served
+    back out by the public `/config` endpoint. Final automated verification: typecheck and build (both now
+    including `apps/dashboard`), full test suite (488/488), eval gate (100% all targets), `npm audit
+    --omit=dev --audit-level=high` re-checked and confirmed the new `fastify` advisory is pre-existing drift, not
+    caused by this session's new dependencies (`vite`, `@vitejs/plugin-react`, `react`, `react-dom`) — lockfile diff
+    checked directly.
+  - Deliberately deferred, per the owner's own scoping choice, not forgotten: 9 more templates (12 in the spec, 3
+    built), ~24 more icons, automatic brand/logo discovery from the crawl, the full welcome/typing/error/unanswered
+    preview-state matrix, and a draft/publish/undo-redo lifecycle (see section 12, #18). Not to be started unprompted.
 
 ---
 ## Memory maintenance policy
