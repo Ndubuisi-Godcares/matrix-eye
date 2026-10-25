@@ -24,6 +24,9 @@ const isCurrent = (href: string) => (href === "/" ? path === "/" : path === href
     </nav>
 
     <div class="nav__actions">
+      <button class="icon-btn" type="button" data-cmdk-open hidden aria-label="Search this website (Ctrl K)">
+        <Icon name="search" />
+      </button>
       <button class="icon-btn" type="button" data-theme-toggle aria-label="Switch colour theme">
         <Icon name="moon" class="theme-moon" />
         <Icon name="sun" class="theme-sun" />

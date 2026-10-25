@@ -6,11 +6,13 @@
 > only this file, `CLAUDE.md`, and the source tree — nothing else is needed and nothing important lives only in chat history.
 > Section 11 says exactly where work stopped; section 9 says what was and was not verified; section 3 is the full project
 > topology (directory map + architecture) if you need to re-orient.
-> Last audit: **2026-10-26** (session begun 2026-10-25, ran past midnight). About to be pushed: `bea51c6` — the engine's
-> decline reply is now adaptive and professional (`packages/engine/src/abstain.ts`), instead of one fixed sentence.
-> This followed a run of website copy work (section 15 has the full story of every 2026-10-25/26 commit: `fa04b80`
-> Home hero/header restyle, `8875aff` site-wide copywriting review, `f9fba02` Home lead-paragraph swap, `fd1860a`
-> deeper copy register, `9458b20` a CI test fix, `bea51c6` this engine change — the first non-copy task this session).
+> Last audit: **2026-10-26** (session begun 2026-10-25, ran past midnight, still going). About to be pushed: two more
+> pieces of work — (1) the engine's decline reply now speaks in the first person and never names "the website"/"the
+> site" (`packages/engine/src/abstain.ts`, `prompt.ts`), and (2) a new site-wide search feature: a Ctrl/Cmd+K command
+> palette with optional voice input, reusing the existing Pagefind index (`apps/website/src/components/CommandPalette.astro`,
+> `src/scripts/command-palette.ts`). Section 15 has the full story of every 2026-10-25/26 commit (there have been many —
+> `fa04b80` through to whatever is at the tip when you read this); section 11 is the fastest way to get the current
+> headline state without reading all of them.
 > Legend: **VERIFIED** = checked in code or by running something this audit; **REPORTED** = established earlier in the
 > project's conversation history and not re-checked; **UNVERIFIED/UNKNOWN** = not checked.
 
@@ -134,7 +136,8 @@ TOC with scroll-spy). Nav: Home, Product, Docs, Pricing, Guides, Security; logo 
 | Chat widget + React wrapper | `packages/widget*` | complete | jsdom + real-browser tests pass; a11y reviewed (screen-reader testing still owed) |
 | CLI / demo | `apps/cli`, `apps/demo` | complete | CLI run by the owner (REPORTED); demo logo path uses `brand/matrix-eye-logo.png` |
 | Marketing/docs website | `apps/website` | built; copy/restyle refreshed 2026-10-25 | see 9/11 |
-| Docs search (Pagefind) | `src/scripts/search.ts` | complete | browser test passes |
+| Docs search (Pagefind, inline box in the docs sidebar) | `src/scripts/search.ts`, `components/DocsSearch.astro` | complete | browser test passes |
+| **Site-wide search** (Ctrl/Cmd+K command palette, header search button, every page, with optional voice input) | `components/CommandPalette.astro`, `src/scripts/command-palette.ts` | complete, added 2026-10-26 | 3 new browser tests pass; see 7/9/11 |
 | Evals | `evals/` | complete | regression baseline on one *invented* university site; not proof for real sites |
 | Hosted accounts (control-plane Postgres, per-account API keys, project ownership) | `apps/api/src/control-plane/` | M1 code done | tests pass (pg-mem + fake GoTrue); no real Supabase project; committed `c975761` |
 | **Hosted VPS deploy, dashboard, billing, analytics, email notifications** | none | **planned (Phase 4 M2-M5), nothing exists** | |
@@ -211,6 +214,21 @@ owner shared (committed, `fa04b80`; see 11/15).
   `pricing.astro`'s lead; `security.astro`'s lead; `waitlist.astro`'s lead; `Footer.astro`'s about line; `site.ts`'s
   meta description; and all of `faq.ts`. **Contact, docs and guides were deliberately left in their existing (already
   precise, already technical, just less formally "infra-vendor") voice** — see section 9 for why.
+- **Site-wide search added 2026-10-26** (`CommandPalette.astro`, `scripts/command-palette.ts`, mounted once in
+  `Base.astro` so it's on every page): a Ctrl/Cmd+K command-palette modal, plus a search button in the header
+  (`[data-cmdk-open]`, hidden until a search index is confirmed to exist — same progressive-enhancement pattern as
+  the pre-existing docs sidebar search, `DocsSearch.astro`/`search.ts`). It reuses the *same* Pagefind index
+  `DocsSearch` uses — Pagefind indexes the whole built `dist/` directory (`astro build && pagefind --site dist`), not
+  just `/docs/`, so no new indexing work was needed, only a new UI. Optional **voice search**: a mic button
+  (`[data-cmdk-mic]`), shown only when `window.SpeechRecognition`/`webkitSpeechRecognition` exists (feature-detected,
+  not polyfilled), transcribes speech into the search box and re-runs the search live. **Required loosening the
+  site's `Permissions-Policy` header** (`scripts/headers.mjs`, feeds `serve.mjs` and both `vercel.json` files, which
+  were regenerated via `npm run deploy-config`): `microphone=()` (fully blocked) → `microphone=(self)` (first-party
+  only) — without this the browser would refuse the mic prompt outright, before even asking the visitor. Header icon
+  count on mobile went from 2 to 3 (search, theme, menu — see the icon-order note below); `.icon-btn` sizing at
+  `<=860px` automatically applies to the new button too, no separate CSS needed. The header, docs sidebar box and
+  this palette are three independent, complementary search entry points by design, not meant to be unified.
+- Logo: `src/components/Logo.astro` shows `/brand/mark.webp` (emblem only, transparent; owner asked for no lettering and a
   small size: 30 px header, 36 px footer). Dark theme: no tile; light theme: dark rounded tile (`.logo-badge`).
   Assets are generated by `scripts/make-assets.mjs` from `brand/matrix-eye-logo.png` (colour-to-alpha black removal).
 - Layout: container max 1280 px; header wider (1760 px); docs 3-column. Hero: eyebrow label, gradient headline words, 3
@@ -250,6 +268,45 @@ External services in use: none (no analytics, no third-party scripts/fonts). Git
 `apps/website/dist`) and `apps/website/vercel.json`, generated by `npm run deploy-config -w @matrix-eye/website` (CSP names the API origin).
 
 ## 9. Implementation and verification status
+
+**Checks run on 2026-10-26 (site-wide search + voice search, and the first-person decline-wording follow-up — see 5/7/11):**
+- `npm run typecheck`: passes, 0 errors — hit one real issue along the way: `search.ts` and the new `command-palette.ts`
+  both have no top-level `import`/`export`, so TypeScript treated each as a **global script** rather than a module,
+  and their same-named top-level `const root`/`function setup` collided. Fixed by adding `export {};` to the end of
+  both files — a no-op at runtime (Vite/Astro already bundles each `<script>` as its own module regardless), but
+  required for `tsc` to treat them as separate scopes. **If you add a third such script-only file, give it the same
+  treatment up front.**
+- `npm run build`: passes; confirmed `dist/pagefind/` is produced and non-empty (the feature's progressive-enhancement
+  probe depends on `/pagefind/pagefind-entry.json` existing).
+- `npm test`: full suite green (475/475) on the final run. Two unrelated flakes hit mid-session and were confirmed
+  pre-existing by re-running alone: `packages/widget-react` (a React `act()` timing test) and, earlier,
+  `apps/website/test/browser.test.ts`'s existing real-API waitlist test (ephemeral-port network contention, the same
+  pattern documented in section 13 already).
+- Added 3 new browser tests (`apps/website/test/browser.test.ts`): Ctrl+K opens the palette from Home and returns a
+  result outside `/docs/` (proving the shared index is genuinely site-wide, not scoped to docs); the header button
+  opens it and Enter navigates to the top result; the mic button is shown (Chromium exposes `webkitSpeechRecognition`
+  in these tests). **Two of these failed on the first write and were fixed, not relaxed to pass:** the first assumed
+  the literal `/security/` page would rank top-8 for the query "security" — it didn't (Pagefind's relevance scoring
+  favoured docs pages that mention security more densely); changed the query and the assertion to "some result is
+  outside `/docs/`", which is what the test actually needs to prove and matches observed real ranking. The second
+  tried to simulate "browser without speech recognition" by deleting `webkitSpeechRecognition` via Playwright's
+  `addInitScript` — the deletion didn't take effect for reasons not fully root-caused (worth revisiting if someone
+  wants that negative case covered), so that half was dropped rather than left flaky; the code path for "hidden by
+  default, only shown `if (SpeechRecognitionImpl)`" is simple enough to trust by reading, and is exercised in
+  production by any visitor on a non-supporting browser.
+- Manually tested in Chrome (not just Playwright): opened the palette by click and by Ctrl+K, confirmed the backdrop,
+  focus landing in the input, live results with highlighted matches, Enter-to-navigate, Escape-to-close, and the
+  3-icon mobile header layout (390px) — screenshots were not saved (ephemeral verification), but see section 7 for
+  what was confirmed working. Checked the browser console for errors/CSP violations while exercising it: none.
+- Regenerated `vercel.json` (root and `apps/website/`) via `npm run deploy-config -w @matrix-eye/website` after
+  editing `scripts/headers.mjs`'s `Permissions-Policy`, and diffed to confirm only the `microphone=()` →
+  `microphone=(self)` line changed in each — this file feeds three places (section 1/8's "one definition" note) and
+  a test enforces the committed `vercel.json` matches, so editing `headers.mjs` without regenerating would have
+  broken that test.
+- First-person decline wording (follow-up to the earlier adaptive-wording change): re-ran `packages/engine`
+  (102/102) and the eval gate (100% all targets, unaffected — this eval run uses extractive mode, no model
+  configured locally, so the new LLM system-prompt rule wasn't actually exercised by it; it's covered by the engine
+  unit/integration tests instead, which don't need a real model).
 
 **Checks run on 2026-10-26 (engine: adaptive/professional decline wording, `packages/engine/src/abstain.ts` — see 5/10/11 for what changed):**
 - `npm run typecheck`: passes, 0 errors (whole monorepo). `npm run build`: passes, all workspaces including SDK/widget/widget-react.
@@ -390,7 +447,37 @@ phrasing; small local models sometimes decline two-part questions; widget/`Origi
 
 ## 11. Current development position (READ THIS FIRST)
 
-- **2026-10-26 session, latest work (commit hash at the top of this file): adaptive, professional decline wording.**
+- **2026-10-26 session, latest work (commit hash at the top of this file): site-wide search, and the decline wording
+  made first-person.** Two follow-ups from the owner, handled in order:
+  1. **"It shouldn't make reference to not having the answer from the website... it should act like a human, where he
+     answers as if the website is his."** The owner was reacting to the decline wording from the previous commit,
+     which (despite fixing the "one bland repeated sentence" problem) still talked ABOUT the website in the third
+     person ("this website doesn't cover...", "this website's published content") — a bot reporting on an external
+     resource, not a staff member who simply doesn't know. Before changing anything, replied to confirm understanding
+     and asked two scoping questions (keep or drop the "closest page" mention; scope to decline only, or also check
+     successful answers for the same pattern); owner answered "Yes to both", read as: keep the near-miss mention but
+     rephrase it humanly, and also check successful answers. Rewrote the four `abstain.ts` openers and the near-miss
+     sentence to first person with zero references to "website"/"site"; added LLM system-prompt rule 7
+     (`prompt.ts`, `buildSystemPrompt`) instructing the model to answer as staff in the first person and never name
+     "the website"/"the page"/"the source" — extractive mode (verbatim quoting, used with no model configured) was
+     deliberately left alone, since paraphrasing there would risk the inaccuracy that mode exists to prevent. Updated
+     the two places quoting a literal example (`ChatDemo.astro`, the guide) and added tests asserting no
+     "website"/"site" word appears in a decline, at both unit and integration level. Committed `3b3fae2`.
+  2. **"Add a search icon/bar... fully functional. Ctrl+K... Add voice search too."** Built the feature described in
+     section 7/9 in full: `CommandPalette.astro` + `command-palette.ts`, mounted once in `Base.astro`; a search button
+     in `Header.astro` (progressive-enhancement hidden-until-index-confirmed, matching the existing docs search
+     pattern); Ctrl/Cmd+K global shortcut with a full focus trap, Escape-to-close, arrow-key result navigation,
+     Enter-to-open-top-result; voice input via the Web Speech API, feature-detected (no polyfill), transcribing into
+     the search box and re-running the query live. Reused the existing Pagefind index rather than building anything
+     new for indexing (it already covers the whole site — see section 7 for why). Had to loosen
+     `Permissions-Policy: microphone=()` to `microphone=(self)` in `scripts/headers.mjs` and regenerate both
+     `vercel.json` files, or the browser would have refused the microphone prompt outright. Added a `mic` icon to
+     `Icon.astro`. Hit and fixed a real TypeScript issue (global-script collision between `search.ts` and
+     `command-palette.ts`, see section 9) and two incorrect test assumptions (also section 9) before landing on
+     30/30 passing browser tests plus manual verification in Chrome (click-to-open, Ctrl+K, search, navigate, mobile
+     3-icon header). Verification: section 9. Not yet committed — see the file-list note at the end of this entry if
+     you're picking this up mid-way; check `git status` for the exact current state.
+- **2026-10-26 session, earlier work: adaptive, professional decline wording.**
   The owner asked to "improve the performance of the model... let the response not be bland where it says I couldn't
   find the information... it should be professional". Read this as: the abstention *decision* (when to decline) is
   working correctly per the eval gate and is explicitly protected by ADR-003 ("do not weaken") — the actual complaint
@@ -575,6 +662,13 @@ check `apps/api` schema validation still passes typecheck/tests after.
     are (deliberately left out of passes two and three — section 9).
 13. ~~Make the engine's decline reply adaptive and professional instead of one bland fixed sentence.~~ Done 2026-10-26
     (`packages/engine/src/abstain.ts`); all checks green including the eval gate (section 9/11).
+14. ~~Make the decline reply speak in the first person, never naming "the website"/"the site".~~ Done 2026-10-26
+    (`3b3fae2`); also added LLM prompt rule 7 for successful answers (section 11).
+15. ~~Add a site-wide search icon/bar, Ctrl+K, voice search, fully functional.~~ Done 2026-10-26
+    (`CommandPalette.astro`, `command-palette.ts`); all checks green, 30/30 browser tests (section 9/11).
+16. Consider revisiting the dropped "browser without speech recognition" test case (section 9) if it matters enough
+    to debug properly — the feature itself is correct (read `command-palette.ts`), just that one negative-path test
+    wasn't landed.
 
 **P2**
 - Host the API somewhere with a persistent disk or move to Postgres (Phase 4); set `PUBLIC_API_URL`, `MATRIX_EYE_SITE_ORIGINS`, re-run `npm run deploy-config` with the API origin.
@@ -752,6 +846,39 @@ check `apps/api` schema validation still passes typecheck/tests after.
   this change never touched) — diagnosed it as environment, not code, by checking free memory and re-running clean;
   documented the distinguishing pattern in section 13 so a future session doesn't have to re-derive it. No API/SDK/
   widget changes needed (the response is still a plain string).
+- **2026-10-26, continued: "it shouldn't make reference to not having the answer from the website... act like a
+  human... First let me understand if you understand what I mean."** The owner was reacting to the decline wording
+  just shipped — still third-person ("this website doesn't cover..."). Replied with a before/after comparison to
+  confirm understanding, rather than assuming and changing code immediately, and asked two genuine scoping questions
+  (keep the near-miss mention in human phrasing, or drop it; decline-only or also check successful answers). Owner
+  replied "Yes to both" — read as keep-but-rephrase, and also check success-path answers. Rewrote `abstain.ts`'s four
+  openers and the near-miss sentence to first person, zero "website"/"site" references; added prompt rule 7 for the
+  LLM's successful-answer phrasing; left extractive mode (verbatim quoting) alone by design. Updated the example
+  quotes in `ChatDemo.astro` and the guide to the new real output. Verified: engine tests (102/102), eval gate (100%,
+  extractive mode so the new prompt rule isn't exercised by it), typecheck, build. Committed `3b3fae2`.
+- **2026-10-26, same message, second half: "add a search icon/bar... fully functional... Ctrl+K... voice search
+  too."** A genuinely new feature, not a copy/wording task — the first of those this session. Investigated first
+  rather than assuming: found the site already has Pagefind wired up (`DocsSearch.astro`/`search.ts`), and that
+  Pagefind indexes the *entire* built site (`astro build && pagefind --site dist`), not just `/docs/` — so no new
+  indexing work was needed, only a new UI surface. Built `CommandPalette.astro` + `command-palette.ts` (mounted once
+  in `Base.astro`), a header search button (progressive-enhancement hidden-until-index-exists, matching the existing
+  pattern), full keyboard support (Ctrl/Cmd+K, Escape, arrow-key navigation, Enter-to-open-top-result, a real focus
+  trap), and voice search via the feature-detected Web Speech API. Discovered and fixed a real blocker along the
+  way: the site's `Permissions-Policy` header explicitly set `microphone=()`, which would have silently broken voice
+  search in production (the browser refuses the permission prompt outright under that policy) — loosened it to
+  `microphone=(self)` in `scripts/headers.mjs` and regenerated both `vercel.json` files via the existing
+  `deploy-config` script, confirming by diff that only that one line changed. Hit and fixed a real TypeScript issue
+  (two script files with no top-level import/export collided in global scope once there were two of them — added
+  `export {};` to both) and two incorrect assumptions in the first draft of the browser tests (a ranking assumption
+  that didn't match Pagefind's actual relevance scoring; a Playwright API-removal simulation that didn't take
+  effect and wasn't worth the time to root-cause for a secondary negative-path test) — fixed the first properly,
+  consciously dropped the second rather than leaving a flaky or fake-passing test. Manually verified in Chrome:
+  click-to-open, Ctrl+K from multiple pages, live search with highlighted results, Enter navigation, Escape close,
+  console free of errors/CSP violations, and the 3-icon mobile header layout. Final verification: typecheck, full
+  build, full test suite (475/475, one unrelated flake in `widget-react` confirmed pre-existing by re-running alone),
+  30/30 browser tests including 3 new ones for this feature. Commit status: check `git status`/`git log` — this was
+  being committed at the point this entry was written; section 11's entry has the detail if the commit hash isn't
+  obvious from recent history.
 
 ---
 ## Memory maintenance policy

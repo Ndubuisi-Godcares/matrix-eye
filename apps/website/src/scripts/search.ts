@@ -139,3 +139,7 @@ async function setup(root: HTMLElement) {
     if (!root.contains(event.target as Node)) close();
   });
 }
+
+// An explicit module marker: without any import/export, TS would treat this as a global script and collide with
+// other script entry points (e.g. command-palette.ts) that happen to declare the same top-level names.
+export {};

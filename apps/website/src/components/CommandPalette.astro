@@ -1,0 +1,30 @@
+---
+/**
+ * Site-wide search: open with the header's search button or Ctrl/Cmd+K, from any page. Uses the same Pagefind
+ * index as the docs search box (Pagefind indexes the whole built site, not just /docs/ — see
+ * apps/website/package.json's build script), so this searches every page. Optional voice input via the Web Speech
+ * API, shown only when the browser supports it. The index is built at deploy time and queried in the visitor's
+ * browser, so nothing typed or spoken here is sent anywhere.
+ */
+import Icon from "./Icon.astro";
+---
+
+<div class="cmdk" data-cmdk hidden>
+  <div class="cmdk__backdrop" data-cmdk-dismiss></div>
+  <div class="cmdk__panel" role="dialog" aria-modal="true" aria-label="Search this website">
+    <div class="cmdk__bar">
+      <Icon name="search" class="cmdk__icon" />
+      <label class="sr-only" for="cmdk-input">Search this website</label>
+      <input id="cmdk-input" type="search" placeholder="Search this website…" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="cmdk-results" aria-autocomplete="list" />
+      <button type="button" class="cmdk__mic" data-cmdk-mic hidden aria-label="Search by voice" aria-pressed="false"><Icon name="mic" /></button>
+      <button type="button" class="cmdk__close" data-cmdk-dismiss aria-label="Close search"><Icon name="close" /></button>
+    </div>
+    <ul class="cmdk__results" id="cmdk-results" role="listbox" aria-label="Search results"></ul>
+    <p class="cmdk__hint"><span><kbd>Esc</kbd> close</span><span><kbd>&uarr;</kbd><kbd>&darr;</kbd> move</span><span><kbd>Enter</kbd> open</span></p>
+    <div class="sr-only" role="status" aria-live="polite" data-cmdk-status></div>
+  </div>
+</div>
+
+<script>
+  import "../scripts/command-palette";
+</script>

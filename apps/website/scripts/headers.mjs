@@ -38,7 +38,8 @@ export function securityHeaders(options = {}) {
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "strict-origin-when-cross-origin",
-    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), interest-cohort=()",
+    // microphone=(self): the command palette's optional voice search needs it; everything else stays blocked.
+    "Permissions-Policy": "camera=(), microphone=(self), geolocation=(), payment=(), interest-cohort=()",
     "Cross-Origin-Opener-Policy": "same-origin",
     "X-Frame-Options": "DENY",
   };

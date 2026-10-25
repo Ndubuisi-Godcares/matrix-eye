@@ -505,6 +505,37 @@ pre { margin: 0; padding: 1.1rem 1.25rem; overflow-x: auto; background: var(--co
 .search__results mark { background: color-mix(in srgb, var(--accent) 45%, transparent); color: inherit; border-radius: 2px; }
 .search__empty { padding: 0.7rem; color: var(--muted); font-size: 0.92rem; }
 
+/* ---------- command palette (site-wide search, Ctrl/Cmd+K) ---------- */
+.cmdk[hidden] { display: none; }
+.cmdk { position: fixed; inset: 0; z-index: 100; display: flex; align-items: flex-start; justify-content: center; padding: 10vh 1rem 2rem; }
+.cmdk__backdrop { position: absolute; inset: 0; background: color-mix(in srgb, #000 55%, transparent); }
+.cmdk__panel { position: relative; width: min(100%, 38rem); max-height: 70vh; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; animation: cmdk-in 0.15s var(--ease, ease) both; }
+@keyframes cmdk-in { from { opacity: 0; transform: translateY(-6px) scale(0.98); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .cmdk__panel { animation: none; } }
+.cmdk__bar { display: flex; align-items: center; gap: 0.6rem; padding: 0.9rem 1rem; border-bottom: 1px solid var(--border); }
+.cmdk__icon { flex: none; width: 1.2rem; height: 1.2rem; color: var(--muted); }
+.cmdk__bar input { flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 1.05rem; color: var(--text); outline: none; }
+.cmdk__bar input::-webkit-search-cancel-button { display: none; }
+.cmdk__mic, .cmdk__close { flex: none; display: inline-grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 8px; border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+.cmdk__mic:hover, .cmdk__close:hover { background: var(--accent-soft); color: var(--ink); }
+.cmdk__mic svg, .cmdk__close svg { width: 1.1rem; height: 1.1rem; }
+.cmdk__mic.is-listening { color: var(--danger); background: color-mix(in srgb, var(--danger) 12%, transparent); }
+.cmdk__mic.is-listening svg { animation: cmdk-pulse 1.2s ease-in-out infinite; }
+@keyframes cmdk-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+@media (prefers-reduced-motion: reduce) { .cmdk__mic.is-listening svg { animation: none; } }
+.cmdk__results { list-style: none; margin: 0; padding: 0.5rem; overflow-y: auto; }
+.cmdk__results[hidden] { display: none; }
+.cmdk__results li { margin: 0; }
+.cmdk__results a { display: block; padding: 0.65rem 0.75rem; border-radius: var(--radius-sm); text-decoration: none; }
+.cmdk__results a:hover, .cmdk__results a:focus-visible { background: var(--accent-soft); }
+.cmdk__results strong { display: block; color: var(--ink); font-size: 0.97rem; margin-bottom: 0.15rem; }
+.cmdk__results span { display: block; color: var(--muted); font-size: 0.87rem; line-height: 1.4; }
+.cmdk__results mark { background: color-mix(in srgb, var(--accent) 45%, transparent); color: inherit; border-radius: 2px; }
+.cmdk__empty { padding: 0.9rem 0.75rem; color: var(--muted); font-size: 0.92rem; }
+.cmdk__hint { display: flex; gap: 1rem; margin: 0; padding: 0.55rem 1rem; border-top: 1px solid var(--border); font-size: 0.78rem; color: var(--muted); }
+.cmdk__hint kbd { font-family: var(--font-mono); font-size: 0.72rem; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 4px; padding: 0.05rem 0.35rem; margin-right: 0.2rem; }
+@media (max-width: 600px) { .cmdk { padding-top: 4vh; } .cmdk__hint span:nth-child(2) { display: none; } }
+
 /* ---------- guides ---------- */
 .post-list { display: grid; gap: 1.25rem; }
 .post-card { display: block; text-decoration: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.6rem; color: inherit; }

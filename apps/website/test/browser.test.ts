@@ -341,6 +341,51 @@ describe("keyboard and interaction", () => {
     await context.close();
   });
 
+  it("opens the site-wide command palette with Ctrl+K from any page and finds a non-docs page", async (ctx) => {
+    if (!browser) return ctx.skip();
+    const { page, context } = await open("/"); // Home, not /docs/ — proves the index covers the whole site
+    const trigger = page.locator("[data-cmdk-open]");
+    await trigger.waitFor({ state: "visible" });
+    await page.keyboard.press("Control+k");
+    const input = page.locator("#cmdk-input");
+    await expect.poll(() => input.isVisible()).toBe(true);
+    await input.fill("pricing");
+    await page.locator(".cmdk__results a").first().waitFor();
+    const found = await page.locator(".cmdk__results a").evaluateAll((links) => links.map((l) => (l as HTMLAnchorElement).pathname));
+    // Not asserting a specific page ranks first (that's Pagefind's relevance scoring, not this feature's contract) —
+    // only that the results span beyond /docs/, proving the same index DocsSearch uses covers the whole site.
+    expect(found.some((p) => !p.startsWith("/docs/"))).toBe(true);
+    await page.keyboard.press("Escape");
+    expect(await page.locator("[data-cmdk]").isHidden()).toBe(true);
+    await context.close();
+  }, 60_000);
+
+  it("opens the command palette from the header button, and Enter goes to the top result", async (ctx) => {
+    if (!browser) return ctx.skip();
+    const { page, context } = await open("/");
+    const trigger = page.locator("[data-cmdk-open]");
+    await trigger.waitFor({ state: "visible" });
+    await trigger.click();
+    await page.locator("#cmdk-input").fill("quickstart");
+    await page.locator(".cmdk__results a").first().waitFor();
+    await page.keyboard.press("Enter");
+    await page.waitForURL(/\/docs\//);
+    expect(new URL(page.url()).pathname.startsWith("/docs/")).toBe(true);
+    await context.close();
+  }, 60_000);
+
+  it("shows the voice-search button when the browser supports speech recognition", async (ctx) => {
+    if (!browser) return ctx.skip();
+    // Chromium (what these tests run in) exposes webkitSpeechRecognition; this checks the feature-detection wiring
+    // actually reveals the button for a supporting browser. There is no reliable way to simulate a browser that
+    // lacks a built-in API from inside Chromium itself, so the "hidden when unsupported" half is covered by reading
+    // the code (the button starts `hidden` in the markup and is only un-hidden inside `if (SpeechRecognitionImpl)`).
+    const { page, context } = await open("/");
+    await page.locator("[data-cmdk-open]").click();
+    await expect.poll(() => page.locator("[data-cmdk-mic]").isHidden()).toBe(false);
+    await context.close();
+  }, 60_000);
+
   it("expands FAQ answers from the keyboard", async (ctx) => {
     if (!browser) return ctx.skip();
     const { page, context } = await open("/pricing/");
