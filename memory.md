@@ -548,6 +548,7 @@ check `apps/api` schema validation still passes typecheck/tests after.
 | `packages/crawler` render test flaked once under load | timing (hypothesis); passed alone | re-run alone before suspecting code |
 | `packages/llm/test/openai-compatible.test.ts` failed with `ETIMEDOUT` connecting to a local loopback server (2026-10-25) | transient local networking; passed alone and on a full re-run immediately after | re-run alone (or the whole suite) before suspecting code, same as the crawler render test above |
 | `npm audit --omit=dev --audit-level=high` reports 2 high-severity vulnerabilities as of 2026-10-25 (`zod`, `undici`); was 0 on 2026-10-13 | new GitHub advisories published against already-installed versions, not a lockfile change made in this project | not yet fixed; `npm audit fix` for `undici`, `npm audit fix --force` (breaking) for `zod` — see section 12 P0 |
+| **CI's `npm test` step failed 4 times in a row (2026-10-25, commits `fa04b80` through `d8ce0ad`)** on `apps/website/test/browser.test.ts`'s docs-TOC scroll-spy test (`expect.poll` never reaching 1 matching link), while the *identical* suite passed 464/464 every time locally | **Genuinely caused by this session's font change, confirmed, not flakiness** — removing Fraunces and setting the global `h1, h2 { font-weight: 800 }` rule (section 7) changed the rendered height of `.prose h2` headings (the rule applies globally, including inside docs pages, since `.prose h2` only overrides `font-size`). The test scrolled by a **fixed 200px** after `scrollIntoViewIfNeeded()`, which depended on the old heading height to land inside the scroll-spy's ~190px active band; the new heading height pushed it just outside that band. It passed locally on Windows but failed on CI's Linux runner — plausibly sub-pixel font-rendering differences between OSes sitting on opposite sides of an already-marginal boundary, though the root fragility (a fixed pixel offset) was the same on both. **Do not mistake a repeated CI failure for flakiness without checking whether a recent change could plausibly be the cause** — three earlier failures in this same session *were* genuine flakiness (network timeouts, afterAll teardown), which made it easy to misdiagnose this fourth one the same way at first. | Fixed in `apps/website/test/browser.test.ts`: the test now computes the heading's actual position and scrolls to place it at a fixed distance from the viewport top, instead of nudging by a fixed amount after an imprecise `scrollIntoViewIfNeeded()`. Verified: passes alone and in the full suite, locally, 464/464. **Not yet confirmed green on CI** — see section 11 for the push this landed in. |
 | Website tests collide on `dist` | both suites build | `test/helpers.ts` uses a lock file + 30 s reuse; do not remove |
 | Shell quirks on this machine | Git Bash heredocs with quotes break; MSYS rewrites args starting with `/`; Python default encoding cp1252; `"\\u2060"` literal | write scripts with the Write tool; use `MSYS_NO_PATHCONV=1`; open files with `encoding="utf-8"`, preserve CRLF (`newline=""`) |
 | Git "CRLF will be replaced by LF" warnings | `.gitattributes`/Windows | harmless |
@@ -664,6 +665,19 @@ check `apps/api` schema validation still passes typecheck/tests after.
   markers left over from passes one through four while writing this entry — several had gone stale because the
   corresponding commits landed in between audits; re-read `git log` before trusting any "uncommitted" claim in this
   file if continuing this session's work.
+- **2026-10-25/26, sixth entry (same session): found and fixed a real CI-only regression from the font change, after
+  initially misdiagnosing it as flakiness.** `gh run list` showed **every** CI run since the first restyle commit
+  (`fa04b80` onward, 4 in a row) failing `npm test`, always on the same docs-TOC scroll-spy test — while the identical
+  suite passed locally every time. Having already seen genuine flakiness earlier in this session (an LLM provider test
+  timeout, a crawler-test teardown flake), the first instinct was to re-run and move on; `gh run rerun --failed` was
+  tried once and failed again, which was the signal this was not flakiness. Root-caused it (section 13 has the full
+  explanation): the global `h1, h2 { font-weight: 800 }` change from pass one altered `.prose h2` heading height on
+  docs pages, and the test's fixed-200px scroll assumption no longer reliably landed inside the scroll-spy's active
+  band — apparently right at a boundary that Windows (local) and CI's Linux runner render just differently enough to
+  disagree on. Fixed the test to compute the heading's actual position instead of assuming a fixed offset
+  (`apps/website/test/browser.test.ts`). Verified locally (passes alone and in the full 464/464 suite). **Lesson for
+  future sessions: a CI failure that survives one re-run is not flakiness — check `git log`/recent diffs for a plausible
+  cause before re-running a second time or shrugging it off, especially when CSS/layout changed.**
 
 ---
 ## Memory maintenance policy

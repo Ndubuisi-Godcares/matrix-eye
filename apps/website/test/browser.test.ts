@@ -214,7 +214,13 @@ describe("layout and motion", () => {
     if (!browser) return ctx.skip();
     const { page, context } = await open("/docs/accuracy/", { width: 1400, height: 900 });
     await page.locator(".prose h2").nth(2).scrollIntoViewIfNeeded();
-    await page.evaluate(() => scrollBy(0, 200));
+    // Nudge the heading to a fixed position inside the scroll-spy's active band (80px to 30% of the 900px
+    // viewport from the top, see site.ts's IntersectionObserver rootMargin), rather than a fixed pixel offset:
+    // a fixed offset is fragile to the exact rendered height of the heading above it (font, weight, line height).
+    await page.evaluate(() => {
+      const heading = document.querySelectorAll(".prose h2")[2] as HTMLElement;
+      window.scrollTo(0, window.scrollY + heading.getBoundingClientRect().top - 150);
+    });
     await expect.poll(() => page.locator('.docs__toc a[aria-current="location"]').count()).toBe(1);
     await context.close();
   });
