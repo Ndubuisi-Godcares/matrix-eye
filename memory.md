@@ -6,11 +6,11 @@
 > only this file, `CLAUDE.md`, and the source tree — nothing else is needed and nothing important lives only in chat history.
 > Section 11 says exactly where work stopped; section 9 says what was and was not verified; section 3 is the full project
 > topology (directory map + architecture) if you need to re-orient.
-> Last audit: **2026-10-26** (session begun 2026-10-25, ran past midnight). Last pushed commit: `fd1860a` — a pass
-> deepening the site's copy into the dense, technical "indexes… context-aware… grounded… source references… abstains"
-> register the owner approved by example (see section 15 for the full story of all four 2026-10-25/26 commits:
-> `fa04b80` Home hero/header restyle, `8875aff` site-wide copywriting review, `f9fba02` Home lead-paragraph swap,
-> `fd1860a` this deeper register pass). Working tree is clean as of this audit.
+> Last audit: **2026-10-26** (session begun 2026-10-25, ran past midnight). About to be pushed: `bea51c6` — the engine's
+> decline reply is now adaptive and professional (`packages/engine/src/abstain.ts`), instead of one fixed sentence.
+> This followed a run of website copy work (section 15 has the full story of every 2026-10-25/26 commit: `fa04b80`
+> Home hero/header restyle, `8875aff` site-wide copywriting review, `f9fba02` Home lead-paragraph swap, `fd1860a`
+> deeper copy register, `9458b20` a CI test fix, `bea51c6` this engine change — the first non-copy task this session).
 > Legend: **VERIFIED** = checked in code or by running something this audit; **REPORTED** = established earlier in the
 > project's conversation history and not re-checked; **UNVERIFIED/UNKNOWN** = not checked.
 
