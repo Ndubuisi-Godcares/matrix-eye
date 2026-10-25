@@ -39,7 +39,7 @@ export const FAQ: FaqItem[] = [
   },
   {
     q: "Is the chat window accessible?",
-    a: "<p>It is built for keyboards and screen readers, meets WCAG 2.1 AA colour contrast, and is checked with automated accessibility audits on every change. Automated audits catch only part of the problems, so testing with real screen readers is planned before launch.</p>",
+    a: "<p>It is built for keyboards and screen readers, meets WCAG 2.1 AA colour contrast, and is checked with automated accessibility tests on every change. Automated tests catch only part of the problems, so testing with real screen readers is planned before launch.</p>",
   },
   {
     q: "What does it cost?",

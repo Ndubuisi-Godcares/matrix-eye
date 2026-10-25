@@ -6,10 +6,10 @@
 > only this file, `CLAUDE.md`, and the source tree — nothing else is needed and nothing important lives only in chat history.
 > Section 11 says exactly where work stopped; section 9 says what was and was not verified; section 3 is the full project
 > topology (directory map + architecture) if you need to re-orient.
-> Last audit: **2026-10-25**. Last pushed commit: `3702f26` (memory/CLAUDE.md continuity hardening, 2026-10-19). **This
-> session made real code changes to the Home page and shared styles (Home hero/header restyle: fonts, sizing, the early-access
-> label, header icon order) that are, as of this audit, still uncommitted in the working tree** — see section 11 for exactly
-> what and section 9 for what was verified.
+> Last audit: **2026-10-25**. Last pushed commit: `fa04b80` (Home hero/header restyle: fonts, sizing, early-access label,
+> header icons — section 15 has the full story). **This session also did a second, larger pass: a site-wide copywriting
+> review** (nav/footer/tagline, Product, Pricing, Security, Bot, Waitlist, FAQ data) **that is, as of this audit, still
+> uncommitted in the working tree** — see section 11 for exactly what and section 9 for what was verified.
 > Legend: **VERIFIED** = checked in code or by running something this audit; **REPORTED** = established earlier in the
 > project's conversation history and not re-checked; **UNVERIFIED/UNKNOWN** = not checked.
 
@@ -104,9 +104,9 @@ test suite. `trailingSlash: always`.
 
 | Route | Purpose | Notes / status |
 |---|---|---|
-| `/` | Home: hero (eyebrow label, gradient headline, feature tiles, CTA, stack row, animated scene), "why", "how", code tabs, FAQ, CTA | **Font/sizing/copy restyle done 2026-10-25, uncommitted** (see 11) |
-| `/product/` | The four stages, "where it runs" table, comparison table (generic, no competitor names), honest limits | done |
-| `/pricing/` | Plans (Community Free; Developer Pro $19-$39 est.; Business Hosted $49-$149 est.; Private custom) + FAQ + FAQPage JSON-LD | prices are **unvalidated estimates**, labelled as such |
+| `/` | Home: hero (eyebrow label, gradient headline, feature tiles, CTA, stack row, animated scene), "why", "how", code tabs, FAQ, CTA | Font/sizing/copy restyle **done and pushed** (`fa04b80`, 2026-10-25) |
+| `/product/` | The four stages, "where it runs" table, comparison table (generic, no competitor names), honest limits | done; stage headings retitled 2026-10-25 (crawl/index, retrieve, generate-or-abstain, verify), **uncommitted** (see 11) |
+| `/pricing/` | Plans (Community Free; Developer Pro $19-$39 est.; Business Hosted $49-$149 est.; Private custom) + FAQ + FAQPage JSON-LD | prices are **unvalidated estimates**, labelled as such; copy polish 2026-10-25, **uncommitted** |
 | `/security/` | Honest security posture incl. gaps (no outside audit) | done |
 | `/bot/` | Crawler (`MatrixEyeBot`) info for site owners | done |
 | `/privacy/`, `/terms/` | **Drafts with bracketed placeholders**, `noindex`, excluded from sitemap | need lawyer + legal entity |
@@ -181,6 +181,23 @@ owner shared (see 11); still **uncommitted** as of this audit.
   the right edge and close together (`.nav__actions { order: 1; margin-left: auto; margin-right: 0.3rem; }`,
   `.nav__toggle { order: 2; }`), and both `.icon-btn` buttons are slightly smaller on this breakpoint only
   (`width/height: 2.3rem`, svg `1.05rem`, vs `2.6rem`/`1.2rem` elsewhere) per the owner's reference image and follow-up asks.
+- **Site-wide copy terminology (established 2026-10-25, per the owner's "MatrixEye Website — Complete Copy and Tone
+  Refinement" brief — a full copy audit, not just Home):** primary noun is **"assistant"** / "AI assistant" ("chatbot" is
+  used only to name the competitor *category*, e.g. "Hosted chatbot builder" on `/product/`'s comparison table, never to
+  describe MatrixEye itself); content ingestion is **"crawls and indexes"** (two real, distinct pipeline steps — keep both
+  words, don't collapse to one); the UI surface is an **"embeddable chat widget"** ("chat window" remains an acceptable
+  plain-English synonym in a few spots, not banned); citations are **"source references"** / "cites its sources"
+  interchangeably; the non-answer behaviour is **"abstains"** in technical prose, "says so" / "I couldn't find that" in
+  plain copy (the literal UI string is unchanged); reserve the word **"audit"** for an actual independent/third-party
+  review — automated CI checks (axe-core accessibility scans, the answer-quality gate) are **"checks"** or "tests", never
+  "audited automatically", to avoid overclaiming (fixed in three places: Home's dev-section checklist, `security.astro`,
+  `faq.ts` — see section 9 for the full review). **Deployment/package framing:** the owner's brief described the product
+  as "npm-module-based"; the `@matrix-eye/*` packages are `"private": true` and not published to the npm registry (the
+  real flow, confirmed in `docs/quickstart.md`, is clone-the-repo-and-build). Copy uses accurate framing — "TypeScript
+  SDK", npm *package-naming convention* (`@matrix-eye/sdk`), "Open source" — and avoids implying public `npm install`
+  works today. **Flag to the owner:** if "npm module" / public npm installability was meant literally (e.g. there's a
+  plan to publish before this copy ships), say so and the wording can be revisited; as written it follows the site's
+  existing honesty rule (section 10).
 - Logo: `src/components/Logo.astro` shows `/brand/mark.webp` (emblem only, transparent; owner asked for no lettering and a
   small size: 30 px header, 36 px footer). Dark theme: no tile; light theme: dark rounded tile (`.logo-badge`).
   Assets are generated by `scripts/make-assets.mjs` from `brand/matrix-eye-logo.png` (colour-to-alpha black removal).
@@ -222,7 +239,32 @@ External services in use: none (no analytics, no third-party scripts/fonts). Git
 
 ## 9. Implementation and verification status
 
-**Checks run on 2026-10-25 (Home hero/header restyle, see 7/11 for what changed):**
+**Checks run on 2026-10-25, second pass (site-wide copywriting review, see 7/11 for what changed):**
+- `npm run typecheck`: passes, 0 errors.
+- `npm run build -w @matrix-eye/website`: passes, 24 pages — after fixing one regression this pass introduced: the new
+  `SITE.description` (site.ts) was initially 207 characters, failing `apps/website/test/static.test.ts`'s "every page
+  has a unique, sensible title and description" check (hard cap 175 chars, part of the search-engine-basics test).
+  Shortened to 172 chars; re-ran that test file alone (16/16 passed) to confirm.
+- `npm test`: **464/464 individual tests passed** on the final full run; one test *file*
+  (`packages/crawler/test/render.test.ts`) reported a file-level failure from its `afterAll` hook (closing the
+  Playwright renderer/server) even though every test in it passed — a teardown-only flake, consistent with the existing
+  "render test flaked once under load" note in section 13, not a real regression. Also separately confirmed
+  `apps/website/test/browser.test.ts` (which includes a network-dependent "real API" form test) passes cleanly alone
+  (34/34) when not competing with other suites for resources.
+- Did **not** re-run `npm run eval -- --gate` or `npm audit` this pass (no change to the engine, evals, or dependencies).
+- Scope check against the owner's brief: read every page in `apps/website/src/pages`, every file in
+  `apps/website/src/data`, `Header.astro`/`Footer.astro`/`ContactForm.astro`, and `apps/website/src/scripts/forms.ts` /
+  `search.ts` for user-facing strings (validation errors, empty states, button labels) — all already professional, no
+  changes needed beyond what's listed in section 7. Read `docs/quickstart.md`, `docs/how-it-works.md`, `docs/accuracy.md`,
+  `docs/sdk.md` in full and grepped all of `docs/*.md` (the 9 public docs) plus `apps/website/src/content/guides/*.md`
+  (3 guides) for casual filler words and overclaim phrases ("hallucination-free", "100% accurate", "zero config",
+  "guarantee", "chatbot" used to describe MatrixEye itself) — **found none**; these files were already written in the
+  precise, hedged, developer-credible voice the brief asks for, so they were **not rewritten** (a lighter-touch review
+  than the marketing pages, documented honestly rather than claimed as a full line edit). `privacy.astro`/`terms.astro`
+  were deliberately **not touched** — they are legal drafts pending lawyer review (section 1/9), and rewriting legal
+  wording for tone risks changing its meaning without legal authority to do so.
+
+**Checks run on 2026-10-25, first pass (Home hero/header restyle, see 7/11 for what changed):**
 - `npm run typecheck`: passes, 0 errors (`astro check`: 53 files, 0 errors/warnings/hints), re-run twice across the session
   as edits landed.
 - `npm run build -w @matrix-eye/website`: passes, 24 pages, after fixing a build break the Fraunces removal caused (a
@@ -288,9 +330,10 @@ phrasing; small local models sometimes decline two-part questions; widget/`Origi
 | Honest content: prices marked estimates; drafts marked; security gaps listed; comparisons generic | brand is honesty | confirmed |
 | Product names in code: `@matrix-eye/*`, `MATRIX_EYE_*`, `matrix-eye-widget.js`, `<matrix-eye-chat>`, `MatrixEyeBot`, CLI `npm run matrix` | rename | confirmed |
 | Palette switch to neon green on near-black to match the logo | owner approved "apply all" 2026-10-13 | confirmed (committed `c975761`) |
-| Headline/body typography unified to Inter only (Fraunces removed), smaller type scale | owner's 2026-10-25 mobile reference image used one bold sans typeface throughout, not a serif/sans mix, at a visibly smaller size | confirmed, **uncommitted** |
-| Small inline tags (e.g. "Early access") use the plain `.eyebrow` label style, not a bordered/glowing pill badge | owner called the glow-pill treatment "too AI'ish" (2026-10-25) and asked for the site's most-frequently-used label pattern instead | confirmed, **uncommitted** |
-| Reference image said "EARLY ACCESS · NPM MODULE"; shipped copy says "Early access · Open source" instead | the `@matrix-eye/*` packages are `"private": true` and not published to npm — "NPM MODULE" would be an unbuilt claim, which this project's honesty rule (see above) forbids | decision made without asking (low-risk, reversible); **flag to the owner if they specifically wanted the npm wording** |
+| Headline/body typography unified to Inter only (Fraunces removed), smaller type scale | owner's 2026-10-25 mobile reference image used one bold sans typeface throughout, not a serif/sans mix, at a visibly smaller size | confirmed, committed (`fa04b80`) |
+| Small inline tags (e.g. "Early access") use the plain `.eyebrow` label style, not a bordered/glowing pill badge | owner called the glow-pill treatment "too AI'ish" (2026-10-25) and asked for the site's most-frequently-used label pattern instead | confirmed, committed (`fa04b80`) |
+| Reference image said "EARLY ACCESS · NPM MODULE"; shipped copy says "Early access · Open source" instead | the `@matrix-eye/*` packages are `"private": true` and not published to npm — "NPM MODULE" would be an unbuilt claim, which this project's honesty rule (see above) forbids | decision made without asking (low-risk, reversible); **flag to the owner if they specifically wanted the npm wording** (restated and applied site-wide in the 2026-10-25 copy audit, section 7) |
+| Site-wide copy audit (nav, hero, Product, Pricing, Security, Bot, Waitlist, footer, FAQ data) rewritten for a technical/developer-credible tone; `docs/*.md` and guides reviewed and left as-is (already met the bar) | owner's detailed copywriting brief, 2026-10-25 (quoted in full in section 15) | confirmed, **uncommitted** — see 11/12 |
 | Do **not** add: fake demo video, invented photos, unbuilt claims ("knowledge base updated automatically"), brand logos of frameworks | honesty/trademark | confirmed advice, owner agreed to "apply all" *as adapted*; see 11 |
 | Historical planning PDFs/strategy notes keep "Eagle's Eye" | they are history | confirmed |
 | Phase 4: control-plane (accounts/billing/project ownership) on Supabase Postgres; knowledge data stays per-project SQLite on the API VPS disk; hosted inference stays self-hosted Ollama, not a third-party LLM API; budget <$25/mo (ADR-008) | owner decisions D5-D7, 2026-10-13; keeps the "self-hostable, private" story true for the hosted tier; avoids a costly Postgres rewrite of the working FTS5/BM25 ranking | confirmed (architecture only; nothing built yet) |
@@ -323,13 +366,42 @@ phrasing; small local models sometimes decline two-part questions; widget/`Origi
   - **New, unrelated finding surfaced by this session's `npm audit`:** 2 high-severity vulnerabilities (`zod`, `undici`)
     that were not present on 2026-10-13 — see section 9 for detail and section 12 for the backlog item. Not fixed; flagged
     only.
-  - **Not committed yet.** `git status` at the end of this session: `apps/website/package.json`,
-    `apps/website/src/layouts/Base.astro`, `apps/website/src/pages/index.astro`, `apps/website/src/styles/global.css`,
-    `package-lock.json` all modified, nothing staged. **Next concrete action for a session that continues this work:**
-    confirm with the owner whether to commit and push (the last few sessions show the owner prefers to be asked before any
-    push, and said yes each time asked) — the usual checks (typecheck/build/test) are already green, so a commit should be
-    low-risk once approved.
-- **Before this (2026-10-19 session): nothing had changed since 2026-10-13** — that session only re-verified state and
+  - **Committed and pushed as `fa04b80`** (both repos) after the owner chose "commit now, handle the npm-audit finding
+    separately" when asked. CI run `40217644668` initially failed on a flaky `apps/website/test/browser.test.ts` docs
+    table-of-contents test (timing, `Matcher did not succeed in time` — unrelated to this push, never reached the
+    `npm audit` step since `npm test` failing skipped it); re-triggered with `gh run rerun --failed`.
+- **2026-10-25 session, second pass (same day, uncommitted at end of this audit): site-wide copywriting review.** The
+  owner gave a full copywriting brief ("MatrixEye Website — Complete Copy and Tone Refinement", quoted in section 15)
+  asking for a professional, developer-credible tone across the **entire** site, not just Home. Work done, all against
+  `apps/website/src/`:
+  - `data/site.ts`: tightened `tagline` and `description` (the `description` rewrite initially broke the 175-character
+    search-engine-basics test at 207 chars; shortened to 172 — section 9).
+  - `components/Footer.astro`: one-line about text aligned to the new "assistant… cites its sources" phrasing.
+  - `pages/product.astro`: h1 tightened; the four pipeline-stage headings retitled to standard retrieval/generation
+    terms ("Crawl and index your site", "Retrieve the relevant evidence", "Generate a grounded answer, or abstain",
+    "Verify before it's shown"); "chat window" → "embeddable chat widget" in the fits-your-website section.
+  - `pages/pricing.astro`: h1 smoothed. `data/pricing.ts`: two feature bullets reworded for technical precision
+    ("crawls and indexes JavaScript-rendered sites", "automatic re-crawling to keep your index current").
+  - `pages/security.astro` and `data/faq.ts`: "accessibility audit(s)" → "accessibility checks/tests" (the site has
+    **no actual outside audit** — consistent with the same fix already made on Home; see the terminology note in
+    section 7).
+  - `pages/bot.astro`: fixed a grammar bug ("an MatrixEye assistant" → "a MatrixEye assistant") and "chat window" →
+    "chat widget" for consistency, found while reading the page for tone.
+  - `pages/waitlist.astro`: h1 aligned with the Home CTA band's phrasing ("Be among the first…").
+  - **Deliberately not touched:** `privacy.astro`, `terms.astro` (legal drafts pending lawyer review — rewriting them
+    for tone without legal authority risks changing their meaning); `docs/*.md` (9 files) and the 3 guides (reviewed,
+    already met the target voice — section 9 has the detail on what was actually checked, since "reviewed and found
+    fine" is not the same claim as "rewritten line by line").
+  - **Verified green:** typecheck, build, full test suite (464/464 individual tests; one file-level teardown flake in
+    the crawler's render test, confirmed pre-existing — section 9). Visually checked `/product/` and `/pricing/` at
+    390px width in Chrome to confirm the more technical phrasing didn't cause mobile wrapping/overflow problems, per
+    the brief's own instruction 12 — none found.
+  - **Not committed as of this audit.** `git status`: `apps/website/src/components/Footer.astro`,
+    `apps/website/src/data/faq.ts`, `apps/website/src/data/pricing.ts`, `apps/website/src/data/site.ts`,
+    `apps/website/src/pages/bot.astro`, `apps/website/src/pages/pricing.astro`, `apps/website/src/pages/product.astro`,
+    `apps/website/src/pages/security.astro`, `apps/website/src/pages/waitlist.astro` all modified. **Next concrete
+    action:** confirm with the owner whether to commit/push this copy pass (same pattern as the first pass above).
+- **Before the 2026-10-25 session (i.e. the 2026-10-19 session): nothing had changed since 2026-10-13** — that session only re-verified state and
   hardened this file for continuity (see section 15 for that entry). The Phase 4 M1 commit (`c975761`) and everything
   below in this section about it is still accurate and still the real next step for the *backend/hosting* track, which
   this session's Home-page restyle did not touch.
@@ -369,8 +441,9 @@ phrasing; small local models sometimes decline two-part questions; widget/`Origi
   per `docs/planning/Phase4-Plan.md`. First owner-side step for M2: actually create the Supabase project and a VPS account
   (neither exists yet) so the code in `apps/api/src/control-plane/` has something real to talk to.
 - **Next concrete action (website track, see top of this section):** confirm with the owner whether to commit and push
-  the 2026-10-25 Home restyle, then consider whether the same font/sizing/copy treatment should extend to the other
-  23 pages (only Home was done this session).
+  the 2026-10-25 site-wide copy pass (second pass above); the Home restyle (first pass) is already committed (`fa04b80`).
+  After that: fix the `npm audit` P0 (section 12) before any further push, and resolve the npm-vs-open-source wording
+  flag with the owner if it matters to them.
 - **Owner-side open items:** domain, legal entity and contact email, lawyer review of `/privacy/` and `/terms/`, pricing
   validation, decisions D5-D7, a real screen-reader test, the `zod`/`undici` `npm audit` findings (section 9/12).
 - **Blockers:** none technical.
@@ -397,11 +470,11 @@ check `apps/api` schema validation still passes typecheck/tests after.
 5. ~~Commit the M1 changes.~~ Done 2026-10-13 (`c975761`, pushed both repos, CI green).
 6. Start M2: provision a real Supabase project + VPS, deploy the API, run Ollama on it.
 7. ~~Restyle the Home hero/header to match the owner's 2026-10-25 mobile reference (fonts, sizing, early-access label,
-   header icons) and rewrite Home copy to a more professional tone.~~ Done 2026-10-25, all checks green; **not yet
-   committed** — confirm with the owner first (section 11).
+   header icons) and rewrite Home copy to a more professional tone.~~ Done and **committed** 2026-10-25 (`fa04b80`).
 8. Fix the `npm audit` P0 above before the next push.
-9. Consider: extend the same font/sizing/copy treatment from Home to the other 23 pages, if the owner wants consistency
-   site-wide (not done this session — only Home was in scope).
+9. ~~Site-wide copywriting review (nav, Product, Pricing, Security, Bot, Waitlist, footer, FAQ data; docs/guides reviewed
+   and left as-is).~~ Done 2026-10-25, all checks green; **not yet committed** — confirm with the owner first (section 11).
+10. Resolve the "npm module" vs. "open source" wording flag with the owner if it matters to them (section 7/10).
 
 **P2**
 - Host the API somewhere with a persistent disk or move to Postgres (Phase 4); set `PUBLIC_API_URL`, `MATRIX_EYE_SITE_ORIGINS`, re-run `npm run deploy-config` with the API origin.
@@ -494,8 +567,40 @@ check `apps/api` schema validation still passes typecheck/tests after.
   Chrome screenshot at mobile (430x900) and desktop (1440x900) against the reference. Final full-suite checks: typecheck
   0 errors, build 24 pages, tests 464/464 (one intermediate run had unrelated flaky failures in the LLM provider test,
   confirmed by re-running alone). Also fixed a stale `og:image:alt` (still described the old eagle logo) and surfaced a
-  new, unrelated `npm audit` finding (section 9/12 P0). **Not committed** — see section 11 for exactly what changed and
-  what to ask the owner before pushing.
+  new, unrelated `npm audit` finding (section 9/12 P0). Asked the owner whether to commit now or fix the audit finding
+  first; chose "commit now, handle the audit separately" — **committed and pushed as `fa04b80`** (CI initially failed on
+  an unrelated flaky docs test, re-triggered with `gh run rerun --failed`).
+- **2026-10-25, same day, second session (continuing immediately after the first): site-wide copywriting review.** The
+  owner sent a detailed brief, "MatrixEye Website — Complete Copy and Tone Refinement" (full text preserved here since
+  it is the actual spec this work was judged against, not paraphrased elsewhere in this file): act as a senior technical
+  copywriter/developer-tools marketer; replace basic/generic/conversational copy with technically credible, concise
+  language for developers and technical founders; audit every page and section (nav, hero, features, technical
+  explanations, integration instructions, pricing, docs, guides, security, FAQs, forms, buttons, tooltips, empty states,
+  errors, footer); don't limit changes to Home; use precise terminology (content indexing, context-aware inference,
+  source attribution, verifiable responses, API integration, npm packages, configurable widgets, deployment options,
+  data handling) consistently; keep headlines concise; preserve the dark/neon-green/circuit brand identity and the
+  existing information architecture/functionality; **do not invent features, integrations, performance figures, security
+  guarantees, deployment capabilities, pricing commitments or roadmap promises — inspect the implementation to establish
+  what's actually supported**; avoid absolute claims ("hallucination-free", "100% accurate", "zero configuration",
+  "complete data ownership") unless substantiated; review CTA labels; check mobile layout doesn't break from longer
+  copy; and at the end, report sections updated, terminology conventions established, and any claims requiring
+  confirmation. The brief's own product-context paragraph called MatrixEye "an npm-module-based developer product" —
+  flagged immediately as a tension with the codebase (`@matrix-eye/*` packages are `private: true`, not published; see
+  section 7) and resolved using the brief's own instruction (#9/#10: flag unverifiable claims, don't invent them) rather
+  than asking and stalling the larger task. Executed the audit: read every website page, every `src/data/*.ts` file,
+  the header/footer/forms components, and the form validation/empty-state strings in `scripts/forms.ts`/`search.ts`;
+  read two full docs (`quickstart.md`, `how-it-works.md`) plus spot-read `accuracy.md`/`sdk.md`, and grepped all 9 public
+  docs and 3 guides for casual filler and overclaim phrases, finding none — those files already matched the target voice
+  and were deliberately left unchanged (not rewritten line-by-line; see section 9 for the precise claim about what was
+  checked). Rewrote `site.ts`, `Footer.astro`, `product.astro`, `pricing.astro` + `pricing.ts`, `security.astro`,
+  `bot.astro` (also fixed a grammar bug), `faq.ts`, `waitlist.astro`; deliberately left `privacy.astro`/`terms.astro`
+  untouched (legal drafts, lawyer review still pending, not mine to rewrite for tone). Established a terminology
+  glossary (section 7) and caught one self-introduced regression during verification: the new `SITE.description` broke
+  the 175-character site-wide title/description test (207 chars), fixed to 172 and re-verified. Final checks: typecheck
+  0 errors, build 24 pages, 464/464 individual tests passing (one file-level teardown-only flake in the crawler's render
+  test, confirmed pre-existing by re-running files alone), mobile layout spot-checked at 390px on `/product/` and
+  `/pricing/` for wrapping/overflow (none found). **Not committed** — see section 11 for the exact file list and what to
+  ask the owner before pushing.
 
 ---
 ## Memory maintenance policy
