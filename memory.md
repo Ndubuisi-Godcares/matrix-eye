@@ -677,7 +677,9 @@ check `apps/api` schema validation still passes typecheck/tests after.
   disagree on. Fixed the test to compute the heading's actual position instead of assuming a fixed offset
   (`apps/website/test/browser.test.ts`). Verified locally (passes alone and in the full 464/464 suite). **Lesson for
   future sessions: a CI failure that survives one re-run is not flakiness — check `git log`/recent diffs for a plausible
-  cause before re-running a second time or shrugging it off, especially when CSS/layout changed.**
+  cause before re-running a second time or shrugging it off, especially when CSS/layout changed.** **Confirmed on CI**
+  (commit `9458b20`, run `40225059946`): `npm test` passed. The run still shows red overall, but only because of the
+  pre-existing, already-flagged `npm audit` P0 (section 9/12/13) — typecheck/build/test/eval all green.
 
 ---
 ## Memory maintenance policy
