@@ -6,9 +6,10 @@
 > only this file, `CLAUDE.md`, and the source tree — nothing else is needed and nothing important lives only in chat history.
 > Section 11 says exactly where work stopped; section 9 says what was and was not verified; section 3 is the full project
 > topology (directory map + architecture) if you need to re-orient.
-> Last audit: **2026-10-19**, against git `main` at `c975761` (HEAD, pushed, matches `origin/main`). **No code changes since
-> the 2026-10-13 session** — this audit re-ran every check to confirm nothing drifted and hardened this file for continuity
-> (owner plans to reset the conversation and possibly switch accounts; see 11 and 15 for what that means in practice).
+> Last audit: **2026-10-25**. Last pushed commit: `3702f26` (memory/CLAUDE.md continuity hardening, 2026-10-19). **This
+> session made real code changes to the Home page and shared styles (Home hero/header restyle: fonts, sizing, the early-access
+> label, header icon order) that are, as of this audit, still uncommitted in the working tree** — see section 11 for exactly
+> what and section 9 for what was verified.
 > Legend: **VERIFIED** = checked in code or by running something this audit; **REPORTED** = established earlier in the
 > project's conversation history and not re-checked; **UNVERIFIED/UNKNOWN** = not checked.
 
@@ -53,7 +54,7 @@
 | Crawler | undici, cheerio, robots-parser; optional Playwright render mode (`--render`). |
 | LLM | Provider-agnostic OpenAI-compatible client; **Ollama** auto-detected locally (`qwen3:4b-instruct` recommended; thinking/embedding models skipped). Extractive mode (no model) is the default fallback. |
 | Widget | Plain TS web component, esbuild bundle (~10.3 KB gzipped, CI budget 30 KB), SSE streaming. React wrapper `@matrix-eye/widget-react`. |
-| Website | Astro 7.3.8 (static), Sätteri Markdown processor, Shiki, Pagefind search, sharp (image assets), self-hosted variable fonts (Inter, Fraunces, JetBrains Mono). |
+| Website | Astro 7.3.8 (static), Sätteri Markdown processor, Shiki, Pagefind search, sharp (image assets), self-hosted variable fonts (Inter, JetBrains Mono; Fraunces removed 2026-10-25, see 7/11). |
 | Hosting | **None live.** Vercel project import attempted (Hobby plan, from the personal GitHub repo). Intended: static site on Vercel; API needs a long-running host (Phase 4). |
 | CI | `.github/workflows/ci.yml` (ubuntu-24.04): `npm ci`, install Chromium, typecheck, build, test, eval gate `--gate`, upload eval report, `npm audit --omit=dev --audit-level=high`. CI was confirmed green at `1423d2d` (Phase 3 push) earlier in the project; **not checked for any later commit** (`gh run list --limit 1` to check). |
 | Auth | Admin API: single Bearer key (`MATRIX_EYE_API_KEY`). Public widget/forms endpoints: no key, protected by per-project origin allow-list, rate limits. **No user accounts, roles, sessions, payments, email or analytics exist.** |
@@ -103,7 +104,7 @@ test suite. `trailingSlash: always`.
 
 | Route | Purpose | Notes / status |
 |---|---|---|
-| `/` | Home: hero (pill, gradient headline, feature tiles, CTA, stack row, animated scene), "why", "how", code tabs, FAQ, CTA | **Restyle in progress, uncommitted** (see 11) |
+| `/` | Home: hero (eyebrow label, gradient headline, feature tiles, CTA, stack row, animated scene), "why", "how", code tabs, FAQ, CTA | **Font/sizing/copy restyle done 2026-10-25, uncommitted** (see 11) |
 | `/product/` | The four stages, "where it runs" table, comparison table (generic, no competitor names), honest limits | done |
 | `/pricing/` | Plans (Community Free; Developer Pro $19-$39 est.; Business Hosted $49-$149 est.; Private custom) + FAQ + FAQPage JSON-LD | prices are **unvalidated estimates**, labelled as such |
 | `/security/` | Honest security posture incl. gaps (no outside audit) | done |
@@ -154,24 +155,47 @@ Two SQLite schemas (VERIFIED in source), same file in the API (`MATRIX_EYE_DB_PA
 ## 7. UI/UX and design system (website)
 
 **Direction changed on 2026-10-13:** from navy + gold ("Eagle's Eye" brand) to **near-black + neon green/teal** to match the
-new logo. The change is **uncommitted and incomplete** (section 11).
+new logo (committed, `c975761`). **Home hero/header refined further on 2026-10-25** against a new mobile reference image the
+owner shared (see 11); still **uncommitted** as of this audit.
 - Tokens live at the top of `apps/website/src/styles/global.css` (`:root`, dark under `prefers-color-scheme` guarded by
   `:root:not([data-theme="light"])`, and `:root[data-theme="dark"]`). New tokens: `--grad` (teal->lime), `--grad-text`.
   Dark: bg `#04080c`, accent `#2cf2a6`; light: bg `#f5faf7`, accent `#14b87a`, buttons use the gradient.
-- Fonts: Inter (body), **Fraunces** (headlines; owner said "I love the font"), JetBrains Mono (code). All self-hosted.
+- **Fonts (changed 2026-10-25): Inter only** (body, headings, UI), JetBrains Mono (code). Self-hosted. **Fraunces was
+  removed entirely** (dependency uninstalled, `@font-face`, `--font-serif` token, preload link and the old `og:image:alt`
+  wording all deleted) — `h1`/`h2`/`.stat`/`.price` now use `var(--font-sans)` at `font-weight: 800` instead of the serif
+  at `560`, and `h1`/`h2`/`.lead` sizes were reduced (`h1`: `clamp(2.1rem, 4.6vw, 3.4rem)`, was `clamp(2.5rem, 5.4vw, 4.1rem)`;
+  `h2`: `clamp(1.6rem, 2.75vw, 2.25rem)`; `.lead`: `clamp(1.02rem, 1.35vw, 1.15rem)`). Reason: the owner's new mobile
+  reference image used one consistent bold sans typeface throughout (no serif contrast) at a visibly smaller scale; **this
+  supersedes the earlier "I love the [Fraunces] font" note** in the project history — treat Inter-only as current.
+- Hero "early access" label: **no longer a pill/badge.** It went through two rounds on 2026-10-25: first a bordered
+  capsule with a glowing dot (`.pill`/`.pill__tag`/`.pill__text`, matching the reference image's "EARLY ACCESS · NPM
+  MODULE" badge, text adapted to **"Early access · Open source"** since the packages are `"private": true` and not
+  actually published to npm — a literal "NPM MODULE" claim would have broken the honesty rule, see 10); then, after the
+  owner said the glow/pill read as "too AI'ish", it was muted to a plain neutral capsule with a grey dot (no glow); the
+  owner then asked to drop the pill/dot entirely and just show the words. **Final state:** `<span class="eyebrow">Early
+  access</span>` — reusing the site's existing `.eyebrow` label style (small, uppercase, letter-spaced, `--accent-text`
+  colour, no background/border/shadow) that already labels every other section ("Why it is different", "How it works",
+  etc.), per the owner's explicit preference for "the design that's used most frequently". The `.pill` CSS rule was deleted.
+- Header icon order (mobile, `<=860px`): **changed 2026-10-25.** Previously menu (hamburger) then theme toggle, both
+  pushed right by `margin-left: auto` on `.nav__toggle`. Now **theme toggle first, then the menu button last**, flush to
+  the right edge and close together (`.nav__actions { order: 1; margin-left: auto; margin-right: 0.3rem; }`,
+  `.nav__toggle { order: 2; }`), and both `.icon-btn` buttons are slightly smaller on this breakpoint only
+  (`width/height: 2.3rem`, svg `1.05rem`, vs `2.6rem`/`1.2rem` elsewhere) per the owner's reference image and follow-up asks.
 - Logo: `src/components/Logo.astro` shows `/brand/mark.webp` (emblem only, transparent; owner asked for no lettering and a
   small size: 30 px header, 36 px footer). Dark theme: no tile; light theme: dark rounded tile (`.logo-badge`).
   Assets are generated by `scripts/make-assets.mjs` from `brand/matrix-eye-logo.png` (colour-to-alpha black removal).
-- Layout: container max 1280 px; header wider (1760 px); docs 3-column. Hero: pill, gradient headline words, 3 tiles,
-  gradient CTA, "works with" chips, animated scene (`HeroScene.astro` + `ChatDemo.astro`: typing dots, crawl card, verified/
-  decline badges, rings, chat input, Source button).
+- Layout: container max 1280 px; header wider (1760 px); docs 3-column. Hero: eyebrow label, gradient headline words, 3
+  tiles, gradient CTA, "works with" chips, animated scene (`HeroScene.astro` + `ChatDemo.astro`: typing dots, crawl card,
+  verified/decline badges, rings, chat input, Source button).
 - Motion: scroll reveal (`.sr`), hero entrance, hover lifts, reading-progress bar, TOC scroll-spy, header shadow. All
   disabled under `prefers-reduced-motion` (final state shown); content visible without JS.
 - Accessibility rules (tested): AA contrast both themes, visible focus, skip link, aria-linked form errors, keyboard menu
   (Escape), tab arrows, tables scroll in a focusable region on small screens, no sideways scroll at 375 px.
-- Owner design preferences: header = logo extreme left, nav centred, theme toggle + CTA extreme right; "MatrixEye" one
-  word; wanted copy of the reference hero (pill, gradient words, tiles, stack row, richer chat card) but **not** a fake
-  "Watch demo" video button, invented building photo, or unbuilt claims (see 10).
+- Owner design preferences: header = logo extreme left, nav centred, theme toggle + CTA extreme right; mobile header icon
+  order = theme toggle then menu, close together, flush right (2026-10-25); "MatrixEye" one word; one consistent bold sans
+  typeface, no serif contrast, smaller type scale (2026-10-25); avoid "AI'ish" neon-glow badge/pill treatments — prefers the
+  site's plain uppercase `.eyebrow` label style for small tags; **not** a fake "Watch demo" video button, invented building
+  photo, or unbuilt claims (see 10).
 
 ## 8. Integrations and configuration
 
@@ -197,6 +221,29 @@ External services in use: none (no analytics, no third-party scripts/fonts). Git
 `apps/website/dist`) and `apps/website/vercel.json`, generated by `npm run deploy-config -w @matrix-eye/website` (CSP names the API origin).
 
 ## 9. Implementation and verification status
+
+**Checks run on 2026-10-25 (Home hero/header restyle, see 7/11 for what changed):**
+- `npm run typecheck`: passes, 0 errors (`astro check`: 53 files, 0 errors/warnings/hints), re-run twice across the session
+  as edits landed.
+- `npm run build -w @matrix-eye/website`: passes, 24 pages, after fixing a build break the Fraunces removal caused (a
+  `?url` import of the font file in `Base.astro` that `npm uninstall` didn't know to remove — fixed by hand, see 7).
+- `npm test`: **464/464 passed (37 files)** on the final run. One intermediate run had 4 failures, all in
+  `packages/llm/test/openai-compatible.test.ts` (`ETIMEDOUT` connecting to a local loopback test server) — re-ran that
+  file alone (6/6 passed) and the full suite again (464/464 passed): **confirmed flaky/transient, not caused by this
+  session's changes** (that package was never touched). Consistent with the existing "re-run alone before suspecting code"
+  note in section 13; add this file to that pattern if it recurs.
+- Visual check (Chrome, via `npm run serve -w @matrix-eye/website` on `:4400`): compared the Home hero at 430x900 (mobile)
+  and 1440x900 (desktop) against the owner's reference screenshots after each round of changes (fonts/sizing, pill ->
+  muted badge -> plain eyebrow label, header icon reorder/resize). Confirmed visually matching each time.
+- **New finding, unrelated to this session's work:** `npm audit --omit=dev --audit-level=high` now reports **2 high-severity
+  and 2 other vulnerabilities** (`zod` <4.6.6, memory exhaustion on oversized constrained collections,
+  GHSA-mrhx-c7xc-m3w5; `undici`, DoS via unhandled error on excessive content-encodings, GHSA-xjj6-f33q-929c) — this was
+  **0 vulnerabilities on 2026-10-13**; the advisories were evidently published since then against already-installed
+  versions (confirmed via `git diff package-lock.json`: no `zod`/`undici` version changed this session, only the Fraunces
+  package was removed). **Not fixed this session** (zod's fix is `npm audit fix --force`, a breaking change touching API
+  validation across the whole project — out of scope for a Home-page styling/copy task). This will fail the CI audit step
+  (`.github/workflows/ci.yml`) on the next push; see section 12 P1.
+- Did **not** re-run `npm run eval -- --gate` this session (engine/evals untouched).
 
 **Checks re-run on 2026-10-19 (continuity audit; no code changed since 2026-10-13, this just confirms nothing drifted):**
 - `git status`: clean except an unstaged, trivial 2-line `memory.md` edit (two backlog-line tweaks recording the M1 commit
@@ -240,22 +287,54 @@ phrasing; small local models sometimes decline two-part questions; widget/`Origi
 | Website: static Astro, strict CSP, nothing third-party, forms to own API (ADR-007) | cheap, safe, fast | confirmed |
 | Honest content: prices marked estimates; drafts marked; security gaps listed; comparisons generic | brand is honesty | confirmed |
 | Product names in code: `@matrix-eye/*`, `MATRIX_EYE_*`, `matrix-eye-widget.js`, `<matrix-eye-chat>`, `MatrixEyeBot`, CLI `npm run matrix` | rename | confirmed |
-| Palette switch to neon green on near-black to match the logo | owner approved "apply all" 2026-10-13 | **in progress** |
+| Palette switch to neon green on near-black to match the logo | owner approved "apply all" 2026-10-13 | confirmed (committed `c975761`) |
+| Headline/body typography unified to Inter only (Fraunces removed), smaller type scale | owner's 2026-10-25 mobile reference image used one bold sans typeface throughout, not a serif/sans mix, at a visibly smaller size | confirmed, **uncommitted** |
+| Small inline tags (e.g. "Early access") use the plain `.eyebrow` label style, not a bordered/glowing pill badge | owner called the glow-pill treatment "too AI'ish" (2026-10-25) and asked for the site's most-frequently-used label pattern instead | confirmed, **uncommitted** |
+| Reference image said "EARLY ACCESS · NPM MODULE"; shipped copy says "Early access · Open source" instead | the `@matrix-eye/*` packages are `"private": true` and not published to npm — "NPM MODULE" would be an unbuilt claim, which this project's honesty rule (see above) forbids | decision made without asking (low-risk, reversible); **flag to the owner if they specifically wanted the npm wording** |
 | Do **not** add: fake demo video, invented photos, unbuilt claims ("knowledge base updated automatically"), brand logos of frameworks | honesty/trademark | confirmed advice, owner agreed to "apply all" *as adapted*; see 11 |
 | Historical planning PDFs/strategy notes keep "Eagle's Eye" | they are history | confirmed |
 | Phase 4: control-plane (accounts/billing/project ownership) on Supabase Postgres; knowledge data stays per-project SQLite on the API VPS disk; hosted inference stays self-hosted Ollama, not a third-party LLM API; budget <$25/mo (ADR-008) | owner decisions D5-D7, 2026-10-13; keeps the "self-hostable, private" story true for the hosted tier; avoids a costly Postgres rewrite of the working FTS5/BM25 ranking | confirmed (architecture only; nothing built yet) |
 
 ## 11. Current development position (READ THIS FIRST)
 
-- **As of 2026-10-19: nothing has changed since the 2026-10-13 session below.** This session did no implementation work —
-  it only re-verified the existing state (typecheck/test/CI, section 9) and expanded this file and `CLAUDE.md` for
-  continuity, because the owner is about to reset the conversation and may switch to a different account/machine. **If
-  you are reading this after that reset: everything below is still accurate and still the real next step.** There is no
-  hidden context from the reset conversation that matters — this file, `CLAUDE.md`, `docs/adr/ADR-008-phase4-hosted-architecture.md`,
-  and `docs/planning/Phase4-Plan.md` are the complete record. The repo, both GitHub remotes, and the Vercel project are
-  unchanged and reachable the same way as described in sections 3/8.
-- **Objective (done):** website restyle to the neon green/teal palette with the reference-style hero, "MatrixEye" (one word)
-  everywhere. Committed and pushed on 2026-10-13 (see section 15).
+- **2026-10-25 session (current, uncommitted): Home hero/header restyle.** The owner shared a mobile reference screenshot
+  of the Home hero and asked for several rounds of changes, all against `apps/website/src/pages/index.astro`,
+  `apps/website/src/styles/global.css`, and `apps/website/src/layouts/Base.astro` (plus `apps/website/package.json` /
+  root `package-lock.json` for the font dependency removal). In order:
+  1. Unified the headline/body typography to **Inter only** (removed Fraunces entirely: `@font-face`, `--font-serif`
+     token, the `?url` preload import/link in `Base.astro`, and the `@fontsource-variable/fraunces` npm dependency) and
+     made `h1`/`h2`/`.stat`/`.price` bold sans (`font-weight: 800`) instead of serif at `560`.
+  2. Reduced `h1`/`h2`/`.lead` font sizes (see exact clamp values in section 7).
+  3. Rewrote the Home page copy end to end for a more professional tone (hero, "why", "how it works", "for developers",
+     "trust", CTA band) — see the full diff in `index.astro`; notably swapped "audited automatically" for "checked
+     automatically" since the site has **no actual outside audit** (section 9/13) and the original wording overclaimed.
+  4. Replaced the two-part hero pill (tag + descriptive text) with a single badge reading "Early access · Open source"
+     styled like the reference image, **then** — after the owner said it looked "too AI'ish" — muted it (no background
+     glow, grey dot), **then** — per a further owner request — removed the pill/dot shape entirely in favour of the site's
+     plain `.eyebrow` label style (final state). See section 7 for the full story and section 10 for the npm-vs-open-source
+     wording call.
+  5. Reordered and resized the mobile header's two icon buttons (theme toggle, then menu button, closer together, flush
+     right, both slightly smaller at `<=860px`), per the reference image and two follow-up refinement requests.
+  6. Fixed a stale `og:image:alt` in `Base.astro` that still described the old navy/gold eagle logo instead of the current
+     neon emblem (noticed while removing the Fraunces preload link next to it; unrelated one-line correctness fix).
+  - **Verified green this session:** typecheck, build (24 pages), full test suite (464/464, after confirming one
+    intermediate failure was pre-existing flakiness unrelated to these changes — section 9), and visual comparison in
+    Chrome at mobile and desktop widths against the owner's reference image after each round.
+  - **New, unrelated finding surfaced by this session's `npm audit`:** 2 high-severity vulnerabilities (`zod`, `undici`)
+    that were not present on 2026-10-13 — see section 9 for detail and section 12 for the backlog item. Not fixed; flagged
+    only.
+  - **Not committed yet.** `git status` at the end of this session: `apps/website/package.json`,
+    `apps/website/src/layouts/Base.astro`, `apps/website/src/pages/index.astro`, `apps/website/src/styles/global.css`,
+    `package-lock.json` all modified, nothing staged. **Next concrete action for a session that continues this work:**
+    confirm with the owner whether to commit and push (the last few sessions show the owner prefers to be asked before any
+    push, and said yes each time asked) — the usual checks (typecheck/build/test) are already green, so a commit should be
+    low-risk once approved.
+- **Before this (2026-10-19 session): nothing had changed since 2026-10-13** — that session only re-verified state and
+  hardened this file for continuity (see section 15 for that entry). The Phase 4 M1 commit (`c975761`) and everything
+  below in this section about it is still accurate and still the real next step for the *backend/hosting* track, which
+  this session's Home-page restyle did not touch.
+- **Objective (done 2026-10-13, see above for what changed since):** website restyle to the neon green/teal palette with
+  the reference-style hero, "MatrixEye" (one word) everywhere. Committed and pushed on 2026-10-13 (see section 15).
 - **Honesty rules kept:** the hero does not claim "knowledge base updated automatically" (not built); it says "Self-host, private".
 - **CI and Vercel: both confirmed** this session (2026-10-13) — CI green through `51728e8`; owner confirmed the Vercel
   deployment works.
@@ -286,11 +365,14 @@ phrasing; small local models sometimes decline two-part questions; widget/`Origi
 - **Not done yet (still M1 work, or M2+):** no real Supabase project exists (code only talks to whatever
   `MATRIX_EYE_SUPABASE_URL` points at); no CLI/dashboard calls these routes yet; M2 (VPS deploy) not started.
 - **Committed and pushed 2026-10-13** at `c975761` (both repos); CI green (run `38414208313`, 3m15s).
-- **Next concrete action:** start **M2** (provision the VPS, deploy the API, run Ollama on it) per
-  `docs/planning/Phase4-Plan.md`. First owner-side step for M2: actually create the Supabase project and a VPS account
+- **Next concrete action (backend/hosting track):** start **M2** (provision the VPS, deploy the API, run Ollama on it)
+  per `docs/planning/Phase4-Plan.md`. First owner-side step for M2: actually create the Supabase project and a VPS account
   (neither exists yet) so the code in `apps/api/src/control-plane/` has something real to talk to.
+- **Next concrete action (website track, see top of this section):** confirm with the owner whether to commit and push
+  the 2026-10-25 Home restyle, then consider whether the same font/sizing/copy treatment should extend to the other
+  23 pages (only Home was done this session).
 - **Owner-side open items:** domain, legal entity and contact email, lawyer review of `/privacy/` and `/terms/`, pricing
-  validation, decisions D5-D7, a real screen-reader test.
+  validation, decisions D5-D7, a real screen-reader test, the `zod`/`undici` `npm audit` findings (section 9/12).
 - **Blockers:** none technical.
 
 ## 12. Outstanding work and prioritized backlog
@@ -301,7 +383,11 @@ control-plane Postgres (code done this session, uncommitted; no real Supabase pr
 API+Ollama (not started) -> M3 minimal dashboard (not started) -> M4 billing/Stripe (not started) -> M5 hardening
 (not started) before real customers.
 
-**P0:** none. All checks were green at the last full run.
+**P0:** **`npm audit --omit=dev --audit-level=high` now fails** (`zod` high, `undici` high — section 9). Not caused by this
+session's changes, but will break CI (`.github/workflows/ci.yml` runs this exact command) on the next push from any branch,
+including the already-pending Home-restyle commit. Fix before or alongside the next push: `npm audit fix` handles `undici`
+non-breaking; `zod` needs `npm audit fix --force` (upgrades to zod@4.6.7, a breaking change per npm's own warning) —
+check `apps/api` schema validation still passes typecheck/tests after.
 
 **P1 (current)**
 1. ~~Check CI for the latest commits.~~ Done 2026-10-13: green through `51728e8`.
@@ -310,6 +396,12 @@ API+Ollama (not started) -> M3 minimal dashboard (not started) -> M4 billing/Str
 4. ~~Implement M1 (accounts/control-plane) in code, including rotate-key.~~ Done 2026-10-13; all checks green (section 11).
 5. ~~Commit the M1 changes.~~ Done 2026-10-13 (`c975761`, pushed both repos, CI green).
 6. Start M2: provision a real Supabase project + VPS, deploy the API, run Ollama on it.
+7. ~~Restyle the Home hero/header to match the owner's 2026-10-25 mobile reference (fonts, sizing, early-access label,
+   header icons) and rewrite Home copy to a more professional tone.~~ Done 2026-10-25, all checks green; **not yet
+   committed** — confirm with the owner first (section 11).
+8. Fix the `npm audit` P0 above before the next push.
+9. Consider: extend the same font/sizing/copy treatment from Home to the other 23 pages, if the owner wants consistency
+   site-wide (not done this session — only Home was in scope).
 
 **P2**
 - Host the API somewhere with a persistent disk or move to Postgres (Phase 4); set `PUBLIC_API_URL`, `MATRIX_EYE_SITE_ORIGINS`, re-run `npm run deploy-config` with the API origin.
@@ -333,6 +425,8 @@ API+Ollama (not started) -> M3 minimal dashboard (not started) -> M4 billing/Str
 | API ignores settings | env var names changed | use `MATRIX_EYE_*`; `.env` read from repo root |
 | Port 4400 in use | an earlier `npm run serve -w @matrix-eye/website` still running | stop it (`Stop-Process -Id (Get-NetTCPConnection -LocalPort 4400 -State Listen).OwningProcess`) |
 | `packages/crawler` render test flaked once under load | timing (hypothesis); passed alone | re-run alone before suspecting code |
+| `packages/llm/test/openai-compatible.test.ts` failed with `ETIMEDOUT` connecting to a local loopback server (2026-10-25) | transient local networking; passed alone and on a full re-run immediately after | re-run alone (or the whole suite) before suspecting code, same as the crawler render test above |
+| `npm audit --omit=dev --audit-level=high` reports 2 high-severity vulnerabilities as of 2026-10-25 (`zod`, `undici`); was 0 on 2026-10-13 | new GitHub advisories published against already-installed versions, not a lockfile change made in this project | not yet fixed; `npm audit fix` for `undici`, `npm audit fix --force` (breaking) for `zod` — see section 12 P0 |
 | Website tests collide on `dist` | both suites build | `test/helpers.ts` uses a lock file + 30 s reuse; do not remove |
 | Shell quirks on this machine | Git Bash heredocs with quotes break; MSYS rewrites args starting with `/`; Python default encoding cp1252; `"\\u2060"` literal | write scripts with the Write tool; use `MSYS_NO_PATHCONV=1`; open files with `encoding="utf-8"`, preserve CRLF (`newline=""`) |
 | Git "CRLF will be replaced by LF" warnings | `.gitattributes`/Windows | harmless |
@@ -381,6 +475,27 @@ API+Ollama (not started) -> M3 minimal dashboard (not started) -> M4 billing/Str
   (new conversation, new account, new machine) should be able to resume correctly from `CLAUDE.md` + this file + the repo
   alone, with no information lost from the reset conversation. **No new technical next action**: it is still M2 (section 11),
   unchanged.
+- **2026-10-25 (new session, different Claude account — confirmed the memory system worked: picked up exactly where
+  2026-10-19 left off): Home hero/header restyle.** The owner shared a mobile reference screenshot and iterated across
+  several follow-up requests sent mid-turn (handled as they arrived, not as separate turns): (1) match the reference's
+  bold sans headline font and reduce font sizes -> removed Fraunces, unified on Inter at heavier weight, shrank
+  `h1`/`h2`/`.lead`; (2) "implement the early access exactly as shown" -> built a bordered pill badge, substituting
+  "Open source" for the reference's "NPM module" since the packages are `private: true` and not published (an honesty-rule
+  call, flagged rather than silently either breaking the rule or ignoring the instruction); (3) "wordings are too basic...
+  read through the entire text" -> rewrote all Home page copy for a more professional tone, including fixing an
+  "audited automatically" claim that overclaimed (no outside audit exists); (4) "move the navbar icon to the extreme end
+  and the light mode icon before it... bring them closer" -> reordered the mobile header's theme-toggle/menu buttons and
+  tightened the gap; (5) owner found the pill badge "too AI'ish" (shared a zoomed screenshot) -> asked two clarifying
+  questions (what replacement style, how wide the change should go) since this touches brand identity, got "muted neutral
+  badge" + "just this badge" -> removed the glow/background fill; (6) "reduce both icons slightly... I don't want the
+  rounded rectangle and the dot, I want just early access, the design is used most frequently" -> shrank the header icons
+  further, and replaced the badge entirely with the site's existing `.eyebrow` label style (plain uppercase text, no
+  shape), which is what every other section heading on the site already uses. Verified after each round with a headless
+  Chrome screenshot at mobile (430x900) and desktop (1440x900) against the reference. Final full-suite checks: typecheck
+  0 errors, build 24 pages, tests 464/464 (one intermediate run had unrelated flaky failures in the LLM provider test,
+  confirmed by re-running alone). Also fixed a stale `og:image:alt` (still described the old eagle logo) and surfaced a
+  new, unrelated `npm audit` finding (section 9/12 P0). **Not committed** — see section 11 for exactly what changed and
+  what to ask the owner before pushing.
 
 ---
 ## Memory maintenance policy

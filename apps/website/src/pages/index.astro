@@ -46,11 +46,11 @@ const tabs: Array<{ id: string; label: string; lang: CodeLanguage; code: string 
   <section class="hero">
     <div class="container hero__grid">
       <div class="hero__copy">
-        <p class="pill"><span class="pill__tag"><i></i> Early access</span><span class="pill__text">Turn your website into a smart assistant</span></p>
-        <h1>An assistant for your website that <span class="grad-text">shows its sources</span></h1>
-        <p class="lead">MatrixEye reads your pages and answers visitors in a chat window. Every answer links to the page it came from. When your site doesn't say, it says so instead of guessing.</p>
+        <span class="eyebrow">Early access</span>
+        <h1>An assistant for your website that <span class="grad-text">cites its sources</span></h1>
+        <p class="lead">MatrixEye reads your website and answers visitor questions in a chat window, linking every answer to the page it came from. If your site doesn't cover a question, it says so, rather than guessing.</p>
         <ul class="tiles" aria-label="Highlights">
-          <li class="tile"><span class="tile__icon"><Icon name="file" /></span><div><strong>Accurate answers</strong><span>With source links</span></div></li>
+          <li class="tile"><span class="tile__icon"><Icon name="file" /></span><div><strong>Accurate answers</strong><span>Backed by source links</span></div></li>
           <li class="tile"><span class="tile__icon"><Icon name="bolt" /></span><div><strong>Easy to integrate</strong><span>API &amp; widget</span></div></li>
           <li class="tile"><span class="tile__icon"><Icon name="lock" /></span><div><strong>Data stays yours</strong><span>Self-hosted</span></div></li>
         </ul>
@@ -58,7 +58,7 @@ const tabs: Array<{ id: string; label: string; lang: CodeLanguage; code: string 
           <a class="btn btn--primary" href="/waitlist/">Join the waitlist <Icon name="arrow" /></a>
           <a class="btn btn--secondary" href="/product/">See how it works</a>
         </div>
-        <p class="hero__note">Free during early access. No credit card. Self-host it or wait for the hosted service.</p>
+        <p class="hero__note">Free during early access, no credit card required. Self-host it today, or wait for the hosted service.</p>
         <div class="stack">
           <p class="stack__label">Works with any website stack</p>
           <ul class="stack__list">{stackLogos.map((l) => <li><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d={l.path} fill="currentColor" /></svg>{l.name}</li>)}</ul>
@@ -73,23 +73,23 @@ const tabs: Array<{ id: string; label: string; lang: CodeLanguage; code: string 
       <div class="section__head">
         <span class="eyebrow">Why it is different</span>
         <h2 id="why">Answers you can trust, because you can check them</h2>
-        <p class="lead">Most chatbots sound confident whether or not they know. MatrixEye is built around the opposite habit.</p>
+        <p class="lead">Most chatbots sound confident even when they're guessing. MatrixEye is built to do the opposite.</p>
       </div>
       <div class="grid grid--3">
         <article class="card">
           <div class="card__icon"><Icon name="link" /></div>
           <h3>Every answer cites its page</h3>
-          <p>Visitors see exactly which page of your site an answer came from, and can click through. You can see it too, which makes mistakes easy to find and fix.</p>
+          <p>Visitors see exactly which page an answer came from and can click straight through to it. You can review the same citations, which makes mistakes easy to spot and fix.</p>
         </article>
         <article class="card">
           <div class="card__icon"><Icon name="shield" /></div>
           <h3>It says "I couldn't find that"</h3>
-          <p>If your site doesn't cover a question, the assistant says so and points to your contact details. Prices, dates and email addresses are checked against your page text before they are shown.</p>
+          <p>When a question isn't covered on your site, the assistant says so and points visitors to your contact details instead of guessing. Prices, dates and email addresses are verified against your page content before they're shown.</p>
         </article>
         <article class="card">
           <div class="card__icon"><Icon name="server" /></div>
           <h3>Yours to run, anywhere</h3>
-          <p>Self-host the whole thing with a language model on your own machine, or use a hosted service when it launches. The same code and the same chat window work both ways.</p>
+          <p>Self-host the entire stack with a language model on your own infrastructure, or move to the hosted service once it launches. The same code and the same chat window work either way.</p>
         </article>
       </div>
     </div>
@@ -104,15 +104,15 @@ const tabs: Array<{ id: string; label: string; lang: CodeLanguage; code: string 
       <ol class="steps">
         <li>
           <h3>Point it at your site</h3>
-          <p>Give it your web address. It reads your pages politely, respecting <code>robots.txt</code>, and understands JavaScript sites too.</p>
+          <p>Give MatrixEye your site's address. It crawls your pages responsibly, honouring <code>robots.txt</code>, and handles JavaScript-rendered sites as well.</p>
         </li>
         <li>
           <h3>It indexes and checks</h3>
-          <p>Pages are split into passages and indexed. Anything that looks like an instruction aimed at an AI is removed, so a hostile page cannot steer your assistant.</p>
+          <p>Pages are split into passages and indexed. Any text that looks like an instruction aimed at an AI is stripped out, so a hostile page can't steer your assistant.</p>
         </li>
         <li>
           <h3>Visitors get cited answers</h3>
-          <p>A question finds the right passages, the answer is written from them, and the result is verified before it appears, with links to the sources.</p>
+          <p>Each question retrieves the most relevant passages, the answer is drafted from them, and the result is verified, with source links, before it's shown.</p>
         </li>
       </ol>
       <p class="mt-0" style="margin-top: 1.5rem;"><a href="/docs/how-it-works/">Read the details of how it works</a></p>
@@ -124,18 +124,18 @@ const tabs: Array<{ id: string; label: string; lang: CodeLanguage; code: string 
       <div>
         <span class="eyebrow">For developers</span>
         <h2 id="dev">One line to add it. A typed SDK to build on.</h2>
-        <p class="lead">A small chat widget for any page, a React component, and a TypeScript client with streaming answers.</p>
+        <p class="lead">A lightweight chat widget for any page, a React component, and a typed TypeScript client with streaming responses.</p>
         <ul class="checks" style="margin-top: 1.5rem;">
-          <li><Icon name="check" /><span><strong>About 10 KB</strong> for the widget, in an isolated shell so your site's CSS cannot break it.</span></li>
-          <li><Icon name="check" /><span><strong>Streaming answers</strong>, replaced by the verified version when complete.</span></li>
-          <li><Icon name="check" /><span><strong>Built for keyboards and screen readers</strong> and audited automatically on every change.</span></li>
-          <li><Icon name="check" /><span><strong>Safe by construction:</strong> answers are shown as plain text, never as HTML.</span></li>
+          <li><Icon name="check" /><span><strong>About 10 KB</strong> for the widget, running in an isolated shell so your site's CSS can't interfere with it.</span></li>
+          <li><Icon name="check" /><span><strong>Streaming answers</strong>, replaced by the verified version once complete.</span></li>
+          <li><Icon name="check" /><span><strong>Built for keyboard and screen-reader use</strong>, and checked automatically on every change.</span></li>
+          <li><Icon name="check" /><span><strong>Safe by design:</strong> answers render as plain text, never as raw HTML.</span></li>
         </ul>
         <p style="margin-top: 1.5rem;"><a class="btn btn--secondary btn--sm" href="/docs/widget/">Widget guide</a> <a class="btn btn--secondary btn--sm" href="/docs/sdk/">SDK guide</a></p>
       </div>
       <div>
         <CodeTabs name="home" tabs={tabs} />
-        <p class="hero__note">Packages are in early access; the <a href="/docs/quickstart/">quickstart</a> shows how to run everything today.</p>
+        <p class="hero__note">These packages are in early access &mdash; see the <a href="/docs/quickstart/">quickstart</a> for how to run everything today.</p>
       </div>
     </div>
   </section>
@@ -144,13 +144,13 @@ const tabs: Array<{ id: string; label: string; lang: CodeLanguage; code: string 
     <div class="container">
       <div class="section__head">
         <span class="eyebrow">Safe by design</span>
-        <h2 id="trust">Built for other people's websites and other people's visitors</h2>
+        <h2 id="trust">Designed to behave responsibly on every website it touches</h2>
       </div>
       <div class="grid grid--4">
-        <div class="card"><div class="card__icon"><Icon name="eye" /></div><h3>A polite crawler</h3><p>Follows <code>robots.txt</code>, reads a few pages per second, and identifies itself as <a href="/bot/">MatrixEyeBot</a>.</p></div>
-        <div class="card"><div class="card__icon"><Icon name="lock" /></div><h3>No secrets in the page</h3><p>The chat window only works on websites you allow, and is rate-limited for each visitor.</p></div>
-        <div class="card"><div class="card__icon"><Icon name="shield" /></div><h3>Attack-aware</h3><p>Defences against prompt injection and server-side request forgery, with tests for each.</p></div>
-        <div class="card"><div class="card__icon"><Icon name="layers" /></div><h3>Your data stays yours</h3><p>Self-host and nothing leaves your servers. No third-party trackers on this site.</p></div>
+        <div class="card"><div class="card__icon"><Icon name="eye" /></div><h3>A polite crawler</h3><p>Respects <code>robots.txt</code>, crawls at a conservative rate, and identifies itself clearly as <a href="/bot/">MatrixEyeBot</a>.</p></div>
+        <div class="card"><div class="card__icon"><Icon name="lock" /></div><h3>No secrets in the page</h3><p>The chat widget only runs on websites you explicitly allow, and every visitor is rate-limited.</p></div>
+        <div class="card"><div class="card__icon"><Icon name="shield" /></div><h3>Attack-aware</h3><p>Defences against prompt injection and server-side request forgery, each covered by automated tests.</p></div>
+        <div class="card"><div class="card__icon"><Icon name="layers" /></div><h3>Your data stays yours</h3><p>Self-host the platform and nothing leaves your infrastructure. This site itself uses no third-party trackers.</p></div>
       </div>
       <p style="margin-top: 1.5rem;"><a href="/security/">Read about security</a></p>
     </div>
@@ -168,8 +168,8 @@ const tabs: Array<{ id: string; label: string; lang: CodeLanguage; code: string 
     <div class="container">
       <div class="cta-band split">
         <div>
-          <h2 id="join">Be one of the first to use it</h2>
-          <p class="lead" style="color: inherit; opacity: 0.85;">Early access is free. Tell us what you'd use it for, and we'll email you when your turn comes. No spam, and you can ask to be removed at any time.</p>
+          <h2 id="join">Be among the first to try it</h2>
+          <p class="lead" style="color: inherit; opacity: 0.85;">Early access is free. Tell us what you'd use it for and we'll email you when it's your turn &mdash; no spam, and you can opt out at any time.</p>
         </div>
         <div class="card"><WaitlistForm idPrefix="home" /></div>
       </div>
