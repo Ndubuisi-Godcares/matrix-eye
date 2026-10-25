@@ -6,12 +6,13 @@
 > only this file, `CLAUDE.md`, and the source tree — nothing else is needed and nothing important lives only in chat history.
 > Section 11 says exactly where work stopped; section 9 says what was and was not verified; section 3 is the full project
 > topology (directory map + architecture) if you need to re-orient.
-> Last audit: **2026-10-26** (session begun 2026-10-25, ran past midnight, still going). About to be pushed: two more
-> pieces of work — (1) the engine's decline reply now speaks in the first person and never names "the website"/"the
-> site" (`packages/engine/src/abstain.ts`, `prompt.ts`), and (2) a new site-wide search feature: a Ctrl/Cmd+K command
-> palette with optional voice input, reusing the existing Pagefind index (`apps/website/src/components/CommandPalette.astro`,
-> `src/scripts/command-palette.ts`). Section 15 has the full story of every 2026-10-25/26 commit (there have been many —
-> `fa04b80` through to whatever is at the tip when you read this); section 11 is the fastest way to get the current
+> Last audit: **2026-10-26** (session begun 2026-10-25, ran past midnight, still going). Last pushed commit: `ab95e5b` —
+> a new site-wide search feature: a Ctrl/Cmd+K command palette with optional voice input, reusing the existing
+> Pagefind index (`apps/website/src/components/CommandPalette.astro`, `src/scripts/command-palette.ts`). Just before
+> it, `3b3fae2` made the engine's decline reply speak in the first person, never naming "the website"/"the site"
+> (`packages/engine/src/abstain.ts`, `prompt.ts`). Section 15 has the full story of every 2026-10-25/26 commit (there
+> have been many — `fa04b80` through to whatever is at the tip when you read this); section 11 is the fastest way to
+> get the current
 > headline state without reading all of them.
 > Legend: **VERIFIED** = checked in code or by running something this audit; **REPORTED** = established earlier in the
 > project's conversation history and not re-checked; **UNVERIFIED/UNKNOWN** = not checked.
@@ -475,8 +476,7 @@ phrasing; small local models sometimes decline two-part questions; widget/`Origi
      `Icon.astro`. Hit and fixed a real TypeScript issue (global-script collision between `search.ts` and
      `command-palette.ts`, see section 9) and two incorrect test assumptions (also section 9) before landing on
      30/30 passing browser tests plus manual verification in Chrome (click-to-open, Ctrl+K, search, navigate, mobile
-     3-icon header). Verification: section 9. Not yet committed — see the file-list note at the end of this entry if
-     you're picking this up mid-way; check `git status` for the exact current state.
+     3-icon header). Verification: section 9. **Committed and pushed as `ab95e5b`.**
 - **2026-10-26 session, earlier work: adaptive, professional decline wording.**
   The owner asked to "improve the performance of the model... let the response not be bland where it says I couldn't
   find the information... it should be professional". Read this as: the abstention *decision* (when to decline) is
@@ -876,9 +876,7 @@ check `apps/api` schema validation still passes typecheck/tests after.
   click-to-open, Ctrl+K from multiple pages, live search with highlighted results, Enter navigation, Escape close,
   console free of errors/CSP violations, and the 3-icon mobile header layout. Final verification: typecheck, full
   build, full test suite (475/475, one unrelated flake in `widget-react` confirmed pre-existing by re-running alone),
-  30/30 browser tests including 3 new ones for this feature. Commit status: check `git status`/`git log` — this was
-  being committed at the point this entry was written; section 11's entry has the detail if the commit hash isn't
-  obvious from recent history.
+  30/30 browser tests including 3 new ones for this feature. **Committed and pushed as `ab95e5b`.**
 
 ---
 ## Memory maintenance policy
