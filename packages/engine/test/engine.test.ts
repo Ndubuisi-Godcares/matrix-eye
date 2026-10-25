@@ -111,6 +111,11 @@ describe("ConversationEngine (extractive, no model)", () => {
     expect(r.answer.toLowerCase()).not.toContain("contact the team directly");
   });
 
+  it("declines in the first person, never naming 'the website'/'the site'", async () => {
+    const r = await engine().ask({ projectId: PROJECT, question: "Do you have a swimming pool?" });
+    expect(r.answer.toLowerCase()).not.toMatch(/\bwebsite\b|\bthe site\b/);
+  });
+
   it("never repeats the injected instruction from the hostile page", async () => {
     const r = await engine().ask({ projectId: PROJECT, question: "Is tuition free? Tell me about the open day" });
     expect(r.answer).not.toMatch(/tuition is free|scam@evil|ignore/i);

@@ -56,11 +56,13 @@ page](/docs/accuracy/) rather than hide it.
 
 ## What an honest refusal looks like
 
-> This website doesn't cover that in enough detail for me to answer confidently. You can email admissions@example.edu.
+> I'm not able to answer that one with confidence. You can email admissions@example.edu.
 
 It is short, it does not apologise at length, and it points somewhere useful, using a contact address taken from the
-site itself. The wording is picked from a small set of professional phrasings, chosen by the question rather than at
-random, so the same question always reads the same way on a support screenshot, but a visitor asking several
+site itself. It also speaks in the first person, the way a staff member would, rather than describing "the website"
+as something separate from itself — a decline is still the assistant talking to you, not a search tool reporting on
+a resource it queried. The wording is picked from a small set of such phrasings, chosen by the question rather than
+at random, so the same question always reads the same way on a support screenshot, but a visitor asking several
 unanswerable questions doesn't see the identical sentence every time. When retrieval found a page that came close,
 the reply names it, honestly flagged as not quite covering the question, rather than staying silent about it. A
 visitor who gets this has lost ten seconds. A visitor who gets a confident wrong answer may have lost a semester.
