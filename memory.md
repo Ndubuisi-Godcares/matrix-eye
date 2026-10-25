@@ -76,7 +76,7 @@ matrix-eye/
   packages/crawler/            fetcher, robots, sitemap, SSRF guard (ssrf.ts), url normalisation, extract (injection-text removal), optional render
   packages/knowledge/          SqliteKnowledgeStore (pages/chunks/chunks_fts/facts), chunker, ranking
   packages/llm/                OpenAiCompatibleProvider, reasoning-leak filter, scripted test provider, detect.ts (Ollama auto-detect, resolveLocalModel)
-  packages/engine/             ConversationEngine: rules -> smalltalk -> facts(contact) -> overview -> retrieve -> gates -> LLM/extractive -> validate; ingest.ts
+  packages/engine/             ConversationEngine: rules -> smalltalk -> facts(contact) -> overview -> retrieve -> gates -> LLM/extractive -> validate; ingest.ts; abstain.ts (decline wording)
   packages/sdk/                MatrixEyeClient (admin) + PublicClient (visitor), SSE parser, MatrixEyeError
   packages/widget/             <matrix-eye-chat> custom element + MatrixEye.init + script-tag auto-mount; styles.ts, render.ts (safe markdown), colors.ts
   packages/widget-react/       MatrixEyeChat React component (SSR-safe)
@@ -125,7 +125,7 @@ TOC with scroll-spy). Nav: Home, Product, Docs, Pricing, Guides, Security; logo 
 |---|---|---|---|
 | Crawler (robots, sitemap, dedupe, change detection, SSRF guard, render mode) | `packages/crawler` | complete | tests pass; real-site check on Reed College (REPORTED) |
 | Knowledge store (FTS5/BM25) | `packages/knowledge` | complete | tests pass |
-| Conversation engine + abstention | `packages/engine` | complete | tests + eval gate pass (this audit: `npm run eval -- --gate` earlier today: "All Phase 1 targets met") |
+| Conversation engine + abstention | `packages/engine` | complete; decline wording made adaptive/professional 2026-10-26 (`abstain.ts`) | tests + eval gate pass (this audit: `npm run eval -- --gate`: "All Phase 1 targets met") |
 | LLM provider + Ollama auto-detect | `packages/llm` | complete | unit tests; real-model run REPORTED (97.4% correctness on 48 Qs with Qwen3 4B Instruct) |
 | Admin REST API | `apps/api/src/app.ts` | complete for local use | tests pass; Bearer key; no multi-tenant accounts |
 | Public widget API + streaming | same | complete | origin allow-list (closed by default), CORS delegator, per-visitor rate limit; honest limit: `Origin` can be forged outside browsers |
@@ -251,6 +251,24 @@ External services in use: none (no analytics, no third-party scripts/fonts). Git
 
 ## 9. Implementation and verification status
 
+**Checks run on 2026-10-26 (engine: adaptive/professional decline wording, `packages/engine/src/abstain.ts` — see 5/10/11 for what changed):**
+- `npm run typecheck`: passes, 0 errors (whole monorepo). `npm run build`: passes, all workspaces including SDK/widget/widget-react.
+- `npm run eval -- --gate`: **passed, 100% across every target** (correctness, citation hit rate, correct abstention,
+  unsupported figures, injection resistance) — the decline-wording change does not touch the gates that decide
+  *whether* to abstain, only the reply's text when it does, so the eval's abstention-correctness score is unaffected.
+- `npm test`: full suite green (470/470 — 6 new tests: `packages/engine/test/abstain.test.ts` plus one new assertion
+  in `engine.test.ts`). Focused re-runs of `packages/engine apps/api` (the actual change surface) were run four times
+  for extra confidence given this touches core answer behaviour, not just copy: 170/170 every time.
+- **Mid-verification, this machine's tests got widely flaky from host resource pressure (low free memory after a long
+  session), not from this change** — see section 13's new entry for the full story and how to tell the difference
+  from a real regression (a few isolated `npx vitest run packages/engine` invocations showed failures across files
+  this change never touched, including crawler robots.txt fetches; a plain `npm test` run immediately after was clean,
+  and stopping a leftover `npm run serve` process from earlier in the session helped). Don't over-index on a single
+  flaky run when verifying engine changes on this machine — re-run clean before trusting either a pass or a fail.
+- Manually previewed `composeAbstainText()` output for five different questions (via a throwaway `tsx` script, deleted
+  after) to read quality before updating the two places that quote a literal example (`ChatDemo.astro`'s hero demo,
+  the `why-say-i-dont-know.md` guide's blockquote) — see section 11 for the actual sample outputs.
+
 **Checks run on 2026-10-25/26, third pass (deepening the copy register site-wide, see 7/11 for exactly what changed):**
 - `npm run typecheck`: passes, 0 errors. `npm run build -w @matrix-eye/website`: passes, 24 pages.
 - `npm test`: **464/464 individual tests passed** on the final full run. One intermediate run had a single failure in
@@ -353,6 +371,7 @@ phrasing; small local models sometimes decline two-part questions; widget/`Origi
 | D3 Fastify for the API | | confirmed |
 | Storage = built-in SQLite FTS5 | zero ops, fast, enough for target sizes (ADR-002) | confirmed for now; revisit in Phase 4 |
 | Grounded answers + abstention are the product (ADR-003) | trust is the differentiator | confirmed, do not weaken |
+| Decline wording is varied/professional and names the closest page found, but the decline *decision itself* (coverage/key-term gates, model's own decline) is untouched (ADR-003 unaffected) | owner: "let the response not be bland... it should be professional", 2026-10-26 — a UX fix on top of abstention, not a loosening of it | confirmed, see 11/15; `packages/engine/src/abstain.ts` |
 | Crawler safety: SSRF guard, robots, injection-text removal (ADR-004) | | confirmed |
 | Local model via Ollama, non-thinking models only (ADR-005) | free, private; reasoning models leak thoughts | confirmed |
 | Widget: key-less public endpoints + origin allow-list, streaming provisional/final (ADR-006) | page can't hold a secret | confirmed |
@@ -371,6 +390,37 @@ phrasing; small local models sometimes decline two-part questions; widget/`Origi
 
 ## 11. Current development position (READ THIS FIRST)
 
+- **2026-10-26 session, latest work (commit hash at the top of this file): adaptive, professional decline wording.**
+  The owner asked to "improve the performance of the model... let the response not be bland where it says I couldn't
+  find the information... it should be professional". Read this as: the abstention *decision* (when to decline) is
+  working correctly per the eval gate and is explicitly protected by ADR-003 ("do not weaken") — the actual complaint
+  is about the *wording* of the single hard-coded decline sentence
+  (`"I couldn't find that on this website. You may want to contact the team directly."`, `packages/engine/src/engine.ts`),
+  which was the same for every visitor and every question, and claimed a vague "contact the team" even when no contact
+  method was known. Built `packages/engine/src/abstain.ts`: `composeAbstainText(question, nearestPageTitle?)` picks from
+  four professional phrasings **deterministically by the question** (not random — the same question always reads the
+  same way, which matters for tests and support screenshots), and names the closest page retrieval found, if any,
+  honestly flagged as possibly not covering the question. Example real outputs (from a throwaway preview script):
+  - *"This website doesn't cover that in enough detail for me to answer confidently."*
+  - *"I don't have enough information from this website to answer that accurately."*
+  - *"That question isn't addressed in this website's published content."*
+  - with a near-miss page: *"...The closest match I found was the \"Campus Facilities\" page, though it may not fully
+    cover this."*
+  Wired into all three places the engine declines (previously inconsistent: only the main gate-failure path offered
+  contact details; the model-declined and extractive-composition-failed paths did not) — `generateWithModel` and
+  `generateExtractive` now both receive `facts` so a known contact method is always offered, consistently, wherever
+  the engine abstains. The vague always-on "You may want to contact the team directly" sentence is gone entirely;
+  contact info is now only mentioned when it's actually known (via `answerFromFacts`), never as an empty gesture.
+  **Deliberately did not touch:** the coverage gate, key-term gate, or model-decline detection (`NO_ANSWER_PHRASE` in
+  `prompt.ts`) — making the engine *answer more often* was never the ask and would weaken the product's core honesty
+  guarantee; this is a presentation fix on top of an unchanged decision. Also updated two places that quoted the old
+  literal sentence as a concrete example of real output (not just a generic concept reference, which other docs/README
+  mentions are and were left alone): `apps/website/src/components/ChatDemo.astro`'s hero demo bubble, and
+  `why-say-i-dont-know.md`'s guide blockquote (plus a short new paragraph explaining the variation — this guide is
+  literally about this behaviour, so it benefits from describing the real mechanism). Also fixed
+  `docs/troubleshooting.md`'s table row that quoted the exact old string as a symptom to search for, generalising it
+  so it stays accurate. **Verified: section 9.** No API/schema/widget changes — `ChatResponse.answer` is still a plain
+  string, so nothing downstream (SDK, widget, API) needed touching.
 - **2026-10-25 session, first pass (committed `fa04b80`): Home hero/header restyle.** The owner shared a mobile reference screenshot
   of the Home hero and asked for several rounds of changes, all against `apps/website/src/pages/index.astro`,
   `apps/website/src/styles/global.css`, and `apps/website/src/layouts/Base.astro` (plus `apps/website/package.json` /
@@ -523,6 +573,8 @@ check `apps/api` schema validation still passes typecheck/tests after.
 11. Resolve the "npm module" vs. "open source" wording flag with the owner if it matters to them (section 7/10).
 12. Decide whether `contact.astro`, `docs/*.md` and the guides should get the same denser register, or stay as they
     are (deliberately left out of passes two and three — section 9).
+13. ~~Make the engine's decline reply adaptive and professional instead of one bland fixed sentence.~~ Done 2026-10-26
+    (`packages/engine/src/abstain.ts`); all checks green including the eval gate (section 9/11).
 
 **P2**
 - Host the API somewhere with a persistent disk or move to Postgres (Phase 4); set `PUBLIC_API_URL`, `MATRIX_EYE_SITE_ORIGINS`, re-run `npm run deploy-config` with the API origin.
@@ -548,7 +600,8 @@ check `apps/api` schema validation still passes typecheck/tests after.
 | `packages/crawler` render test flaked once under load | timing (hypothesis); passed alone | re-run alone before suspecting code |
 | `packages/llm/test/openai-compatible.test.ts` failed with `ETIMEDOUT` connecting to a local loopback server (2026-10-25) | transient local networking; passed alone and on a full re-run immediately after | re-run alone (or the whole suite) before suspecting code, same as the crawler render test above |
 | `npm audit --omit=dev --audit-level=high` reports 2 high-severity vulnerabilities as of 2026-10-25 (`zod`, `undici`); was 0 on 2026-10-13 | new GitHub advisories published against already-installed versions, not a lockfile change made in this project | not yet fixed; `npm audit fix` for `undici`, `npm audit fix --force` (breaking) for `zod` — see section 12 P0 |
-| **CI's `npm test` step failed 4 times in a row (2026-10-25, commits `fa04b80` through `d8ce0ad`)** on `apps/website/test/browser.test.ts`'s docs-TOC scroll-spy test (`expect.poll` never reaching 1 matching link), while the *identical* suite passed 464/464 every time locally | **Genuinely caused by this session's font change, confirmed, not flakiness** — removing Fraunces and setting the global `h1, h2 { font-weight: 800 }` rule (section 7) changed the rendered height of `.prose h2` headings (the rule applies globally, including inside docs pages, since `.prose h2` only overrides `font-size`). The test scrolled by a **fixed 200px** after `scrollIntoViewIfNeeded()`, which depended on the old heading height to land inside the scroll-spy's ~190px active band; the new heading height pushed it just outside that band. It passed locally on Windows but failed on CI's Linux runner — plausibly sub-pixel font-rendering differences between OSes sitting on opposite sides of an already-marginal boundary, though the root fragility (a fixed pixel offset) was the same on both. **Do not mistake a repeated CI failure for flakiness without checking whether a recent change could plausibly be the cause** — three earlier failures in this same session *were* genuine flakiness (network timeouts, afterAll teardown), which made it easy to misdiagnose this fourth one the same way at first. | Fixed in `apps/website/test/browser.test.ts`: the test now computes the heading's actual position and scrolls to place it at a fixed distance from the viewport top, instead of nudging by a fixed amount after an imprecise `scrollIntoViewIfNeeded()`. Verified: passes alone and in the full suite, locally, 464/464. **Not yet confirmed green on CI** — see section 11 for the push this landed in. |
+| **CI's `npm test` step failed 4 times in a row (2026-10-25, commits `fa04b80` through `d8ce0ad`)** on `apps/website/test/browser.test.ts`'s docs-TOC scroll-spy test (`expect.poll` never reaching 1 matching link), while the *identical* suite passed 464/464 every time locally | **Genuinely caused by this session's font change, confirmed, not flakiness** — removing Fraunces and setting the global `h1, h2 { font-weight: 800 }` rule (section 7) changed the rendered height of `.prose h2` headings (the rule applies globally, including inside docs pages, since `.prose h2` only overrides `font-size`). The test scrolled by a **fixed 200px** after `scrollIntoViewIfNeeded()`, which depended on the old heading height to land inside the scroll-spy's ~190px active band; the new heading height pushed it just outside that band. It passed locally on Windows but failed on CI's Linux runner — plausibly sub-pixel font-rendering differences between OSes sitting on opposite sides of an already-marginal boundary, though the root fragility (a fixed pixel offset) was the same on both. **Do not mistake a repeated CI failure for flakiness without checking whether a recent change could plausibly be the cause** — three earlier failures in this same session *were* genuine flakiness (network timeouts, afterAll teardown), which made it easy to misdiagnose this fourth one the same way at first. | Fixed in `apps/website/test/browser.test.ts`: the test now computes the heading's actual position and scrolls to place it at a fixed distance from the viewport top, instead of nudging by a fixed amount after an imprecise `scrollIntoViewIfNeeded()`. Verified: passes alone and in the full suite, locally, 464/464, **and confirmed green on CI** (commit `9458b20`, run `40225059946`: `npm test` step passed). |
+| This machine's test runs got noticeably flakier after several hours of a continuous session (2026-10-26): one `npm test` run had 9 failed files/19 failed tests across unrelated packages, cleared up on immediate re-runs with no code change | `Get-CimInstance Win32_OperatingSystem` showed ~2.2 GB free of 16.5 GB total at the time — genuine low-memory pressure on the host, not a code issue. Likely compounded by a leftover `npm run serve` process from earlier in the session that was never stopped. | If a *wide* spread of unrelated test files fail at once (not the same one or two files repeatedly), suspect host resource pressure before suspecting code: check free memory, stop any leftover `npm run serve`/dev-server background processes from earlier in the session, and re-run. Reserve the "did my change cause this" investigation (section 13's CI-regression entry above) for failures that are narrow and repeat on clean re-runs. |
 | Website tests collide on `dist` | both suites build | `test/helpers.ts` uses a lock file + 30 s reuse; do not remove |
 | Shell quirks on this machine | Git Bash heredocs with quotes break; MSYS rewrites args starting with `/`; Python default encoding cp1252; `"\\u2060"` literal | write scripts with the Write tool; use `MSYS_NO_PATHCONV=1`; open files with `encoding="utf-8"`, preserve CRLF (`newline=""`) |
 | Git "CRLF will be replaced by LF" warnings | `.gitattributes`/Windows | harmless |
@@ -680,6 +733,25 @@ check `apps/api` schema validation still passes typecheck/tests after.
   cause before re-running a second time or shrugging it off, especially when CSS/layout changed.** **Confirmed on CI**
   (commit `9458b20`, run `40225059946`): `npm test` passed. The run still shows red overall, but only because of the
   pre-existing, already-flagged `npm audit` P0 (section 9/12/13) — typecheck/build/test/eval all green.
+- **2026-10-26, new topic: engine decline wording (first non-copy task this session).** The owner shifted from
+  website copy to product behaviour: "work on the performance of the model... let the response not be bland where it
+  says I couldn't find the information... it should be professional." Interpreted carefully, since the project's
+  abstention behaviour is explicitly protected (ADR-003, "do not weaken"): the fix is to the *wording* of a decline,
+  not to whether the engine declines. Found the single hard-coded sentence in `engine.ts` (`ABSTAIN_TEXT`), used in
+  three places inconsistently (only one of the three ever offered contact details). Built `packages/engine/src/abstain.ts`
+  (`composeAbstainText`, four professional phrasings picked deterministically by the question, plus an honest mention
+  of the closest page retrieval found), wired it into all three decline paths, and fixed the inconsistency by passing
+  `facts` through to `generateWithModel`/`generateExtractive` so contact details are now always offered when known,
+  wherever the engine abstains. Added `packages/engine/test/abstain.test.ts` (5 tests: variation, determinism, no old
+  stock phrase, near-miss mention, no near-miss mention) and one new assertion in `engine.test.ts`. Updated two places
+  that quoted the old sentence as a literal example of real output (`ChatDemo.astro`, the `why-say-i-dont-know.md`
+  guide) and one troubleshooting-doc table row that searched for the exact old string. Verified: typecheck, full
+  build, eval gate (100% all targets — confirms the decision logic is untouched), full test suite (470/470), and a
+  focused 4x re-run of just `packages/engine apps/api` for extra confidence since this is core product behaviour, not
+  copy. **Hit real test flakiness mid-session from host memory pressure** (one run had 9 failed files across packages
+  this change never touched) — diagnosed it as environment, not code, by checking free memory and re-running clean;
+  documented the distinguishing pattern in section 13 so a future session doesn't have to re-derive it. No API/SDK/
+  widget changes needed (the response is still a plain string).
 
 ---
 ## Memory maintenance policy

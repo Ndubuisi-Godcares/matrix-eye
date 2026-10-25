@@ -13,9 +13,10 @@
  *
  * The invariant: any factual answer returned is backed by at least one cited passage.
  */
-import { ANSWER_DEFAULTS, MatrixError, truncate, type ChatDebug, type ChatResponse, type ChatTurn, type Citation, type Rule, type SearchHit } from "@matrix-eye/core";
+import { ANSWER_DEFAULTS, MatrixError, truncate, type ChatDebug, type ChatResponse, type ChatTurn, type Citation, type Fact, type Rule, type SearchHit } from "@matrix-eye/core";
 import type { KnowledgeStore } from "@matrix-eye/knowledge";
 import type { LlmProvider } from "@matrix-eye/llm";
+import { composeAbstainText } from "./abstain";
 import { containsNumber, expectsNumber } from "./answer-type";
 import { answerFromFacts, isContactQuestion } from "./facts";
 import { composeExtractive } from "./extractive";
@@ -136,7 +137,7 @@ export class ConversationEngine {
     const { chunks, df } = this.store.termDocumentFrequencies(input.projectId);
     const missingKeyTerm = unsupportedKeyTerm(question, evidence, df, chunks);
     if (evidence.length === 0 || cov < this.tuning.minCoverage || missingKeyTerm) {
-      const response = this.abstain(facts);
+      const response = this.abstain(facts, query, evidence[0]);
       const why = missingKeyTerm ? [`unsupported_key_term:${missingKeyTerm}`] : [];
       return { ...response, debug: { ...this.debug(query, evidence, cov, why, timings), hitCount: hits.length, topScore } };
     }
@@ -147,9 +148,9 @@ export class ConversationEngine {
     let response: Omit<ChatResponse, "debug"> | null = null;
 
     if (this.llm) {
-      response = await this.generateWithModel(this.llm, { question, siteName, evidence, history, signal: input.signal, onToken: input.onToken }, issues);
+      response = await this.generateWithModel(this.llm, { question, siteName, evidence, history, facts, signal: input.signal, onToken: input.onToken }, issues);
     }
-    response ??= this.generateExtractive(query, evidence, (term) => inverseDocumentFrequency(term, df, chunks), expectsNumber(question));
+    response ??= this.generateExtractive(query, evidence, facts, (term) => inverseDocumentFrequency(term, df, chunks), expectsNumber(question));
     mark("generate", t);
 
     timings.total = Math.round(performance.now() - started);
@@ -159,7 +160,7 @@ export class ConversationEngine {
   /** Ask the model, validate its answer, and fall back to extractive on any failure. Returns null to request fallback. */
   private async generateWithModel(
     llm: LlmProvider,
-    ctx: { question: string; siteName: string; evidence: SearchHit[]; history: readonly ChatTurn[]; signal?: AbortSignal; onToken?: (text: string) => void },
+    ctx: { question: string; siteName: string; evidence: SearchHit[]; history: readonly ChatTurn[]; facts: readonly Fact[]; signal?: AbortSignal; onToken?: (text: string) => void },
     issues: string[],
   ): Promise<Omit<ChatResponse, "debug"> | null> {
     let raw: string;
@@ -187,7 +188,7 @@ export class ConversationEngine {
     issues.push(...verdict.issues);
 
     if (verdict.declined) {
-      return { answer: ABSTAIN_TEXT, abstained: true, route: "abstain", citations: [] };
+      return this.abstain(ctx.facts, ctx.question, ctx.evidence[0]);
     }
     // Missing citations or invented figures: the model's wording cannot be trusted, its evidence can.
     const unsafe = verdict.issues.some((i) => i === "empty" || i === "no_citation" || i.startsWith("unsupported_number"));
@@ -201,9 +202,9 @@ export class ConversationEngine {
     };
   }
 
-  private generateExtractive(query: string, evidence: SearchHit[], weight: (term: string) => number, wantsNumber: boolean): Omit<ChatResponse, "debug"> {
+  private generateExtractive(query: string, evidence: SearchHit[], facts: readonly Fact[], weight: (term: string) => number, wantsNumber: boolean): Omit<ChatResponse, "debug"> {
     const composed = composeExtractive(query, evidence, 3, weight, wantsNumber);
-    if (!composed) return this.abstain([]);
+    if (!composed) return this.abstain(facts, query, evidence[0]);
     return {
       answer: composed.answer,
       abstained: false,
@@ -212,13 +213,17 @@ export class ConversationEngine {
     };
   }
 
-  /** Honest "not found" reply, offering contact details when we know them. */
-  private abstain(facts: ReturnType<KnowledgeStore["getFacts"]>): Omit<ChatResponse, "debug"> {
+  /**
+   * Honest "not found" reply: professional, varied wording (see abstain.ts), names the closest page retrieval
+   * found when there is one, and offers contact details when we know them.
+   */
+  private abstain(facts: readonly Fact[], question: string, nearest?: SearchHit): Omit<ChatResponse, "debug"> {
+    const text = composeAbstainText(question, nearest?.chunk.pageTitle);
     // When declining, offer one email and one phone, not every department address on the site.
     const contact = answerFromFacts(facts, { maxEmails: 1, maxPhones: 1 });
     return contact
-      ? { answer: `${ABSTAIN_TEXT} ${contact.answer}`, abstained: true, route: "abstain", citations: contact.citations }
-      : { answer: ABSTAIN_TEXT, abstained: true, route: "abstain", citations: [] };
+      ? { answer: `${text} ${contact.answer}`, abstained: true, route: "abstain", citations: contact.citations }
+      : { answer: text, abstained: true, route: "abstain", citations: [] };
   }
 
   private debug(query: string, evidence: readonly SearchHit[], cov: number, issues: string[], timings: Record<string, number>): ChatDebug {
@@ -238,8 +243,6 @@ function preferNumbersWhenAsked(question: string, hits: SearchHit[]): SearchHit[
     .map((hit) => (containsNumber(hit.chunk.text) ? { ...hit, score: hit.score + bonus } : hit))
     .sort((a, b) => b.score - a.score);
 }
-
-const ABSTAIN_TEXT = "I couldn't find that on this website. You may want to contact the team directly.";
 
 function toCitation(id: number, hit: SearchHit): Citation {
   return { id, url: hit.chunk.pageUrl, title: hit.chunk.pageTitle, snippet: truncate(hit.chunk.text, 220) };

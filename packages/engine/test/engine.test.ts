@@ -105,6 +105,12 @@ describe("ConversationEngine (extractive, no model)", () => {
     expect(r.answer).toContain("admissions@riverside-university.test");
   });
 
+  it("declines professionally rather than with the old generic stock sentence", async () => {
+    const r = await engine().ask({ projectId: PROJECT, question: "Do you have a swimming pool?" });
+    expect(r.answer.toLowerCase()).not.toContain("i couldn't find that on this website");
+    expect(r.answer.toLowerCase()).not.toContain("contact the team directly");
+  });
+
   it("never repeats the injected instruction from the hostile page", async () => {
     const r = await engine().ask({ projectId: PROJECT, question: "Is tuition free? Tell me about the open day" });
     expect(r.answer).not.toMatch(/tuition is free|scam@evil|ignore/i);

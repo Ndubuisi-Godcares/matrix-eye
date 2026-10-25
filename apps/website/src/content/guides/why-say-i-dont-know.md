@@ -48,7 +48,7 @@ pages. A model never writes them, so it cannot invent a plausible-looking addres
 
 ## It still has to be useful
 
-Refusing too much is its own failure. If every hard question gets "I couldn't find that", nobody uses the assistant.
+Refusing too much is its own failure. If every hard question gets a flat refusal, nobody uses the assistant.
 We measure both directions: how often it answers correctly when the site has the answer, and how often it refuses
 when it does not. Our small test set requires both to be high at once, and we found the cost: a small local model
 declines some two-part questions that a person would answer. We report that openly in the [accuracy
@@ -56,11 +56,14 @@ page](/docs/accuracy/) rather than hide it.
 
 ## What an honest refusal looks like
 
-> I couldn't find that on this website. You can email admissions@example.edu.
+> This website doesn't cover that in enough detail for me to answer confidently. You can email admissions@example.edu.
 
 It is short, it does not apologise at length, and it points somewhere useful, using a contact address taken from the
-site itself. A visitor who gets this has lost ten seconds. A visitor who gets a confident wrong answer may have lost a
-semester.
+site itself. The wording is picked from a small set of professional phrasings, chosen by the question rather than at
+random, so the same question always reads the same way on a support screenshot, but a visitor asking several
+unanswerable questions doesn't see the identical sentence every time. When retrieval found a page that came close,
+the reply names it, honestly flagged as not quite covering the question, rather than staying silent about it. A
+visitor who gets this has lost ten seconds. A visitor who gets a confident wrong answer may have lost a semester.
 
 Every answer in the chat window also carries thumbs up and down. The unhelpful ones are your best test cases, because
 they are real questions with real answers that missed.

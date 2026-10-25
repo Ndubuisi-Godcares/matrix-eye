@@ -29,7 +29,7 @@ Find your symptom, then follow the fix. If you are still stuck, use the [contact
 | What you see | Why | What to do |
 |---|---|---|
 | Answers are quoted sentences, not conversational | No language model is configured. | Install Ollama and pull a model, or set `MATRIX_EYE_LLM_BASE_URL` and `MATRIX_EYE_LLM_MODEL`. See [Self-hosting](self-hosting.md). |
-| "I couldn't find that on this website" for something your site does say | The page may not be indexed, may phrase it very differently, or the content loads with JavaScript. | Use the search endpoint to see what was indexed; check that page was read; add the wording to the page, or add a fixed rule. |
+| The assistant declines a question your site does answer | The page may not be indexed, may phrase it very differently, or the content loads with JavaScript. | Use the search endpoint to see what was indexed; check that page was read; add the wording to the page, or add a fixed rule. |
 | The first answer takes about 10 seconds | The model is loading into memory. | Normal. Later answers are faster. |
 | Empty or strange replies from the model | A "thinking" model, which writes its reasoning into the answer. | Use a non-thinking model such as `qwen3:4b-instruct`. `llm-check` warns about this. |
 | A two-part question is declined | Small models are cautious. | Try a larger model, or ask the parts separately. |
