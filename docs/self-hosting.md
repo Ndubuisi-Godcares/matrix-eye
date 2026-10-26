@@ -1,7 +1,8 @@
 # Self-hosting and models
 
-Everything runs on your own machine or server: the reader, the search index, the API, the chat widget and, if you
-choose, the language model. Nothing is sent to us. This page covers settings, choosing a model, and running it safely.
+The entire stack runs on infrastructure you control: the crawler, the search index, the API, the chat widget, and
+optionally the language model. No data is sent to MatrixEye. This page covers configuration, model selection, and
+operating it safely.
 
 ## Settings
 
@@ -23,14 +24,16 @@ automatically when present).
 
 ## Language models
 
-Without a model, answers are quoted from your pages: accurate and cited, but they cannot summarise. A model writes a
-natural answer from the same passages, still with sources, and still checked afterwards.
+Without a configured model, answers are composed by quoting source passages directly: accurate and cited, but
+unable to summarize. A model generates a natural-language answer from the same retrieved passages, still cited,
+still verified afterward.
 
-Any server that speaks the OpenAI chat protocol works: Ollama, vLLM, LM Studio, or a hosted provider. Set
+Any server implementing the OpenAI chat protocol works: Ollama, vLLM, LM Studio, or a hosted provider. Set
 `MATRIX_EYE_LLM_BASE_URL` (for example `http://localhost:11434/v1`) and `MATRIX_EYE_LLM_MODEL`.
 
-**With Ollama on the same computer, no settings are needed for the demo and command-line tool:** they find it and
-choose a model for you, and tell you which. (The API server never guesses: a deployment must name its model.)
+**With Ollama running on the same machine, the demo and CLI require no model configuration:** they detect it and
+select a model automatically, and report which one. The API server never guesses — a deployment must name its
+model explicitly.
 
 ```bash
 ollama pull qwen3:4b-instruct       # about 2.5 GB, Apache-2.0 licensed
@@ -58,9 +61,9 @@ npx playwright install chromium
 It is slower (a few seconds a page), so start with a small page limit. The browser is restricted from reaching private or internal
 addresses. If you run rendering for websites other than your own, run it in a network-isolated environment.
 
-## Running it safely
+## Operating it safely
 
-A short checklist before real visitors use it:
+A checklist before exposing it to real visitors:
 
 - Use a long, random `MATRIX_EYE_API_KEY`, and never put it in a web page. Browsers use the project id and your allowed origins instead.
 - Set **allowed origins** on each project to exactly the websites that show the chat window.
@@ -72,5 +75,6 @@ A short checklist before real visitors use it:
 
 ## Moving the index
 
-The index is derived from your website, so it can always be rebuilt by crawling again. Upgrades that change the
-index layout rebuild it automatically on the next crawl; projects, rules, settings and feedback are kept.
+The index is derived entirely from your website, so it can always be rebuilt by re-crawling. Upgrades that change
+the index layout rebuild it automatically on the next crawl; projects, rules, settings and feedback persist across
+the rebuild.

@@ -1,6 +1,6 @@
 # Troubleshooting
 
-Find your symptom, then follow the fix. If you are still stuck, use the [contact page](/contact/).
+Find the symptom, apply the fix. If the issue persists, use the [contact page](/contact/).
 
 ## Reading your website
 

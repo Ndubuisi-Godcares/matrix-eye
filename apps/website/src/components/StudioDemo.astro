@@ -1,0 +1,39 @@
+---
+/**
+ * An illustration of the Template Studio dashboard: designing the widget for the same invented university as
+ * ChatDemo (so the two illustrations read as one story). Clicks through every template, then every launcher icon
+ * shown, before landing on the final pick, which carries through into the live preview, then a save. CSS only; a
+ * "click" ring marks each pick, including the ones passed over on the way to the final choice. Shown in its final
+ * state, with no movement, for visitors who prefer reduced motion - only the final pick on each row renders then,
+ * never the ones passed through. Decorative (aria-hidden): the same facts are in the page copy.
+ */
+import Icon from "./Icon.astro";
+---
+
+<figure class="studio-demo" aria-label="Example of designing a widget in the Template Studio">
+  <div class="studio-demo__bar"><Icon name="layers" /> Template Studio <span class="studio-demo__crumb">Riverside University</span></div>
+  <div class="studio-demo__body">
+    <p class="studio-demo__label reveal reveal--1">Template</p>
+    <div class="studio-row reveal reveal--1">
+      <span class="swatch swatch--flash" style="animation-delay: 0.9s">Minimal<span class="click-ping" style="animation-delay: 0.9s"></span></span>
+      <span class="swatch swatch--flash" style="animation-delay: 1.6s">SaaS<span class="click-ping" style="animation-delay: 1.6s"></span></span>
+      <span class="swatch swatch--pick">Developer<span class="click-ping" style="animation-delay: 2.3s"></span></span>
+    </div>
+
+    <p class="studio-demo__label reveal reveal--2">Launcher icon</p>
+    <div class="studio-row reveal reveal--2">
+      <span class="icon-swatch icon-swatch--flash" style="animation-delay: 3.4s"><Icon name="chat" /><span class="click-ping" style="animation-delay: 3.4s"></span></span>
+      <span class="icon-swatch icon-swatch--flash" style="animation-delay: 4.1s"><Icon name="sparkle" /><span class="click-ping" style="animation-delay: 4.1s"></span></span>
+      <span class="icon-swatch icon-swatch--flash" style="animation-delay: 4.8s"><Icon name="book" /><span class="click-ping" style="animation-delay: 4.8s"></span></span>
+      <span class="icon-swatch icon-swatch--pick"><Icon name="headset" /><span class="click-ping" style="animation-delay: 5.5s"></span></span>
+    </div>
+
+    <p class="studio-demo__label reveal reveal--3">Live preview</p>
+    <div class="studio-preview reveal reveal--3">
+      <p class="studio-preview__bubble studio-preview__bubble--before" aria-hidden="true">How do I apply?</p>
+      <p class="studio-preview__bubble studio-preview__bubble--after">How do I apply?</p>
+    </div>
+
+    <p class="studio-demo__save reveal reveal--4"><Icon name="check" /> Saved &mdash; every visitor sees it on their next load</p>
+  </div>
+</figure>

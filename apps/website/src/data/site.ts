@@ -7,7 +7,7 @@
 export const SITE = {
   name: "MatrixEye",
   /** Short line used in titles and link previews. */
-  tagline: "Turn your website into an AI assistant that cites its sources",
+  tagline: "An assistant for your website, not a rule-based chatbot",
   /** Under about 160 characters so search results show it whole. */
   description: "MatrixEye indexes your website content to power grounded AI conversations, with source references for every answer. Self-host it, or use the hosted service when it launches.",
   /** PLACEHOLDER: replace when the domain is chosen (set PUBLIC_SITE_URL at build time). */

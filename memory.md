@@ -555,6 +555,88 @@ phrasing; small local models sometimes decline two-part questions; widget/`Origi
 
 ## 11. Current development position (READ THIS FIRST)
 
+- **2026-10-26, continued: "Yeah, you are right" + three bundled asks after the owner confirmed the dashboard
+  should not be hosted publicly.** Owner asked to (1) build a Template Studio walkthrough animation like the
+  existing Home hero's crawler/chat animation, placed in a new marketing section on the homepage; (2) rewrite the
+  hero headline to be catchier and explicitly position MatrixEye against rule-based chatbots; (3) extend the dense
+  "infra-vendor" register (established 2026-10-25/26, applied so far to Home/Product/Pricing/Security/Bot/
+  Waitlist/Footer/FAQ data) to **every remaining section of the site, including docs and guides**, which had been
+  deliberately left in a plainer voice in the earlier pass. Confirmed understanding before writing anything (per
+  this project's standing rule), owner confirmed scope, then built, mid-task, two more asks arrived: a **larger,
+  more professional** version of the animation specifically for the Template Studio doc page (not just the
+  homepage teaser), and then a revision so the animation **clicks through every template and every launcher icon
+  shown**, not just the final pick, before landing on the choice that carries into the live preview and the save.
+  What was built:
+  - **Hero headline**: `index.astro`'s H1 changed from "An assistant for your website that cites its sources" to
+    "An assistant for your website, **not a rule-based chatbot**" (reusing the site's own established "X, not Y"
+    contrast pattern — the "why" section's H2 already does this: "Verifiable answers, not confident guesses").
+    `site.ts`'s `tagline` (feeds `<title>`) updated to match. The owner's verbatim reference lead paragraph was
+    **not** touched (it's their supplied text, used site-wide as the tone reference). The "why" section's lead was
+    rewritten instead to name the rule-based-chatbot limitation explicitly, since that's the page's dedicated
+    differentiation section and wasn't protected text: "Rule-based chatbots answer only what they were scripted
+    for, and generic AI assistants answer everything, evidence or not. MatrixEye's response pipeline is built
+    around a narrower rule: read the site, answer from what it says, or decline."
+  - **Two new illustration components**, same CSS-only idiom as the existing `HeroScene.astro`/`ChatDemo.astro`
+    (real markup, final state shown with no movement under `prefers-reduced-motion`, decorative/`aria-hidden`,
+    facts duplicated in real page copy): `StudioDemo.astro` (homepage teaser, compact) and `StudioDemoLarge.astro`
+    (docs page, larger: adds a numbered step tracker and a full two-turn exchange with a citation chip in the
+    preview, not one placeholder line). Both show the **same fictitious "Riverside University" project** as
+    `ChatDemo.astro` so the two illustrations read as one continuous story. Both **click through every option
+    shown** (Minimal → SaaS → Developer; chat → sparkle → book → headset), each passed-over option getting its own
+    brief highlight-and-release flash plus a "click" ring (`@keyframes flash-pick`, `@keyframes click-ping`, timed
+    per-element via inline `animation-delay` rather than numbered CSS classes), before the final pick stays
+    highlighted and carries through to the live preview and the save line. Total sequence ~8s. Under reduced
+    motion, only the final pick on each row renders — the passed-over flashes' own `0%/100%` keyframes are neutral,
+    so disabling animation entirely (the site's global reduced-motion rule) naturally reverts them to their plain,
+    never-picked state with zero extra CSS needed for that case.
+  - Added `sparkle`/`headset` icon paths to the **website's own** `Icon.astro` (previously only in
+    `packages/widget/src/widget.ts`), copied verbatim from the widget so the illustration shows the real icons a
+    visitor would actually get, not redrawn approximations.
+  - **Real bug caught and fixed before shipping, not from feedback:** the live-preview "after" bubble in both
+    components initially used an invented dark-terminal colour scheme (`background: var(--ink)`) to represent the
+    Developer template. Checked against the real template CSS (`packages/widget/src/styles.ts`) and found the
+    actual Developer template changes only font and radius, never colour — fixed both components to match the
+    real template honestly instead of an invented aesthetic.
+  - **New marketing section** on `index.astro` ("Branding" eyebrow, "Design the widget without writing CSS" h2)
+    between the existing "For developers" and "Safe by design" sections, linking to `/docs/dashboard/`. Caught and
+    fixed a section-background-alternation bug of my own making (two `section--alt` backgrounds landing back to
+    back) before it shipped.
+  - **Wired `StudioDemoLarge` into the Template Studio doc page specifically** (not all docs pages): added a named
+    `slot="visual"` to `Docs.astro` right after the page header, and in `docs/[slug].astro` pass
+    `<StudioDemoLarge slot="visual" />` only when `slug === "dashboard"` — markdown itself has no component
+    support in this setup (plain `astro:content` render, not MDX), so this is the only way to attach a
+    page-specific visual to one doc page without converting the whole docs pipeline to MDX.
+  - **Site-wide tone pass, now including docs and guides**: rewrote the prose (not code blocks/tables/commands) in
+    all 10 published docs (`how-it-works.md` fully rewritten — it was the most casual/second-person of the set;
+    `quickstart.md`, `widget.md`, `sdk.md`, `accuracy.md`, `api.md`, `self-hosting.md`, `dashboard.md` had targeted
+    paragraph-level edits; `troubleshooting.md` and `changelog.md` left alone — reference tables and a factual
+    changelog don't benefit from marketing register) and all 3 guides (`why-say-i-dont-know.md`,
+    `accessible-chat-widget.md`, `add-assistant-to-react-or-nextjs.md` — tightened toward the register while
+    deliberately keeping their narrative/first-person essay structure, since flattening a case-study guide into
+    declarative third-person Home-page prose would hurt it, not help it; this was a judgment call, not literally
+    identical treatment to the marketing pages). Also touched `bot.astro`'s and `contact.astro`'s lead paragraphs
+    (their instructional bullet lists were left alone — already precise, forcing marketing prose into a
+    troubleshooting-style list would hurt usability).
+  - **Found and fixed an existing terminology violation while reading, not asked for:** `accessible-chat-widget.md`
+    called the automated axe-core scan an "audit" three times (title, description, and body), conflicting with the
+    site's own established rule (section 7: "audit" is reserved for actual independent/third-party review;
+    automated checks are "checks"/"tests" — already fixed elsewhere on Home/`security.astro`/`faq.ts` in the
+    2026-10-25 pass but apparently missed in this guide). Corrected to "check" throughout; confirmed via grep that
+    no other file in `apps/website/src` or `docs/` has the same issue (the two remaining uses of "audit", on
+    `product.astro` and `security.astro`, are both correctly describing the real, not-yet-done third-party review).
+  - **Verified**: typecheck, full `apps/website` build (including Pagefind indexing, 25 pages), full test suite.
+    Two failures on the first full run — `apps/website/test/browser.test.ts` (connection timeouts) and
+    `packages/widget-react/test/react.test.ts` (`removes the widget when the component unmounts`) — investigated
+    both rather than assuming: the browser-test failures matched this session's already-documented host-contention
+    pattern and **passed clean 30/30 in isolation**; the widget-react failure is **pre-existing and unrelated** —
+    confirmed via `git status` (zero changes to `packages/widget`/`packages/widget-react` this pass) and `npm ls
+    react react-dom` plus a `package-lock.json` diff against the pre-session commit (react-dom was already
+    19.3.0, unchanged) — not chased further since it's outside this pass's scope and the standing guidance is not
+    to rabbit-hole on unrelated tooling flakiness. Eval gate re-run: 100% all targets (engine untouched this pass).
+    Manually verified both animations in Chrome: computed `animationDelay`/`animationName` per swatch confirmed
+    the click-through sequence fires in the intended order, final state confirmed correct on both the homepage
+    teaser and the doc-page version, no real console errors (only the same harmless extension-messaging noise
+    seen throughout this session). Commit status: check the hash at the top of this file and `git log`.
 - **2026-10-26, immediately after the Template Studio push: "Please rectify the failed deployments... is the
   dashboard on the website now?"** The owner saw the Template Studio commit (`f043209`) land with CI red and asked
   to fix it, plus asked whether `apps/dashboard` is live on the public website. Answered the second question first:
@@ -904,6 +986,7 @@ removed v3 API (`z.object`/`z.string`/`z.array`/`z.enum`/`.min`/`.max`/`.optiona
 |---|---|---|
 | **Fixed 2026-10-26.** `composeExtractive` (`packages/engine/src/extractive.ts`) could return `{ answer: "", usedEvidence: [] }` — a non-null, "successful" empty answer — instead of `null`, when every evidence chunk's text was only short fragments (e-commerce card text like "$10", "View product": all under `MIN_SENTENCE_WORDS`) | Both the relevance-filtered `chosen` list and its opening-passage fallback ended up empty, but the function fell through to building (and returning) an empty-string answer object anyway, so `generateExtractive`'s `if (!composed) return this.abstain(...)` guard never fired — a real violation of the ADR-003 abstention guarantee, only surfaced once a real non-prose site (an e-commerce/shop-heavy page) was actually crawled and asked about; the fixture site and eval corpus are all prose, so no existing test exercised this shape | Fixed: returns `null` when `chosen` is still empty, so the engine abstains honestly. Regression test added (`packages/engine/test/units.test.ts`) |
 | Dashboard: "Could not reach the MatrixEye server: Failed to fetch" | `MATRIX_EYE_CORS_ORIGINS` didn't include the dashboard's origin, so `@fastify/cors` resolved `origin: false`; it then replies to that disallowed preflight with `reply.callNotFound()`, which this app's custom 404 handler turns into a plain 404 — correct `@fastify/cors` behaviour, not a bug | Add the dashboard's origin(s) to `MATRIX_EYE_CORS_ORIGINS` (`docs/dashboard.md` already documents this) and restart `npm run dev:api` — `tsx watch` only reads `.env` at process start, so editing it alone does nothing until restarted |
+| `packages/widget-react/test/react.test.ts`'s "removes the widget when the component unmounts" test started failing consistently (not intermittently) as of 2026-10-26's content/animation pass, including run alone with no other suite or dev server active | **Unconfirmed, not caused by this session's changes** — `git status` shows zero modifications to `packages/widget`/`packages/widget-react` all session, and `react-dom` is still 19.3.0, the same version as the pre-session commit (`22aa1b4`), confirmed via `package-lock.json` diff. Likely a real timing assumption in the test's own 60ms `settle()` helper racing the widget's dynamic `import()`, exposed by something about the current machine/Node version rather than a code regression | Not investigated further this pass (out of scope - no widget/widget-react code was touched). **Next session touching `packages/widget-react`: re-run this one test file alone first** to see if it's still failing; if so it may be worth raising `settle()`'s default timeout or investigating the dynamic-import timing directly, rather than assuming it's environmental again |
 | Admin API crawl indexes 0 pages on a JS-rendered (React/Vue/SPA) site | The admin HTTP API (`apps/api`) had no JavaScript-rendering capability at all — `--render` only ever existed on `npm run demo`/the CLI | Fixed 2026-10-26: set `MATRIX_EYE_RENDER=true` and restart `npm run dev:api` (see section 7/11 for how it's wired) |
 | Vercel "No Output Directory named public" | Build ran from repo root without website build config | fixed by `vercel.json` (root + `apps/website`); keep both in sync (`npm run deploy-config`; test enforces) |
 | Vercel "To link a GitHub repository, you need to install the GitHub integration" | Repo was in an organisation; Hobby plan can't deploy org repos; personal repo was empty | pushed code to `Ndubuisi-Godcares/matrix-eye`; user must grant the Vercel GitHub app access |

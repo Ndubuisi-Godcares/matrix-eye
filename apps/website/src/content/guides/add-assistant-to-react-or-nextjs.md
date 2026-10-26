@@ -5,13 +5,13 @@ date: 2026-10-12
 tags: ["react", "nextjs", "tutorial"]
 ---
 
-This walkthrough adds a chat assistant that answers from your own website to a React or Next.js app. It assumes
-MatrixEye is running (see the [quickstart](/docs/quickstart/)) and that you have the address of your API and your
+This walkthrough adds a chat assistant, grounded in your own website's content, to a React or Next.js app. It
+assumes MatrixEye is running (see the [quickstart](/docs/quickstart/)) and that you have your API's address and
 admin key.
 
-## 1. Create a project and read your site
+## 1. Create a project and index your site
 
-Do this once, from a script on your computer or server, never in browser code, because it uses your secret key.
+Run this once, from a script on your own computer or server — never from browser code, since it uses the secret key.
 
 ```ts
 import { MatrixEyeClient } from "@matrix-eye/sdk";
@@ -32,8 +32,8 @@ await matrix.waitForCrawl((await matrix.startCrawl(project.id)).id);
 console.log(project.id); // you will need this next
 ```
 
-If your site is built with React and the crawl finds nothing, the pages are drawn in the browser. Run the crawl with
-the rendering option described in the [self-hosting guide](/docs/self-hosting/).
+If the site is built with React and the crawl indexes nothing, the pages render client-side. Run the crawl with the
+rendering option described in the [self-hosting guide](/docs/self-hosting/).
 
 ## 2. Add the component
 
@@ -65,12 +65,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-The component is safe to render on the server: it renders an empty placeholder there and loads the chat window in the
+The component is safe to render on the server: it renders an empty placeholder there and loads the widget in the
 browser. In a plain React app, import it the same way.
 
-## 3. Or use one script tag
+## 3. Or use a single script tag
 
-For any other site, including WordPress, this is enough, placed just before `</body>`:
+For any other site, including WordPress, this is sufficient, placed just before `</body>`:
 
 ```html
 <script src="https://YOUR-HOST/matrix-eye-widget.js" defer
@@ -80,11 +80,11 @@ For any other site, including WordPress, this is enough, placed just before `</b
 
 ## 4. Check it works
 
-- Open your site. A round chat button appears in the corner. If it does not, open the browser console: the widget
-  explains exactly what is missing.
-- If it says "This assistant isn't available on this website", the page's address is not in `allowedOrigins`.
-  Origins must match exactly: `https://example.com` and `https://www.example.com` are different.
-- Ask the questions your visitors ask most. Click 👎 on weak answers.
+- Open the site. A round launcher appears in the corner. If it does not, open the browser console: the widget
+  reports exactly what is missing.
+- "This assistant isn't available on this website" means the page's address is not in `allowedOrigins`. Origins must
+  match exactly: `https://example.com` and `https://www.example.com` are distinct.
+- Ask the questions visitors ask most, and flag weak answers with a thumbs down.
 
 ## 5. Improve it from real use
 
@@ -93,9 +93,9 @@ const unhappy = await matrix.listFeedback(project.id, "down");
 for (const item of unhappy) console.log(item.question, "->", item.answer);
 ```
 
-Each entry is a real visitor question with the answer they were given. For every one, either the page needs to say
-the thing more clearly, or a fixed rule should set the answer. After changing the site, re-run the crawl; only changed
-pages are read again.
+Each entry is a real visitor question paired with the answer actually given. For each one, either the source page
+needs to state the fact more clearly, or a fixed rule should define the answer. After editing the site, re-run the
+crawl — only changed pages are reprocessed.
 
 ## Styling and behaviour
 

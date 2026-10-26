@@ -1,7 +1,7 @@
 # Accuracy and evaluation
 
-An assistant that is usually right and sometimes confidently wrong is worse than useless, so MatrixEye measures
-itself, in public, including where it falls short.
+An assistant that answers confidently but incorrectly some of the time is worse than no assistant at all. MatrixEye
+measures itself against an evaluation gate, publicly, including where it currently falls short.
 
 ## What is measured
 
@@ -33,9 +33,9 @@ Measured on 48 questions about a fictional university website built for testing:
 
 ## How to read those numbers
 
-**They are a regression baseline, not a promise.** The test set is small, comes from one invented website, and the
-engine was tuned while building it. A high score there shows that nothing has broken; it does not show how it will
-perform on your website. Honest expectations:
+**These figures are a regression baseline, not a performance guarantee.** The test set is small, drawn from one
+invented website, and the engine was tuned against it during development. A passing score demonstrates that
+nothing has regressed; it does not predict performance on your own website. Stated plainly:
 
 - On real sites we found problems the test set could not show (examples below). Each was fixed and turned into a permanent test.
 - A small model is cautious: it sometimes declines two-part questions, and lists can be incomplete.
@@ -55,8 +55,8 @@ perform on your website. Honest expectations:
 
 ## Measure it on your own website
 
-Write a file of questions and the pages that should answer them, then score it. Copy the example set that ships with the project,
-replace the questions, and run:
+Define a file of questions and the pages that should answer each one, then score the assistant against it. Copy
+the example set shipped with the project, replace the questions with your own, and run:
 
 ```bash
 npm run eval -- --url https://your-website.example --dataset my-questions.json
@@ -67,6 +67,7 @@ Add questions your visitors really ask, plus a few the site cannot answer, becau
 
 ## Learn from your visitors
 
-Every answer in the chat window has thumbs up and down. Read the unhelpful ones with
-`GET /v1/projects/PROJECT_ID/feedback?rating=down`: they are real questions with the answer given, which makes the best
-test cases. Add them to your question file, fix the page or add a rule, and re-run the evaluation.
+Every answer in the widget carries a thumbs up/down control. Reviewing the negative ones with
+`GET /v1/projects/PROJECT_ID/feedback?rating=down` surfaces real questions paired with the answer actually given —
+the highest-value source of new test cases available. Add them to the question file, fix the source page or add a
+rule, and re-run the evaluation.

@@ -1,6 +1,7 @@
 ---
 import type { CodeLanguage } from "astro";
 import HeroScene from "../components/HeroScene.astro";
+import StudioDemo from "../components/StudioDemo.astro";
 import CodeTabs from "../components/CodeTabs.astro";
 import Faq from "../components/Faq.astro";
 import Icon from "../components/Icon.astro";
@@ -47,7 +48,7 @@ const tabs: Array<{ id: string; label: string; lang: CodeLanguage; code: string 
     <div class="container hero__grid">
       <div class="hero__copy">
         <span class="eyebrow">Early access</span>
-        <h1>An assistant for your website that <span class="grad-text">cites its sources</span></h1>
+        <h1>An assistant for your website, <span class="grad-text">not a rule-based chatbot</span></h1>
         <p class="lead">MatrixEye indexes your website content to power context-aware AI conversations. Responses are grounded in your published content and include source references for verifiability. When the available context is insufficient, the assistant abstains rather than generating unsupported answers.</p>
         <ul class="tiles" aria-label="Highlights">
           <li class="tile"><span class="tile__icon"><Icon name="file" /></span><div><strong>Accurate answers</strong><span>Backed by source links</span></div></li>
@@ -73,7 +74,7 @@ const tabs: Array<{ id: string; label: string; lang: CodeLanguage; code: string 
       <div class="section__head">
         <span class="eyebrow">Why it is different</span>
         <h2 id="why">Verifiable answers, not confident guesses</h2>
-        <p class="lead">Generic AI assistants generate confident responses regardless of whether supporting evidence exists. MatrixEye's response pipeline is built around the opposite constraint: no evidence, no answer.</p>
+        <p class="lead">Rule-based chatbots answer only what they were scripted for, and generic AI assistants answer everything, evidence or not. MatrixEye's response pipeline is built around a narrower rule: read the site, answer from what it says, or decline.</p>
       </div>
       <div class="grid grid--3">
         <article class="card">
@@ -137,6 +138,24 @@ const tabs: Array<{ id: string; label: string; lang: CodeLanguage; code: string 
         <CodeTabs name="home" tabs={tabs} />
         <p class="hero__note">These packages are in early access &mdash; see the <a href="/docs/quickstart/">quickstart</a> for how to run everything today.</p>
       </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="studio">
+    <div class="container split">
+      <div>
+        <span class="eyebrow">Branding</span>
+        <h2 id="studio">Design the widget without writing CSS</h2>
+        <p class="lead">The Template Studio applies visual templates, launcher icons and brand colours to the widget through a live preview that runs the real component against your real API, not a mockup, and saves the result to your project so every visitor gets it automatically.</p>
+        <ul class="checks" style="margin-top: 1.5rem;">
+          <li><Icon name="check" /><span><strong>Three visual templates</strong> &mdash; Minimal, SaaS and Developer &mdash; each a distinct layout, not a colour swap.</span></li>
+          <li><Icon name="check" /><span><strong>A launcher icon library</strong>, applied instantly in the preview as you choose.</span></li>
+          <li><Icon name="check" /><span><strong>Saved once, applied everywhere:</strong> the result persists to the project's settings and every future visitor sees it, no redeploy required.</span></li>
+          <li><Icon name="check" /><span><strong>Runs locally against your own API</strong>, with no separate account or hosted login.</span></li>
+        </ul>
+        <p style="margin-top: 1.5rem;"><a class="btn btn--secondary btn--sm" href="/docs/dashboard/">Template Studio guide</a></p>
+      </div>
+      <div><StudioDemo /></div>
     </div>
   </section>
 

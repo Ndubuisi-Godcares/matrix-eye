@@ -297,6 +297,71 @@ code, kbd, pre { font-family: var(--font-mono); font-size: 0.9em; }
 @keyframes card-in { from { opacity: 0; transform: translateY(14px) scale(0.94); } to { opacity: 1; transform: none; } }
 @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 
+/* ---------- Template Studio illustration (StudioDemo.astro) ----------
+   Same idiom as .chat-demo above: real markup, CSS-only reveals, final state shown with no movement under
+   reduced motion. A "click" ring (an expanding, fading circle) marks the template/icon a visitor would pick;
+   the live-preview bubble swaps from the default look to the Developer template's look the same way
+   .crawl__running/.crawl__done swap above - hidden/shown by default, animated only when motion is allowed. */
+.studio-demo { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 20px; box-shadow: var(--shadow); overflow: hidden; max-width: 30rem; margin-inline: auto; width: 100%; }
+.studio-demo__bar { display: flex; align-items: center; gap: 0.6rem; padding: 0.85rem 1rem; color: var(--ink); border-bottom: 1px solid var(--border); font-weight: 650; font-size: 0.98rem; }
+.studio-demo__bar svg { width: 1.1rem; height: 1.1rem; color: var(--accent-text); }
+.studio-demo__crumb { margin-left: auto; font-weight: 500; font-size: 0.82rem; color: var(--muted); }
+.studio-demo__body { padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.studio-demo__label { margin: 0.4rem 0 0; font-size: 0.78rem; font-weight: 650; color: var(--muted); text-transform: uppercase; letter-spacing: 0.02em; }
+.studio-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.swatch, .icon-swatch { position: relative; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1.5px solid var(--border); font-size: 0.85rem; color: var(--text); }
+.icon-swatch { padding: 0.45rem; }
+.icon-swatch svg { width: 1rem; height: 1rem; }
+.swatch--pick, .icon-swatch--pick { border-color: var(--accent); color: var(--accent-text); background: var(--accent-soft); font-weight: 600; }
+/* Passed-over options on the way to the final pick: briefly highlight, like .swatch--pick, then release -
+   the animation's own 0%/100% keyframes are neutral, so under reduced motion (animation disabled entirely)
+   these simply render in their plain, never-picked state, exactly as intended. */
+.swatch--flash, .icon-swatch--flash { animation: flash-pick 0.7s ease both; }
+@keyframes flash-pick {
+  0%, 100% { border-color: var(--border); color: var(--text); background: none; font-weight: 400; }
+  35%, 65% { border-color: var(--accent); color: var(--accent-text); background: var(--accent-soft); font-weight: 600; }
+}
+.click-ping { position: absolute; inset: -5px; border: 2px solid var(--accent); border-radius: 999px; opacity: 0; pointer-events: none; }
+.studio-preview { position: relative; min-height: 2.6rem; }
+.studio-preview__bubble { margin: 0; padding: 0.6rem 0.85rem; border-radius: 10px; background: var(--bg-alt); font-size: 0.85rem; color: var(--text); }
+/* Matches the real Developer template (packages/widget/src/styles.ts): monospace type and a tighter radius,
+   not an invented colour scheme - the same card, just typeset the way that template actually renders it. */
+.studio-preview__bubble--after { position: absolute; inset: 0; display: none; font-family: var(--font-mono); font-size: 0.8rem; border-radius: 6px; background: var(--bg-alt); color: var(--text); border: 1px solid var(--border); }
+.studio-demo__save { display: flex; align-items: center; gap: 0.4rem; margin: 0.3rem 0 0; font-size: 0.85rem; font-weight: 600; color: var(--ok); }
+.studio-demo__save svg { width: 1rem; height: 1rem; }
+@media (prefers-reduced-motion: no-preference) {
+  /* .click-ping and .swatch--flash/.icon-swatch--flash carry their own animation-delay inline, per element,
+     so every option in the click-through sequence fires at its own moment without a named class each. */
+  .click-ping { animation: click-ping 0.7s ease-out both; }
+  .studio-preview__bubble--before { animation: fade-out 0.3s ease 6.6s both; }
+  .studio-preview__bubble--after { display: block; animation: reveal 0.4s var(--ease, ease) 6.7s both; }
+}
+@keyframes click-ping { 0% { opacity: 0.9; transform: scale(0.6); } 100% { opacity: 0; transform: scale(1.7); } }
+.studio-demo .reveal--1 { animation-delay: 0.4s; } .studio-demo .reveal--2 { animation-delay: 2.9s; }
+.studio-demo .reveal--3 { animation-delay: 6.2s; } .studio-demo .reveal--4 { animation-delay: 7.5s; }
+.hero .studio-demo { animation: rise 0.9s var(--ease) 0.2s both; }
+
+/* Larger variant for the Template Studio doc page (StudioDemoLarge.astro): a numbered step tracker and a full
+   two-turn exchange in the preview, in place of the homepage teaser's single placeholder line. */
+.studio-demo--lg { max-width: 38rem; }
+.studio-demo--lg .studio-demo__bar { padding: 1.1rem 1.3rem; font-size: 1.05rem; }
+.studio-demo--lg .studio-demo__body { padding: 1.3rem 1.3rem 1.5rem; gap: 0.65rem; }
+.studio-demo--lg .studio-demo__label { font-size: 0.82rem; margin-top: 0.6rem; }
+.studio-demo--lg .swatch, .studio-demo--lg .icon-swatch { padding: 0.55rem 0.9rem; font-size: 0.92rem; }
+.studio-demo--lg .icon-swatch { padding: 0.55rem; }
+.studio-demo--lg .icon-swatch svg { width: 1.15rem; height: 1.15rem; }
+.studio-steps { display: flex; flex-wrap: wrap; gap: 0 1rem; list-style: none; margin: 0; padding: 0.7rem 1.3rem; border-bottom: 1px solid var(--border); background: var(--bg-alt); }
+.studio-steps__item { font-size: 0.78rem; font-weight: 650; color: var(--muted); letter-spacing: 0.01em; }
+.studio-preview--lg { display: flex; flex-direction: column; gap: 0.5rem; min-height: 0; }
+.studio-preview--lg .studio-preview__turn--user { align-self: flex-end; margin: 0; padding: 0.55rem 0.85rem; border-radius: 10px 10px 2px 10px; background: var(--accent-soft); color: var(--accent-text); font-size: 0.88rem; max-width: 80%; }
+/* The Developer template's own typographic treatment (monospace, tighter radius) - same as the homepage
+   teaser's swap, see the comment above .studio-preview__bubble--after, but shown directly rather than
+   swapped-in, since this illustration already has three other animated steps conveying motion. */
+.studio-preview--lg .studio-preview__turn--bot { align-self: flex-start; margin: 0; max-width: 92%; display: flex; flex-direction: column; gap: 0.4rem; padding: 0.7rem 0.9rem; font-family: var(--font-mono); font-size: 0.85rem; border-radius: 6px; background: var(--bg-alt); color: var(--text); border: 1px solid var(--border); }
+.studio-preview--lg .studio-preview__turn--bot p { margin: 0; }
+.studio-preview__cite { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.76rem; color: var(--accent-text); font-family: var(--font-mono); }
+.studio-preview__cite svg { width: 0.85rem; height: 0.85rem; }
+
 /* Hero background: a slowly drifting glow and a faint dotted grid that fades toward the edges. */
 .hero::before { animation: drift 22s ease-in-out infinite alternate; }
 @keyframes drift { from { transform: translate(0, 0) scale(1); } to { transform: translate(-6%, 8%) scale(1.12); } }

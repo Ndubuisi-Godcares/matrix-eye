@@ -1,9 +1,9 @@
 # TypeScript SDK
 
-A typed client for Node 18+ and browsers. No dependencies. `npm run build` produces ES module, CommonJS and type files
-in `packages/sdk/dist` (checked by a test that imports the built output).
+A typed TypeScript client for Node 18+ and browsers, with no dependencies. `npm run build` produces ES module,
+CommonJS and type-declaration files in `packages/sdk/dist`, verified by a test that imports the built output.
 
-Two clients, because they have different trust levels:
+Two clients, split along trust boundaries:
 
 | Class | Needs | Use it |
 |---|---|---|
@@ -51,9 +51,9 @@ for await (const event of chat.stream("How do I apply?", { history })) {
 }
 ```
 
-Tokens are provisional because the answer is checked (citations, figures) only once complete. Always show the `final`
-event's text and citations as the result. A stream that ends without `final` throws `stream_interrupted`.
-Pass `signal` (an `AbortSignal`) to cancel.
+Tokens are provisional: citations and figures are verified only once the response is complete. Always render the
+`final` event's text and citations as the result, not the streamed tokens. A stream that ends without a `final`
+event throws `stream_interrupted`. Pass `signal` (an `AbortSignal`) to cancel.
 
 ### History
 
@@ -75,6 +75,6 @@ Every failure is an `MatrixEyeError` with `status` (0 if the server was unreacha
 
 ## Notes
 
-- The SDK carries its own copy of the API's types. The test suite runs it against the real server (including a real
-  crawl and streaming) so the two cannot drift apart unnoticed.
-- Early access: the package is not on npm yet. Today you use it from the repository (see the [quickstart](quickstart.md)).
+- The SDK maintains its own copy of the API's types. The test suite runs it against a real server, including a real
+  crawl and a real streamed response, so the two cannot drift apart unnoticed.
+- Early access: the package is not yet published to npm. It is consumed from the repository directly; see the [quickstart](quickstart.md).

@@ -1,0 +1,50 @@
+---
+/**
+ * The Template Studio doc page's illustration: a larger, more detailed walkthrough than the homepage teaser
+ * (StudioDemo.astro) - a numbered step tracker, a click through every template and every launcher icon shown (not
+ * just the final pick), and a full two-turn exchange in the live preview (not one bubble) so the template's effect
+ * on a real answer, not just a placeholder line, is visible. Same idiom throughout: CSS-only reveals, a "click"
+ * ring marking each pick, final state shown with no movement under reduced motion (only the final pick on each
+ * row renders then, never the ones passed through). Decorative (aria-hidden): the same facts are in the page copy.
+ */
+import Icon from "./Icon.astro";
+---
+
+<figure class="studio-demo studio-demo--lg" aria-label="Example of designing a widget in the Template Studio">
+  <div class="studio-demo__bar"><Icon name="layers" /> Template Studio <span class="studio-demo__crumb">Riverside University</span></div>
+
+  <ol class="studio-steps" aria-hidden="true">
+    <li class="studio-steps__item reveal reveal--1">1 &middot; Template</li>
+    <li class="studio-steps__item reveal reveal--2">2 &middot; Icon</li>
+    <li class="studio-steps__item reveal reveal--3">3 &middot; Preview</li>
+    <li class="studio-steps__item reveal reveal--4">4 &middot; Save</li>
+  </ol>
+
+  <div class="studio-demo__body">
+    <p class="studio-demo__label reveal reveal--1">Template</p>
+    <div class="studio-row reveal reveal--1">
+      <span class="swatch swatch--flash" style="animation-delay: 0.9s">Minimal<span class="click-ping" style="animation-delay: 0.9s"></span></span>
+      <span class="swatch swatch--flash" style="animation-delay: 1.6s">SaaS<span class="click-ping" style="animation-delay: 1.6s"></span></span>
+      <span class="swatch swatch--pick">Developer<span class="click-ping" style="animation-delay: 2.3s"></span></span>
+    </div>
+
+    <p class="studio-demo__label reveal reveal--2">Launcher icon</p>
+    <div class="studio-row reveal reveal--2">
+      <span class="icon-swatch icon-swatch--flash" style="animation-delay: 3.4s"><Icon name="chat" /><span class="click-ping" style="animation-delay: 3.4s"></span></span>
+      <span class="icon-swatch icon-swatch--flash" style="animation-delay: 4.1s"><Icon name="sparkle" /><span class="click-ping" style="animation-delay: 4.1s"></span></span>
+      <span class="icon-swatch icon-swatch--flash" style="animation-delay: 4.8s"><Icon name="book" /><span class="click-ping" style="animation-delay: 4.8s"></span></span>
+      <span class="icon-swatch icon-swatch--pick"><Icon name="headset" /><span class="click-ping" style="animation-delay: 5.5s"></span></span>
+    </div>
+
+    <p class="studio-demo__label reveal reveal--3">Live preview, in the Developer template</p>
+    <div class="studio-preview studio-preview--lg reveal reveal--3">
+      <p class="studio-preview__turn studio-preview__turn--user">How do I apply?</p>
+      <div class="studio-preview__turn studio-preview__turn--bot">
+        <p>The application deadline for the September intake is 30 June 2026.<sup>[1]</sup></p>
+        <span class="studio-preview__cite"><Icon name="file" /> Admissions · riverside.edu/admissions</span>
+      </div>
+    </div>
+
+    <p class="studio-demo__save reveal reveal--4"><Icon name="check" /> Saved to the project's settings &mdash; every visitor sees it on their next load, no redeploy.</p>
+  </div>
+</figure>

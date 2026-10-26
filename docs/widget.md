@@ -1,13 +1,13 @@
 # Chat widget
 
-A floating chat window that answers visitors' questions from your website and cites the pages it used.
-One script tag, no build step. Its styles live in a Shadow DOM, so your site's CSS cannot break it and it cannot
-break your site. About 10 KB gzipped, no dependencies.
+An embeddable chat widget that answers visitor questions from your website's content and cites the pages it drew
+from. One script tag, no build step. Its styles are isolated in a Shadow DOM, so the host page's CSS cannot affect
+it and it cannot affect the host page. About 10 KB gzipped, no dependencies.
 
 ## 1. Allow your website
 
-A browser may only use the assistant if the project lists the website's **origin** (scheme, host, port; no path).
-A new project is closed until you do this.
+A browser may only use the assistant from an **origin** (scheme, host, port; no path) explicitly listed on the
+project. A new project accepts no origins until one is added.
 
 ```bash
 curl -X PATCH $API/v1/projects/$PROJECT/settings \
@@ -86,33 +86,33 @@ as the CLI — not a public multi-tenant login).
 
 ## 4. What visitors get
 
-- Answers appear as they are written, then are replaced by the checked version with numbered sources.
-- Every factual answer links to the pages it came from; "I couldn't find that" when the site does not say.
-- 👍 / 👎 on each answer. Read them with `GET /v1/projects/:id/feedback?rating=down`. They show exactly what to fix.
-- Stop button while an answer is being written; "Try again" after an error; a "new conversation" button.
-- The conversation survives a page reload within the same tab (sessionStorage; never shared or sent anywhere).
+- Answers stream as they are generated, then are replaced by the verified version with numbered source references.
+- Every factual answer links to the page it was grounded in; the assistant abstains when the site doesn't say.
+- A thumbs up/down on each answer, reviewable with `GET /v1/projects/:id/feedback?rating=down` to surface exactly what to fix.
+- A stop control while an answer streams, a retry after an error, and a control to start a new conversation.
+- The conversation persists across a reload within the same tab (`sessionStorage`; never transmitted or shared).
 
 ## 5. Accessibility
 
-Built to WCAG 2.1 AA and tested in a real browser with axe-core (light, dark and custom colours):
+Built to WCAG 2.1 AA and checked in a real browser with axe-core (light, dark and custom colours):
 
-- Fully keyboard-operable. Opening moves focus into the input; Escape or the close button returns it to the launcher.
-- Screen readers: labelled dialog, transcript and controls; the finished answer is announced once (streamed
-  fragments are not read out); links that open new tabs say so; the typing indicator has a text alternative.
-- Colour contrast meets AA, focus rings are always visible, animation stops under *reduce motion*, and forced-colors
-  (high-contrast) mode is supported.
-- On phones the window becomes a full-screen sheet; the input uses 16 px text so iOS does not zoom.
+- Fully keyboard-operable: opening moves focus into the input; Escape or the close control returns it to the launcher.
+- Screen reader support: a labelled dialog, transcript and controls; the finished answer is announced once (streamed
+  fragments are not read aloud); links that open new tabs are identified as such; the typing indicator has a text alternative.
+- Colour contrast meets AA, focus rings are always visible, animation is suppressed under *reduced motion*, and
+  forced-colors (high-contrast) mode is supported.
+- On phones the window becomes a full-screen sheet; the input uses 16px text so iOS does not zoom on focus.
 
-Automated tools find only part of the problems. Testing with real screen readers (NVDA, VoiceOver) is still planned
-before public launch.
+Automated checks surface only part of the problem space. Testing with real screen readers (NVDA, VoiceOver) remains
+planned before public launch.
 
 ## 6. Security notes
 
-- Answers are inserted as plain text, never HTML, so a hostile page cannot inject script through the model.
-- Links are only created for `http(s)` URLs and open with `rel="noopener noreferrer"`.
-- The widget holds no secret. It can only chat, send feedback and read display settings, and only from allowed origins.
-- The origin check stops other *websites* from embedding your assistant. It cannot stop a script outside a browser from
-  calling the public endpoints, so those are rate-limited per visitor (default 20 messages a minute).
+- Answers are rendered as plain text, never HTML, so a hostile page cannot inject script through model output.
+- Links are created only for `http(s)` URLs and open with `rel="noopener noreferrer"`.
+- The widget holds no secret: it can only send chat messages and feedback and read display settings, and only from allowed origins.
+- The origin check stops other *websites* from embedding the assistant. It does not stop a script outside a browser
+  from calling the public endpoints directly, so those are rate-limited per visitor (default 20 messages a minute).
 
 ## 7. Build
 

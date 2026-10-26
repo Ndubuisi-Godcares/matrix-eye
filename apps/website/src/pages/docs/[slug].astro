@@ -2,6 +2,7 @@
 import { getCollection, render } from "astro:content";
 import { DOC_PAGES } from "../../data/docs";
 import Docs from "../../layouts/Docs.astro";
+import StudioDemoLarge from "../../components/StudioDemoLarge.astro";
 
 /** One page per entry in the documentation manifest (data/docs.ts). */
 export async function getStaticPaths() {
@@ -19,5 +20,6 @@ const { Content, headings } = await render(entry);
 ---
 
 <Docs slug={slug!} {headings}>
+  {slug === "dashboard" && <StudioDemoLarge slot="visual" />}
   <Content />
 </Docs>

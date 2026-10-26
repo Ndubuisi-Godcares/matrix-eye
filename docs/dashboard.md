@@ -1,7 +1,8 @@
 # Template Studio (dashboard)
 
 A local admin tool for designing a project's chat widget: three visual templates, a launcher icon library, brand
-colours, and a live preview that runs the real, unmodified widget against your real API — not a mockup.
+colours, and a live preview that runs the real, unmodified widget against the real API — not a mockup. Changes
+persist to the project's settings and apply to every visitor automatically, without a redeploy.
 
 ## What it is, and is not
 
@@ -37,7 +38,7 @@ Opens on `http://localhost:5183`. It needs:
 2. An admin API key — the same `MATRIX_EYE_API_KEY` the CLI uses.
 3. At least one project already created (the Studio lists existing projects; it does not create them).
 
-To see live answers in the preview, not just the "I don't have that information" decline, also add
+To see generated answers in the preview rather than just the decline response, also add
 `http://localhost:5183` to the **project's own** `allowedOrigins` (not the same setting as step 1 above — that one
 is for the admin API, this one is for the public widget endpoints the live preview talks to):
 

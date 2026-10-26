@@ -21,9 +21,10 @@ Errors always have the shape `{ "error": { "code": "...", "message": "...", "det
 
 ## Website forms (waitlist and contact)
 
-Used by the marketing website. They need no key but only accept requests from the origins in `MATRIX_EYE_SITE_ORIGINS`,
-are rate-limited per visitor (`MATRIX_EYE_FORM_RATE_LIMIT_PER_MINUTE`, default 5 a minute), and answer `204` whether or
-not the address was already registered, so they never reveal who is on the list.
+Used by the marketing website. These routes need no key, but accept requests only from origins listed in
+`MATRIX_EYE_SITE_ORIGINS`, are rate-limited per visitor (`MATRIX_EYE_FORM_RATE_LIMIT_PER_MINUTE`, default 5 a
+minute), and return `204` regardless of whether the address was already registered, so list membership is never
+disclosed.
 
 | Method | Path | Purpose |
 |---|---|---|
@@ -42,7 +43,7 @@ Owner tools (need the admin key):
 
 ## Public endpoints (for the chat widget)
 
-Called from visitors' browsers, so they take **no API key**. See [How it works](how-it-works.md#safety) for the security model.
+Called directly from visitors' browsers, so they take **no API key**. See [How it works](how-it-works.md#safety) for the security model.
 
 | Method | Path | Purpose |
 |---|---|---|
@@ -70,9 +71,9 @@ event: error
 data: {"code":"llm_failed","message":"..."}   <- instead of final, if something failed
 ```
 
-`token` text has not been checked yet. Always replace it with the `final` answer. Rule, contact, overview, small-talk
-and abstain answers are instant, so they send only `final`. A `: keep-alive` comment is sent every 15 s while a cold
-model loads. Closing the connection stops generation.
+`token` text is unverified; always render the `final` answer as the result. Rule, contact, overview, smalltalk and
+abstain responses resolve instantly and send only `final`. A `: keep-alive` comment is sent every 15 seconds while
+a cold model loads. Closing the connection halts generation.
 
 ## Chat response
 
