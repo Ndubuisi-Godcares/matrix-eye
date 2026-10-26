@@ -18,6 +18,7 @@ automatically when present).
 | `MATRIX_EYE_RATE_LIMIT_PER_MINUTE` | Requests per minute per client on all other routes. | `120` |
 | `MATRIX_EYE_SITE_ORIGINS`, `MATRIX_EYE_FORM_RATE_LIMIT_PER_MINUTE` | For running the marketing website's forms. | none, `5` |
 | `MATRIX_EYE_ALLOW_PRIVATE_NETWORKS` | Let the crawler read `localhost` and private addresses. **Development only.** | `false` |
+| `MATRIX_EYE_RENDER` | Run JavaScript for pages that arrive empty (React/Vue sites), the same as `--render` on the demo/CLI. Needs a one-time `npx playwright install chromium`. Off by default since it is slower per page; ordinary server-rendered sites never need it. | `false` |
 | `MATRIX_EYE_LLM_BASE_URL`, `MATRIX_EYE_LLM_MODEL`, `MATRIX_EYE_LLM_API_KEY` | The language model (below). | none |
 
 ## Language models

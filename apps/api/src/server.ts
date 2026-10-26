@@ -3,6 +3,7 @@
  *
  *   MATRIX_EYE_API_KEY=... npm run dev:api
  */
+import { createPlaywrightRenderer, type PageRenderer } from "@matrix-eye/crawler";
 import { SqliteKnowledgeStore } from "@matrix-eye/knowledge";
 import { llmFromEnv } from "@matrix-eye/llm";
 import pg from "pg";
@@ -22,7 +23,19 @@ async function main() {
     controlPlane = await createControlPlane({ db: pool, supabaseUrl: config.controlPlane.supabaseUrl, supabaseAnonKey: config.controlPlane.supabaseAnonKey });
   }
 
-  const { app, crawls } = await buildApp({ config, store, llm, logger: true, controlPlane });
+  // Off by default (MATRIX_EYE_RENDER=true): the same JavaScript-rendering capability
+  // `npm run demo`/the CLI already have via --render, for sites that build their content in the browser.
+  let renderer: PageRenderer | undefined;
+  if (config.render) {
+    try {
+      renderer = await createPlaywrightRenderer({ allowPrivateNetworks: config.allowPrivateNetworks });
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  }
+
+  const { app, crawls } = await buildApp({ config, store, llm, logger: true, controlPlane, renderer });
 
   // Stop accepting requests, let running crawls finish writing, then close the database.
   const shutdown = async (signal: string) => {
@@ -31,6 +44,7 @@ async function main() {
     await crawls.drain();
     store.close();
     await controlPlane?.close();
+    await renderer?.close();
     process.exit(0);
   };
   process.on("SIGINT", () => void shutdown("SIGINT"));

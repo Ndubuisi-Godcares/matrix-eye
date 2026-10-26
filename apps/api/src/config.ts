@@ -25,6 +25,15 @@ const schema = z.object({
     .default("false")
     .transform((v) => v === "true"),
   /**
+   * Run JavaScript for pages that arrive empty (React/Vue sites), the same `--render` capability
+   * `npm run demo`/the CLI already have. Off by default: it needs Chromium (`npx playwright install
+   * chromium`) and is slower per page, so ordinary server-rendered sites never pay the cost.
+   */
+  MATRIX_EYE_RENDER: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((v) => v === "true"),
+  /**
    * Hosted multi-tenant mode (Phase 4, ADR-008). Unset (the default) keeps the API self-host /
    * single-tenant: one operator key, no accounts. Set all three together to turn on accounts,
    * per-account API keys and project ownership; the public widget/forms endpoints are unaffected.
@@ -53,6 +62,7 @@ export interface AppConfig {
   publicRateLimitPerMinute: number;
   formRateLimitPerMinute: number;
   allowPrivateNetworks: boolean;
+  render: boolean;
   /** Null in self-host mode. Set means hosted multi-tenant mode is on (ADR-008). */
   controlPlane: { databaseUrl: string; supabaseUrl: string; supabaseAnonKey: string } | null;
 }
@@ -75,6 +85,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     publicRateLimitPerMinute: v.MATRIX_EYE_PUBLIC_RATE_LIMIT_PER_MINUTE,
     formRateLimitPerMinute: v.MATRIX_EYE_FORM_RATE_LIMIT_PER_MINUTE,
     allowPrivateNetworks: v.MATRIX_EYE_ALLOW_PRIVATE_NETWORKS,
+    render: v.MATRIX_EYE_RENDER,
     controlPlane:
       v.MATRIX_EYE_DATABASE_URL && v.MATRIX_EYE_SUPABASE_URL && v.MATRIX_EYE_SUPABASE_ANON_KEY
         ? { databaseUrl: v.MATRIX_EYE_DATABASE_URL, supabaseUrl: v.MATRIX_EYE_SUPABASE_URL, supabaseAnonKey: v.MATRIX_EYE_SUPABASE_ANON_KEY }

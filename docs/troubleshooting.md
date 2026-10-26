@@ -6,7 +6,7 @@ Find your symptom, then follow the fix. If you are still stuck, use the [contact
 
 | What you see | Why | What to do |
 |---|---|---|
-| The crawl finishes with **0 pages** | The site draws its content with JavaScript, so the plain page is empty. | Run `npx playwright install chromium` once, then add `--render`. |
+| The crawl finishes with **0 pages** | The site draws its content with JavaScript, so the plain page is empty. | Run `npx playwright install chromium` once, then add `--render` (`npm run demo`/the CLI) or set `MATRIX_EYE_RENDER=true` and restart the API (`npm run dev:api`). |
 | `robots.txt disallows crawling` | Your site asks crawlers to stay away (sometimes WordPress's "discourage search engines" setting does this). | Allow `MatrixEyeBot` in your `robots.txt`. See the [crawler page](/bot/). |
 | `Refusing to crawl internal host` | Local and private addresses are blocked for safety. | For your own dev server, add `--allow-private`. Never for sites you don't control. |
 | Some pages are missing | Pages marked `noindex`, disallowed in `robots.txt`, copies of other pages, or beyond the page limit. | Raise `--max-pages`. The crawl summary reports how many were skipped. |

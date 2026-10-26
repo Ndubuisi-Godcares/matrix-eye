@@ -140,6 +140,14 @@ describe("extractive answers", () => {
     expect(composeExtractive("anything", [])).toBeNull();
   });
 
+  it("returns null, not an empty answer, when every evidence chunk is only short fragments", () => {
+    // Real-world case: a crawled e-commerce/card-heavy page whose text is all labels and prices,
+    // none of them a full sentence (MIN_SENTENCE_WORDS) - there is nothing to quote, so this must
+    // read the same as "no evidence" to the caller (null), never a "successful" blank answer.
+    const evidence = [hit("https://x.test/shop", "AIIT Blueprint"), hit("https://x.test/shop2", "$10\nView product")];
+    expect(composeExtractive("what is aiit", evidence)).toBeNull();
+  });
+
   it("adds column context to table rows", () => {
     const evidence = [hit("u", "Programme | Fee\nNursing | $5,200")];
     expect(composeExtractive("nursing fee", evidence)!.answer).toContain("columns: Programme | Fee");

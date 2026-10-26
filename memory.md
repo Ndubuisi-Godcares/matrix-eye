@@ -6,15 +6,15 @@
 > only this file, `CLAUDE.md`, and the source tree — nothing else is needed and nothing important lives only in chat history.
 > Section 11 says exactly where work stopped; section 9 says what was and was not verified; section 3 is the full project
 > topology (directory map + architecture) if you need to re-orient.
-> Last audit: **2026-10-26** (session begun 2026-10-25, ran past midnight, still going). About to be pushed: a new
-> **workspace app, `apps/dashboard`** — a "Template Studio" where a project's chat widget can be designed (3 visual
-> templates, 6 launcher icons, brand colours) with a live preview that mounts the real, unmodified widget against
-> the real API. This is a genuinely new npm workspace, new widget capabilities (`template`/`launcherIcon` options,
-> `packages/widget/src/styles.ts`), new API surface (`GET /v1/projects`, `appearance` in project settings), and a
-> real bug fix (admin CORS silently never allowed PATCH/PUT/DELETE cross-origin — see section 13). Section 11's top
-> entry has the full story; section 15 has the session-by-session narrative of everything before it, going back to
+> Last audit: **2026-10-26** (session begun 2026-10-25, ran past midnight, still going). Latest: after pushing the
+> Template Studio (`f043209`) and the npm-audit fix (`63d7952`, CI confirmed fully green), the owner actually used
+> the dashboard end-to-end against a real site and hit (and all were fixed) a CORS-config gap, a missing project, no
+> JS-rendering in the admin API's crawler (`MATRIX_EYE_RENDER`, new), and a real core-engine bug: `composeExtractive`
+> could return a "successful" **empty answer** instead of abstaining when every evidence chunk was short fragments
+> (e-commerce card text) — exactly the silent non-answer ADR-003 exists to prevent. Section 11's top two entries
+> have the full story; section 15 has the session-by-session narrative of everything before it, going back to
 > `fa04b80`. **If you're picking this up mid-session: section 9's newest block lists every verification check run,
-> including two false alarms (CSS cascade bug, then a local-machine resource-exhaustion scare) that were each
+> including several false alarms (CSS cascade bug, local-machine resource-exhaustion scares) that were each
 > properly root-caused rather than papered over — read it before re-running anything from scratch.**
 > Legend: **VERIFIED** = checked in code or by running something this audit; **REPORTED** = established earlier in the
 > project's conversation history and not re-checked; **UNVERIFIED/UNKNOWN** = not checked.
@@ -567,7 +567,56 @@ phrasing; small local models sometimes decline two-part questions; widget/`Origi
   call-site fixes in `apps/api/src/schemas.ts` (`waitlistSchema`/`contactSchema`'s consent literal). Verified
   clean: typecheck, full build, full test suite (488/488 — no hidden assertion on old zod v3 error shapes broke),
   eval gate (100% all targets), and `npm audit --omit=dev --audit-level=high` now **0 vulnerabilities** (was 4).
-  Commit status: check the hash at the top of this file and `git log` for whether this has landed yet.
+  **Committed and pushed as `63d7952`**, CI confirmed fully green (run `40275826908`, including the audit step).
+- **2026-10-26, same session, continued: the owner actually tried the Template Studio and hit three real, separate
+  blockers in sequence** — a genuinely useful stress-test of the feature just built, each one found and fixed live
+  rather than deferred:
+  1. **Dashboard showed "Could not reach the MatrixEye server: Failed to fetch."** Root-caused by replaying the
+     browser's CORS preflight with curl: `.env` had no `MATRIX_EYE_CORS_ORIGINS` set at all, so the admin CORS
+     branch resolved `origin: false`; `@fastify/cors` itself (not app code) responds to a disallowed-origin
+     preflight with `reply.callNotFound()`, landing on the app's custom 404 handler — explains the exact 404 seen,
+     not a CORS-specific browser error. This is correct, intentional `@fastify/cors` behaviour, not a bug: the fix
+     was operator config, not code. Added `MATRIX_EYE_CORS_ORIGINS=http://localhost:5183,http://127.0.0.1:5183` to
+     `.env` (both, since browsers treat them as different origins) and had the owner restart `npm run dev:api`
+     (`tsx watch` only reads `.env` at process start).
+  2. **"No projects yet."** Expected on a fresh local SQLite DB — `docs/dashboard.md` already says the Studio lists
+     projects, it does not create them. Created one via curl for the owner's real site (`https://www.aiit.network/`,
+     project `d22c750e-0afc-4ffb-a063-0e85700f1c09`), with `allowedOrigins` including the dashboard's own origins so
+     the live preview gets real answers, not just the decline response.
+  3. **Crawl completed but indexed 0 of 76 pages.** The site is a client-rendered SPA (confirmed by fetching the raw
+     HTML directly: a near-empty `<body>`), and `apps/api`'s admin HTTP crawl endpoint had no JavaScript-rendering
+     capability at all — `--render` only ever existed on `npm run demo`/the CLI, never wired into the long-running
+     server. Asked the owner how to handle it (use a different site / keep empty / add render support); chose **add
+     render support**. Built `MATRIX_EYE_RENDER` (`apps/api/src/config.ts`): off by default, lazily constructs the
+     same `createPlaywrightRenderer` demo/CLI already use when true, passed into `buildApp` and closed on shutdown
+     (`apps/api/src/server.ts`). `playwright` needed no new dependency — already an `optionalDependencies` entry on
+     `@matrix-eye/crawler` and already installed. Documented in `docs/self-hosting.md`'s settings table and
+     `docs/troubleshooting.md`'s "0 pages" row. Verified live: with `MATRIX_EYE_RENDER=true` and the API restarted,
+     a re-crawl of the same site indexed **40/40 pages, 370 chunks, 0 failed**.
+  - **Along the way, re-crawling real content surfaced a fourth, independent bug — this one in core engine logic,
+    not anything specific to the dashboard:** asking the newly-crawled project a question returned
+    `{"answer":"","abstained":false,"route":"extractive",...}` — a blank "successful" answer, not a decline. Traced
+    to `packages/engine/src/extractive.ts`'s `composeExtractive`: when every sentence/unit in every evidence chunk
+    is a short fragment under `MIN_SENTENCE_WORDS` (common on e-commerce/card-heavy pages — "AIIT Blueprint", "$10",
+    "View product" are all 1-3 words), **both** the relevance-filtered `chosen` list and its "fall back to the
+    opening of the best passage" rescue were empty, but the function still returned `{ answer: "", usedEvidence: [] }`
+    instead of `null` — so `generateExtractive`'s `if (!composed) return this.abstain(...)` never fired. This is
+    exactly the kind of silent non-answer ADR-003's abstention guarantee exists to prevent, and it had been live in
+    the codebase the whole time, just never exercised by a real site with this content shape (the fixture site and
+    eval corpus are all prose). **Fixed**: `composeExtractive` now returns `null` when `chosen` is still empty after
+    the opening-passage fallback, so the engine abstains honestly instead of showing blank text. Added a regression
+    test (`packages/engine/test/units.test.ts`: "returns null, not an empty answer, when every evidence chunk is
+    only short fragments") reproducing the exact AIIT Network evidence shape. Verified live: the same question
+    against the same project now returns a proper `abstained: true` reply with contact details, not a blank one.
+  - **Final verification for this whole pass:** typecheck, full build, eval gate (100% all targets, confirming the
+    extractive change doesn't regress answer quality), full test suite — two files flaked on the first full run
+    (`packages/engine` fixture-server robots.txt timeout, `apps/website/test/browser.test.ts` connection timeouts)
+    while this machine had the API server, the Chromium-based render crawl, and the dashboard's Vite server all
+    running concurrently; both **passed clean (113/113, 30/30) when re-run in isolation**, matching this session's
+    already-documented host-resource-pressure pattern (section 13), not a regression from these changes.
+  - Commit status: check the hash at the top of this file and `git log` — this pass (CORS config is operator-side,
+    not committed; the `MATRIX_EYE_RENDER` feature and the extractive fix are real code changes) was written up
+    before the final commit landed.
 - **2026-10-26 session, earlier work (commit hash at the top of this file): Template Studio, first slice.** The
   owner pasted a very large, detailed spec ("Build a Professional Chatbot Template Studio, Branding Engine &
   Launcher Icon Library") — 12 template families, automatic logo/colour discovery from a crawled site, a full
@@ -853,6 +902,9 @@ removed v3 API (`z.object`/`z.string`/`z.array`/`z.enum`/`.min`/`.max`/`.optiona
 
 | Issue | Cause (confirmed unless marked) | Fix / note |
 |---|---|---|
+| **Fixed 2026-10-26.** `composeExtractive` (`packages/engine/src/extractive.ts`) could return `{ answer: "", usedEvidence: [] }` — a non-null, "successful" empty answer — instead of `null`, when every evidence chunk's text was only short fragments (e-commerce card text like "$10", "View product": all under `MIN_SENTENCE_WORDS`) | Both the relevance-filtered `chosen` list and its opening-passage fallback ended up empty, but the function fell through to building (and returning) an empty-string answer object anyway, so `generateExtractive`'s `if (!composed) return this.abstain(...)` guard never fired — a real violation of the ADR-003 abstention guarantee, only surfaced once a real non-prose site (an e-commerce/shop-heavy page) was actually crawled and asked about; the fixture site and eval corpus are all prose, so no existing test exercised this shape | Fixed: returns `null` when `chosen` is still empty, so the engine abstains honestly. Regression test added (`packages/engine/test/units.test.ts`) |
+| Dashboard: "Could not reach the MatrixEye server: Failed to fetch" | `MATRIX_EYE_CORS_ORIGINS` didn't include the dashboard's origin, so `@fastify/cors` resolved `origin: false`; it then replies to that disallowed preflight with `reply.callNotFound()`, which this app's custom 404 handler turns into a plain 404 — correct `@fastify/cors` behaviour, not a bug | Add the dashboard's origin(s) to `MATRIX_EYE_CORS_ORIGINS` (`docs/dashboard.md` already documents this) and restart `npm run dev:api` — `tsx watch` only reads `.env` at process start, so editing it alone does nothing until restarted |
+| Admin API crawl indexes 0 pages on a JS-rendered (React/Vue/SPA) site | The admin HTTP API (`apps/api`) had no JavaScript-rendering capability at all — `--render` only ever existed on `npm run demo`/the CLI | Fixed 2026-10-26: set `MATRIX_EYE_RENDER=true` and restart `npm run dev:api` (see section 7/11 for how it's wired) |
 | Vercel "No Output Directory named public" | Build ran from repo root without website build config | fixed by `vercel.json` (root + `apps/website`); keep both in sync (`npm run deploy-config`; test enforces) |
 | Vercel "To link a GitHub repository, you need to install the GitHub integration" | Repo was in an organisation; Hobby plan can't deploy org repos; personal repo was empty | pushed code to `Ndubuisi-Godcares/matrix-eye`; user must grant the Vercel GitHub app access |
 | `git push` rejected / wrong repo | two remotes | `origin` has two push URLs; `personal` is the private repo |

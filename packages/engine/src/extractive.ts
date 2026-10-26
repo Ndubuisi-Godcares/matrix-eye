@@ -92,6 +92,10 @@ export function composeExtractive(
   let chosen = related.filter((c) => c.overlap >= bestOverlap * RELATIVE_CUTOFF).slice(0, maxSentences);
   // Nothing overlapped the question: fall back to the opening of the best passage.
   if (chosen.length === 0) chosen = candidates.filter((c) => c.evidenceIndex === 0).slice(0, 2);
+  // Every unit in every evidence chunk was a short fragment (labels, prices, buttons) and none
+  // passed MIN_SENTENCE_WORDS, so there is nothing to quote at all: abstain, rather than return
+  // a "successful" empty answer.
+  if (chosen.length === 0) return null;
 
   // Present in reading order (source, then position), numbering citations by first appearance.
   chosen.sort((a, b) => a.evidenceIndex - b.evidenceIndex || a.order - b.order);
