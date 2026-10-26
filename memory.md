@@ -555,7 +555,20 @@ phrasing; small local models sometimes decline two-part questions; widget/`Origi
 
 ## 11. Current development position (READ THIS FIRST)
 
-- **2026-10-26 session, latest work (commit hash at the top of this file): Template Studio, first slice.** The
+- **2026-10-26, immediately after the Template Studio push: "Please rectify the failed deployments... is the
+  dashboard on the website now?"** The owner saw the Template Studio commit (`f043209`) land with CI red and asked
+  to fix it, plus asked whether `apps/dashboard` is live on the public website. Answered the second question first:
+  **no** — `apps/dashboard` is a local-only admin tool (`npm run dev -w @matrix-eye/dashboard`, port 5183), by
+  design (section 7/13's "not a hosted login" note); nothing about it is deployed to the public `apps/website`
+  Vercel site, and nothing in this session's work changed that. The CI failure itself was the long-deferred
+  `npm audit` P0 (section 12), not anything specific to the dashboard push — fixed properly rather than deferred
+  again: `npm audit fix` resolved `undici`/`fastify`/`fast-uri` (non-breaking); `zod` needed the breaking v3→v4 bump
+  (`apps/api/package.json`: `^3.24.0` → `^4.6.7`) because v4 removed the deprecated `errorMap` param, requiring two
+  call-site fixes in `apps/api/src/schemas.ts` (`waitlistSchema`/`contactSchema`'s consent literal). Verified
+  clean: typecheck, full build, full test suite (488/488 — no hidden assertion on old zod v3 error shapes broke),
+  eval gate (100% all targets), and `npm audit --omit=dev --audit-level=high` now **0 vulnerabilities** (was 4).
+  Commit status: check the hash at the top of this file and `git log` for whether this has landed yet.
+- **2026-10-26 session, earlier work (commit hash at the top of this file): Template Studio, first slice.** The
   owner pasted a very large, detailed spec ("Build a Professional Chatbot Template Studio, Branding Engine &
   Launcher Icon Library") — 12 template families, automatic logo/colour discovery from a crawled site, a full
   preview-state matrix, a composable config schema, draft/publish lifecycle, and more, framed as "a dedicated
@@ -779,13 +792,17 @@ control-plane Postgres (code committed `c975761`; no real Supabase project yet)*
 API+Ollama (not started) -> M3 minimal dashboard (not started) -> M4 billing/Stripe (not started) -> M5 hardening
 (not started) before real customers.
 
-**P0:** **`npm audit --omit=dev --audit-level=high` now fails with 4 findings** (`zod` high, `undici` high, and as of
-2026-10-26 also `fastify` high — section 9). Not caused by any of this session's changes (confirmed each time by
-diffing `package-lock.json`), but will break CI's audit step on every push until fixed. `npm audit fix` handles
-`undici`/`fastify` non-breaking; `zod` needs `npm audit fix --force` (upgrades to zod@4.6.7, a breaking change per
-npm's own warning) — check `apps/api` schema validation still passes typecheck/tests after. This has been deferred
-across several pushes now with the owner's explicit sign-off each time ("commit now, handle audit separately") —
-it should not keep being deferred indefinitely; raise it proactively next session rather than waiting to be asked.
+**P0 — RESOLVED 2026-10-26.** `npm audit --omit=dev --audit-level=high` had been failing with 4 findings (`zod` high,
+`undici` high, `fastify` high, `fast-uri` moderate) since 2026-10-25, deferred across several pushes with the
+owner's sign-off each time. Fixed after the owner asked to rectify the failing CI runs: `npm audit fix` resolved
+`undici`/`fastify`/`fast-uri` (non-breaking). `zod` needed the breaking upgrade (`^3.24.0` → `^4.6.7` in
+`apps/api/package.json`) because v4 removed the deprecated `errorMap` param — the only two call sites
+(`waitlistSchema`/`contactSchema`'s `consent: z.literal(true, { errorMap: ... })` in `apps/api/src/schemas.ts`)
+were updated to v4's `{ message: "..." }` form. Verified: typecheck, full build, full test suite (488/488 — no
+hidden assertion on the old error-message shape broke), eval gate (100% all targets), and `npm audit
+--omit=dev --audit-level=high` now reports **0 vulnerabilities**. No other zod call site in the codebase used any
+removed v3 API (`z.object`/`z.string`/`z.array`/`z.enum`/`.min`/`.max`/`.optional`/`.nullable`/`.default`/`.trim`/
+`.email`/`.url`/`.uuid`/`ZodError.issues`/`.parse`/`.safeParse` are all still valid in v4 and needed no changes).
 
 **P1 (current)**
 1. ~~Check CI for the latest commits.~~ Done 2026-10-13: green through `51728e8`.
@@ -844,7 +861,7 @@ it should not keep being deferred indefinitely; raise it proactively next sessio
 | Port 4400 in use | an earlier `npm run serve -w @matrix-eye/website` still running | stop it (`Stop-Process -Id (Get-NetTCPConnection -LocalPort 4400 -State Listen).OwningProcess`) |
 | `packages/crawler` render test flaked once under load | timing (hypothesis); passed alone | re-run alone before suspecting code |
 | `packages/llm/test/openai-compatible.test.ts` failed with `ETIMEDOUT` connecting to a local loopback server (2026-10-25) | transient local networking; passed alone and on a full re-run immediately after | re-run alone (or the whole suite) before suspecting code, same as the crawler render test above |
-| `npm audit --omit=dev --audit-level=high` reports 2 high-severity vulnerabilities as of 2026-10-25 (`zod`, `undici`); was 0 on 2026-10-13 | new GitHub advisories published against already-installed versions, not a lockfile change made in this project | not yet fixed; `npm audit fix` for `undici`, `npm audit fix --force` (breaking) for `zod` — see section 12 P0 |
+| `npm audit --omit=dev --audit-level=high` reported up to 4 vulnerabilities between 2026-10-25 and 2026-10-26 (`zod`, `undici`, `fastify`, `fast-uri`); was 0 on 2026-10-13 | new GitHub advisories published against already-installed versions, not a lockfile change made in this project | **Fixed 2026-10-26**, see section 12 P0 — `npm audit fix` for `undici`/`fastify`/`fast-uri`, `zod` v3→v4 bump + two `errorMap`→`message` call-site fixes in `apps/api/src/schemas.ts`. Back to 0 vulnerabilities. |
 | **CI's `npm test` step failed 4 times in a row (2026-10-25, commits `fa04b80` through `d8ce0ad`)** on `apps/website/test/browser.test.ts`'s docs-TOC scroll-spy test (`expect.poll` never reaching 1 matching link), while the *identical* suite passed 464/464 every time locally | **Genuinely caused by this session's font change, confirmed, not flakiness** — removing Fraunces and setting the global `h1, h2 { font-weight: 800 }` rule (section 7) changed the rendered height of `.prose h2` headings (the rule applies globally, including inside docs pages, since `.prose h2` only overrides `font-size`). The test scrolled by a **fixed 200px** after `scrollIntoViewIfNeeded()`, which depended on the old heading height to land inside the scroll-spy's ~190px active band; the new heading height pushed it just outside that band. It passed locally on Windows but failed on CI's Linux runner — plausibly sub-pixel font-rendering differences between OSes sitting on opposite sides of an already-marginal boundary, though the root fragility (a fixed pixel offset) was the same on both. **Do not mistake a repeated CI failure for flakiness without checking whether a recent change could plausibly be the cause** — three earlier failures in this same session *were* genuine flakiness (network timeouts, afterAll teardown), which made it easy to misdiagnose this fourth one the same way at first. | Fixed in `apps/website/test/browser.test.ts`: the test now computes the heading's actual position and scrolls to place it at a fixed distance from the viewport top, instead of nudging by a fixed amount after an imprecise `scrollIntoViewIfNeeded()`. Verified: passes alone and in the full suite, locally, 464/464, **and confirmed green on CI** (commit `9458b20`, run `40225059946`: `npm test` step passed). |
 | This machine's test runs got noticeably flakier after several hours of a continuous session (2026-10-26): one `npm test` run had 9 failed files/19 failed tests across unrelated packages, cleared up on immediate re-runs with no code change | `Get-CimInstance Win32_OperatingSystem` showed ~2.2 GB free of 16.5 GB total at the time — genuine low-memory pressure on the host, not a code issue. Likely compounded by a leftover `npm run serve` process from earlier in the session that was never stopped. | If a *wide* spread of unrelated test files fail at once (not the same one or two files repeatedly), suspect host resource pressure before suspecting code: check free memory, stop any leftover `npm run serve`/dev-server background processes from earlier in the session, and re-run. Reserve the "did my change cause this" investigation (section 13's CI-regression entry above) for failures that are narrow and repeat on clean re-runs. |
 | **Update to the row above (same session, later):** re-running `apps/website/test/browser.test.ts` repeatedly, by itself, produced wildly inconsistent pass counts run to run (2/30, 28/30, 1/30) — far worse than running the *full* `npm test` suite, which was consistently near-clean | `Get-Process chrome,chromium,node` found **15 lingering processes**; each `npx vitest run <file>` invocation that launches real Chromium (via Playwright) apparently doesn't always clean up every child process, and repeating it many times back-to-back accumulates zombies that starve later runs — a property of running the *same heavy file* in a tight loop, not of the full suite (which runs each file once) | Don't repeatedly re-run one heavy Playwright-based test file in isolation to "confirm" a result — one clean run of the *full* `npm test` is a more reliable signal than five repeats of one file. If a result still looks wrong, run `Get-Process chrome,chromium,node \| Measure-Object` (or Task Manager) and kill stragglers before concluding the code is broken. |

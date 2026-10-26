@@ -84,7 +84,7 @@ export const waitlistSchema = z.object({
   useCase: z.string().trim().max(300).optional(),
   source: z.string().trim().max(200).optional(),
   /** Must be true: nothing is stored without the person agreeing to be contacted. */
-  consent: z.literal(true, { errorMap: () => ({ message: "Please tick the box to agree to be contacted" }) }),
+  consent: z.literal(true, { message: "Please tick the box to agree to be contacted" }),
   website: z.string().max(200).optional(),
 });
 
@@ -92,7 +92,7 @@ export const contactSchema = z.object({
   name: z.string().trim().min(1).max(100),
   email: emailSchema,
   message: z.string().trim().min(5).max(2000),
-  consent: z.literal(true, { errorMap: () => ({ message: "Please tick the box so we may reply to you" }) }),
+  consent: z.literal(true, { message: "Please tick the box so we may reply to you" }),
   website: z.string().max(200).optional(),
 });
 
